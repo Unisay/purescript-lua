@@ -1,0 +1,10 @@
+dist
+dist-*
+cabal.project.local
+cabal.project.local~
+result
+result-*
+.direnv
+.psc-ide-port
+/output/
+.vscode/settings.json

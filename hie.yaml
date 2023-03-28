@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: "exe"
+      component: "pslua:exe:pslua"
+
+    - path: "lib"
+      component: "lib:pslua"
+
+    - path: "test"
+      component: "pslua:test:spec"

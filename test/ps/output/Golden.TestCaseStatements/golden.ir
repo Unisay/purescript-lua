@@ -1,0 +1,2185 @@
+[Module
+   {moduleName = ModuleName "Golden.TestCaseStatements",
+    moduleBindings =
+      [Standalone
+         (Name "J",
+          Exp
+            {unExp =
+               Ctor
+                 SumType
+                 (TyName "M")
+                 (CtorName "J")
+                 [FieldName "value0"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "N",
+          Exp
+            {unExp = Ctor SumType (TyName "M") (CtorName "N") [],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "multipleGuards",
+          Exp
+            {unExp = Lit (Integer 1),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "d",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "m"))
+                    (Exp
+                       {unExp =
+                          Abs
+                            (AbsBinding
+                               (ArgNamed (Name "n"))
+                               (Exp
+                                  {unExp =
+                                     Abs
+                                       (AbsBinding
+                                          (ArgNamed (Name "x"))
+                                          (Exp
+                                             {unExp =
+                                                Let
+                                                  (LetBinding
+                                                     (Standalone
+                                                        (Name "v",
+                                                         Exp
+                                                           {unExp =
+                                                              Abs
+                                                                (AbsBinding
+                                                                   ArgUnused
+                                                                   (Exp
+                                                                      {unExp =
+                                                                         IfThenElse
+                                                                           (Exp
+                                                                              {unExp =
+                                                                                 Prim
+                                                                                   (Eq
+                                                                                      (Exp
+                                                                                         {unExp =
+                                                                                            Lit
+                                                                                              (Char
+                                                                                                 'y'),
+                                                                                          expInfo =
+                                                                                            Info
+                                                                                              {refsFree =
+                                                                                                 []}})
+                                                                                      (Exp
+                                                                                         {unExp =
+                                                                                            RefBound
+                                                                                              (Index
+                                                                                                 {level =
+                                                                                                    2,
+                                                                                                  offset =
+                                                                                                    0}),
+                                                                                          expInfo =
+                                                                                            Info
+                                                                                              {refsFree =
+                                                                                                 []}})),
+                                                                               expInfo =
+                                                                                 Info
+                                                                                   {refsFree =
+                                                                                      []}})
+                                                                           (Exp
+                                                                              {unExp =
+                                                                                 Lit
+                                                                                   (Integer
+                                                                                      0),
+                                                                               expInfo =
+                                                                                 Info
+                                                                                   {refsFree =
+                                                                                      []}})
+                                                                           (Exp
+                                                                              {unExp =
+                                                                                 Lit
+                                                                                   (Integer
+                                                                                      1),
+                                                                               expInfo =
+                                                                                 Info
+                                                                                   {refsFree =
+                                                                                      []}}),
+                                                                       expInfo =
+                                                                         Info
+                                                                           {refsFree =
+                                                                              []}})),
+                                                            expInfo =
+                                                              Info
+                                                                {refsFree =
+                                                                   []}})
+                                                        :|
+                                                        [])
+                                                     (Exp
+                                                        {unExp =
+                                                           IfThenElse
+                                                             (Exp
+                                                                {unExp =
+                                                                   Prim
+                                                                     (Eq
+                                                                        (Exp
+                                                                           {unExp =
+                                                                              Lit
+                                                                                (Char
+                                                                                   'x'),
+                                                                            expInfo =
+                                                                              Info
+                                                                                {refsFree =
+                                                                                   []}})
+                                                                        (Exp
+                                                                           {unExp =
+                                                                              RefBound
+                                                                                (Index
+                                                                                   {level =
+                                                                                      2,
+                                                                                    offset =
+                                                                                      0}),
+                                                                            expInfo =
+                                                                              Info
+                                                                                {refsFree =
+                                                                                   []}})),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        []}})
+                                                             (Exp
+                                                                {unExp =
+                                                                   IfThenElse
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           Prim
+                                                                             (Eq
+                                                                                (Exp
+                                                                                   {unExp =
+                                                                                      Lit
+                                                                                        (String
+                                                                                           "Golden.TestCaseStatements.J"),
+                                                                                    expInfo =
+                                                                                      Info
+                                                                                        {refsFree =
+                                                                                           []}})
+                                                                                (Exp
+                                                                                   {unExp =
+                                                                                      Prim
+                                                                                        (ReflectCtor
+                                                                                           (Exp
+                                                                                              {unExp =
+                                                                                                 RefBound
+                                                                                                   (Index
+                                                                                                      {level =
+                                                                                                         4,
+                                                                                                       offset =
+                                                                                                         0}),
+                                                                                               expInfo =
+                                                                                                 Info
+                                                                                                   {refsFree =
+                                                                                                      []}})),
+                                                                                    expInfo =
+                                                                                      Info
+                                                                                        {refsFree =
+                                                                                           []}})),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}})
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           Let
+                                                                             (LetBinding
+                                                                                (Standalone
+                                                                                   (Name
+                                                                                      "y",
+                                                                                    Exp
+                                                                                      {unExp =
+                                                                                         ArrayIndex
+                                                                                           (Exp
+                                                                                              {unExp =
+                                                                                                 RefBound
+                                                                                                   (Index
+                                                                                                      {level =
+                                                                                                         5,
+                                                                                                       offset =
+                                                                                                         0}),
+                                                                                               expInfo =
+                                                                                                 Info
+                                                                                                   {refsFree =
+                                                                                                      []}})
+                                                                                           0,
+                                                                                       expInfo =
+                                                                                         Info
+                                                                                           {refsFree =
+                                                                                              []}})
+                                                                                   :|
+                                                                                   [])
+                                                                                (Exp
+                                                                                   {unExp =
+                                                                                      IfThenElse
+                                                                                        (Exp
+                                                                                           {unExp =
+                                                                                              Prim
+                                                                                                (Eq
+                                                                                                   (Exp
+                                                                                                      {unExp =
+                                                                                                         Lit
+                                                                                                           (String
+                                                                                                              "Golden.TestCaseStatements.N"),
+                                                                                                       expInfo =
+                                                                                                         Info
+                                                                                                           {refsFree =
+                                                                                                              []}})
+                                                                                                   (Exp
+                                                                                                      {unExp =
+                                                                                                         Prim
+                                                                                                           (ReflectCtor
+                                                                                                              (Exp
+                                                                                                                 {unExp =
+                                                                                                                    RefBound
+                                                                                                                      (Index
+                                                                                                                         {level =
+                                                                                                                            4,
+                                                                                                                          offset =
+                                                                                                                            0}),
+                                                                                                                  expInfo =
+                                                                                                                    Info
+                                                                                                                      {refsFree =
+                                                                                                                         []}})),
+                                                                                                       expInfo =
+                                                                                                         Info
+                                                                                                           {refsFree =
+                                                                                                              []}})),
+                                                                                            expInfo =
+                                                                                              Info
+                                                                                                {refsFree =
+                                                                                                   []}})
+                                                                                        (Exp
+                                                                                           {unExp =
+                                                                                              RefBound
+                                                                                                (Index
+                                                                                                   {level =
+                                                                                                      0,
+                                                                                                    offset =
+                                                                                                      0}),
+                                                                                            expInfo =
+                                                                                              Info
+                                                                                                {refsFree =
+                                                                                                   []}})
+                                                                                        (Exp
+                                                                                           {unExp =
+                                                                                              App
+                                                                                                (Exp
+                                                                                                   {unExp =
+                                                                                                      RefBound
+                                                                                                        (Index
+                                                                                                           {level =
+                                                                                                              1,
+                                                                                                            offset =
+                                                                                                              0}),
+                                                                                                    expInfo =
+                                                                                                      Info
+                                                                                                        {refsFree =
+                                                                                                           []}})
+                                                                                                (Exp
+                                                                                                   {unExp =
+                                                                                                      Lit
+                                                                                                        (Boolean
+                                                                                                           True),
+                                                                                                    expInfo =
+                                                                                                      Info
+                                                                                                        {refsFree =
+                                                                                                           []}}),
+                                                                                            expInfo =
+                                                                                              Info
+                                                                                                {refsFree =
+                                                                                                   []}}),
+                                                                                    expInfo =
+                                                                                      Info
+                                                                                        {refsFree =
+                                                                                           []}})),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}})
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           App
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefBound
+                                                                                     (Index
+                                                                                        {level =
+                                                                                           1,
+                                                                                         offset =
+                                                                                           0}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        []}})
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   Lit
+                                                                                     (Boolean
+                                                                                        True),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        []}}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}}),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        []}})
+                                                             (Exp
+                                                                {unExp =
+                                                                   App
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           RefBound
+                                                                             (Index
+                                                                                {level =
+                                                                                   1,
+                                                                                 offset =
+                                                                                   0}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}})
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           Lit
+                                                                             (Boolean
+                                                                                True),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}}),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        []}}),
+                                                         expInfo =
+                                                           Info
+                                                             {refsFree = []}})),
+                                              expInfo = Info {refsFree = []}})),
+                                   expInfo = Info {refsFree = []}})),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "b",
+          Exp
+            {unExp = Lit (Char 'b'),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "a",
+          Exp
+            {unExp = Lit (Integer 1),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "c",
+          Exp
+            {unExp =
+               Let
+                 (LetBinding
+                    (Standalone
+                       (Name "v",
+                        Exp
+                          {unExp =
+                             Abs
+                               (AbsBinding
+                                  ArgUnused
+                                  (Exp
+                                     {unExp =
+                                        IfThenElse
+                                          (Exp
+                                             {unExp =
+                                                Prim
+                                                  (Eq
+                                                     (Exp
+                                                        {unExp =
+                                                           Lit (Integer 2),
+                                                         expInfo =
+                                                           Info
+                                                             {refsFree = []}})
+                                                     (Exp
+                                                        {unExp =
+                                                           RefFree
+                                                             (Local (Name "a")),
+                                                         expInfo =
+                                                           Info
+                                                             {refsFree =
+                                                                [Local
+                                                                   (Name
+                                                                      "a")]}})),
+                                              expInfo =
+                                                Info
+                                                  {refsFree =
+                                                     [Local (Name "a")]}})
+                                          (Exp
+                                             {unExp =
+                                                IfThenElse
+                                                  (Exp
+                                                     {unExp =
+                                                        App
+                                                          (Exp
+                                                             {unExp =
+                                                                RefFree
+                                                                  (Imported
+                                                                     (ModuleName
+                                                                        "Golden.TestValues")
+                                                                     (Name
+                                                                        "f")),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     [Imported
+                                                                        (ModuleName
+                                                                           "Golden.TestValues")
+                                                                        (Name
+                                                                           "f")]}})
+                                                          (Exp
+                                                             {unExp =
+                                                                Lit (Integer 0),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     []}}),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             [Imported
+                                                                (ModuleName
+                                                                   "Golden.TestValues")
+                                                                (Name "f")]}})
+                                                  (Exp
+                                                     {unExp = Lit (Integer 10),
+                                                      expInfo =
+                                                        Info {refsFree = []}})
+                                                  (Exp
+                                                     {unExp =
+                                                        IfThenElse
+                                                          (Exp
+                                                             {unExp =
+                                                                Prim
+                                                                  (Eq
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           Lit
+                                                                             (Integer
+                                                                                3),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}})
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           RefFree
+                                                                             (Local
+                                                                                (Name
+                                                                                   "a")),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                [Local
+                                                                                   (Name
+                                                                                      "a")]}})),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     [Local
+                                                                        (Name
+                                                                           "a")]}})
+                                                          (Exp
+                                                             {unExp =
+                                                                Let
+                                                                  (LetBinding
+                                                                     (Standalone
+                                                                        (Name
+                                                                           "n1",
+                                                                         Exp
+                                                                           {unExp =
+                                                                              IfThenElse
+                                                                                (Exp
+                                                                                   {unExp =
+                                                                                      Prim
+                                                                                        (Eq
+                                                                                           (Exp
+                                                                                              {unExp =
+                                                                                                 Lit
+                                                                                                   (Integer
+                                                                                                      4),
+                                                                                               expInfo =
+                                                                                                 Info
+                                                                                                   {refsFree =
+                                                                                                      []}})
+                                                                                           (Exp
+                                                                                              {unExp =
+                                                                                                 RefFree
+                                                                                                   (Local
+                                                                                                      (Name
+                                                                                                         "a")),
+                                                                                               expInfo =
+                                                                                                 Info
+                                                                                                   {refsFree =
+                                                                                                      [Local
+                                                                                                         (Name
+                                                                                                            "a")]}})),
+                                                                                    expInfo =
+                                                                                      Info
+                                                                                        {refsFree =
+                                                                                           [Local
+                                                                                              (Name
+                                                                                                 "a")]}})
+                                                                                (Exp
+                                                                                   {unExp =
+                                                                                      Let
+                                                                                        (LetBinding
+                                                                                           (Standalone
+                                                                                              (Name
+                                                                                                 "n2",
+                                                                                               Exp
+                                                                                                 {unExp =
+                                                                                                    Lit
+                                                                                                      (Integer
+                                                                                                         0),
+                                                                                                  expInfo =
+                                                                                                    Info
+                                                                                                      {refsFree =
+                                                                                                         []}})
+                                                                                              :|
+                                                                                              [Standalone
+                                                                                                 (Name
+                                                                                                    "y",
+                                                                                                  Exp
+                                                                                                    {unExp =
+                                                                                                       RefFree
+                                                                                                         (Local
+                                                                                                            (Name
+                                                                                                               "a")),
+                                                                                                     expInfo =
+                                                                                                       Info
+                                                                                                         {refsFree =
+                                                                                                            [Local
+                                                                                                               (Name
+                                                                                                                  "a")]}}),
+                                                                                               Standalone
+                                                                                                 (Name
+                                                                                                    "z",
+                                                                                                  Exp
+                                                                                                    {unExp =
+                                                                                                       RefFree
+                                                                                                         (Local
+                                                                                                            (Name
+                                                                                                               "a")),
+                                                                                                     expInfo =
+                                                                                                       Info
+                                                                                                         {refsFree =
+                                                                                                            [Local
+                                                                                                               (Name
+                                                                                                                  "a")]}})])
+                                                                                           (Exp
+                                                                                              {unExp =
+                                                                                                 IfThenElse
+                                                                                                   (Exp
+                                                                                                      {unExp =
+                                                                                                         App
+                                                                                                           (Exp
+                                                                                                              {unExp =
+                                                                                                                 RefFree
+                                                                                                                   (Imported
+                                                                                                                      (ModuleName
+                                                                                                                         "Golden.TestValues")
+                                                                                                                      (Name
+                                                                                                                         "f")),
+                                                                                                               expInfo =
+                                                                                                                 Info
+                                                                                                                   {refsFree =
+                                                                                                                      [Imported
+                                                                                                                         (ModuleName
+                                                                                                                            "Golden.TestValues")
+                                                                                                                         (Name
+                                                                                                                            "f")]}})
+                                                                                                           (Exp
+                                                                                                              {unExp =
+                                                                                                                 RefBound
+                                                                                                                   (Index
+                                                                                                                      {level =
+                                                                                                                         0,
+                                                                                                                       offset =
+                                                                                                                         1}),
+                                                                                                               expInfo =
+                                                                                                                 Info
+                                                                                                                   {refsFree =
+                                                                                                                      []}}),
+                                                                                                       expInfo =
+                                                                                                         Info
+                                                                                                           {refsFree =
+                                                                                                              [Imported
+                                                                                                                 (ModuleName
+                                                                                                                    "Golden.TestValues")
+                                                                                                                 (Name
+                                                                                                                    "f")]}})
+                                                                                                   (Exp
+                                                                                                      {unExp =
+                                                                                                         RefBound
+                                                                                                           (Index
+                                                                                                              {level =
+                                                                                                                 0,
+                                                                                                               offset =
+                                                                                                                 2}),
+                                                                                                       expInfo =
+                                                                                                         Info
+                                                                                                           {refsFree =
+                                                                                                              []}})
+                                                                                                   (Exp
+                                                                                                      {unExp =
+                                                                                                         RefBound
+                                                                                                           (Index
+                                                                                                              {level =
+                                                                                                                 0,
+                                                                                                               offset =
+                                                                                                                 0}),
+                                                                                                       expInfo =
+                                                                                                         Info
+                                                                                                           {refsFree =
+                                                                                                              []}}),
+                                                                                               expInfo =
+                                                                                                 Info
+                                                                                                   {refsFree =
+                                                                                                      [Imported
+                                                                                                         (ModuleName
+                                                                                                            "Golden.TestValues")
+                                                                                                         (Name
+                                                                                                            "f")]}})),
+                                                                                    expInfo =
+                                                                                      Info
+                                                                                        {refsFree =
+                                                                                           [Local
+                                                                                              (Name
+                                                                                                 "a"),
+                                                                                            Local
+                                                                                              (Name
+                                                                                                 "a"),
+                                                                                            Imported
+                                                                                              (ModuleName
+                                                                                                 "Golden.TestValues")
+                                                                                              (Name
+                                                                                                 "f")]}})
+                                                                                (Exp
+                                                                                   {unExp =
+                                                                                      Lit
+                                                                                        (Integer
+                                                                                           0),
+                                                                                    expInfo =
+                                                                                      Info
+                                                                                        {refsFree =
+                                                                                           []}}),
+                                                                            expInfo =
+                                                                              Info
+                                                                                {refsFree =
+                                                                                   [Local
+                                                                                      (Name
+                                                                                         "a"),
+                                                                                    Local
+                                                                                      (Name
+                                                                                         "a"),
+                                                                                    Local
+                                                                                      (Name
+                                                                                         "a"),
+                                                                                    Imported
+                                                                                      (ModuleName
+                                                                                         "Golden.TestValues")
+                                                                                      (Name
+                                                                                         "f")]}})
+                                                                        :|
+                                                                        [Standalone
+                                                                           (Name
+                                                                              "y",
+                                                                            Exp
+                                                                              {unExp =
+                                                                                 RefFree
+                                                                                   (Local
+                                                                                      (Name
+                                                                                         "a")),
+                                                                               expInfo =
+                                                                                 Info
+                                                                                   {refsFree =
+                                                                                      [Local
+                                                                                         (Name
+                                                                                            "a")]}}),
+                                                                         Standalone
+                                                                           (Name
+                                                                              "z",
+                                                                            Exp
+                                                                              {unExp =
+                                                                                 RefFree
+                                                                                   (Local
+                                                                                      (Name
+                                                                                         "a")),
+                                                                               expInfo =
+                                                                                 Info
+                                                                                   {refsFree =
+                                                                                      [Local
+                                                                                         (Name
+                                                                                            "a")]}})])
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           IfThenElse
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   App
+                                                                                     (Exp
+                                                                                        {unExp =
+                                                                                           RefFree
+                                                                                             (Imported
+                                                                                                (ModuleName
+                                                                                                   "Golden.TestValues")
+                                                                                                (Name
+                                                                                                   "f")),
+                                                                                         expInfo =
+                                                                                           Info
+                                                                                             {refsFree =
+                                                                                                [Imported
+                                                                                                   (ModuleName
+                                                                                                      "Golden.TestValues")
+                                                                                                   (Name
+                                                                                                      "f")]}})
+                                                                                     (Exp
+                                                                                        {unExp =
+                                                                                           RefBound
+                                                                                             (Index
+                                                                                                {level =
+                                                                                                   0,
+                                                                                                 offset =
+                                                                                                   2}),
+                                                                                         expInfo =
+                                                                                           Info
+                                                                                             {refsFree =
+                                                                                                []}}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        [Imported
+                                                                                           (ModuleName
+                                                                                              "Golden.TestValues")
+                                                                                           (Name
+                                                                                              "f")]}})
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefBound
+                                                                                     (Index
+                                                                                        {level =
+                                                                                           0,
+                                                                                         offset =
+                                                                                           1}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        []}})
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefBound
+                                                                                     (Index
+                                                                                        {level =
+                                                                                           0,
+                                                                                         offset =
+                                                                                           0}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        []}}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                [Imported
+                                                                                   (ModuleName
+                                                                                      "Golden.TestValues")
+                                                                                   (Name
+                                                                                      "f")]}})),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     [Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Imported
+                                                                        (ModuleName
+                                                                           "Golden.TestValues")
+                                                                        (Name
+                                                                           "f"),
+                                                                      Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Imported
+                                                                        (ModuleName
+                                                                           "Golden.TestValues")
+                                                                        (Name
+                                                                           "f")]}})
+                                                          (Exp
+                                                             {unExp =
+                                                                IfThenElse
+                                                                  (Exp
+                                                                     {unExp =
+                                                                        Prim
+                                                                          (Eq
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   Lit
+                                                                                     (Integer
+                                                                                        4),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        []}})
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefFree
+                                                                                     (Local
+                                                                                        (Name
+                                                                                           "a")),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        [Local
+                                                                                           (Name
+                                                                                              "a")]}})),
+                                                                      expInfo =
+                                                                        Info
+                                                                          {refsFree =
+                                                                             [Local
+                                                                                (Name
+                                                                                   "a")]}})
+                                                                  (Exp
+                                                                     {unExp =
+                                                                        Let
+                                                                          (LetBinding
+                                                                             (Standalone
+                                                                                (Name
+                                                                                   "n3",
+                                                                                 Exp
+                                                                                   {unExp =
+                                                                                      Lit
+                                                                                        (Integer
+                                                                                           0),
+                                                                                    expInfo =
+                                                                                      Info
+                                                                                        {refsFree =
+                                                                                           []}})
+                                                                                :|
+                                                                                [Standalone
+                                                                                   (Name
+                                                                                      "y",
+                                                                                    Exp
+                                                                                      {unExp =
+                                                                                         RefFree
+                                                                                           (Local
+                                                                                              (Name
+                                                                                                 "a")),
+                                                                                       expInfo =
+                                                                                         Info
+                                                                                           {refsFree =
+                                                                                              [Local
+                                                                                                 (Name
+                                                                                                    "a")]}}),
+                                                                                 Standalone
+                                                                                   (Name
+                                                                                      "z",
+                                                                                    Exp
+                                                                                      {unExp =
+                                                                                         RefFree
+                                                                                           (Local
+                                                                                              (Name
+                                                                                                 "a")),
+                                                                                       expInfo =
+                                                                                         Info
+                                                                                           {refsFree =
+                                                                                              [Local
+                                                                                                 (Name
+                                                                                                    "a")]}})])
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   IfThenElse
+                                                                                     (Exp
+                                                                                        {unExp =
+                                                                                           App
+                                                                                             (Exp
+                                                                                                {unExp =
+                                                                                                   RefFree
+                                                                                                     (Imported
+                                                                                                        (ModuleName
+                                                                                                           "Golden.TestValues")
+                                                                                                        (Name
+                                                                                                           "f")),
+                                                                                                 expInfo =
+                                                                                                   Info
+                                                                                                     {refsFree =
+                                                                                                        [Imported
+                                                                                                           (ModuleName
+                                                                                                              "Golden.TestValues")
+                                                                                                           (Name
+                                                                                                              "f")]}})
+                                                                                             (Exp
+                                                                                                {unExp =
+                                                                                                   RefBound
+                                                                                                     (Index
+                                                                                                        {level =
+                                                                                                           0,
+                                                                                                         offset =
+                                                                                                           1}),
+                                                                                                 expInfo =
+                                                                                                   Info
+                                                                                                     {refsFree =
+                                                                                                        []}}),
+                                                                                         expInfo =
+                                                                                           Info
+                                                                                             {refsFree =
+                                                                                                [Imported
+                                                                                                   (ModuleName
+                                                                                                      "Golden.TestValues")
+                                                                                                   (Name
+                                                                                                      "f")]}})
+                                                                                     (Exp
+                                                                                        {unExp =
+                                                                                           RefBound
+                                                                                             (Index
+                                                                                                {level =
+                                                                                                   0,
+                                                                                                 offset =
+                                                                                                   2}),
+                                                                                         expInfo =
+                                                                                           Info
+                                                                                             {refsFree =
+                                                                                                []}})
+                                                                                     (Exp
+                                                                                        {unExp =
+                                                                                           RefBound
+                                                                                             (Index
+                                                                                                {level =
+                                                                                                   0,
+                                                                                                 offset =
+                                                                                                   0}),
+                                                                                         expInfo =
+                                                                                           Info
+                                                                                             {refsFree =
+                                                                                                []}}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        [Imported
+                                                                                           (ModuleName
+                                                                                              "Golden.TestValues")
+                                                                                           (Name
+                                                                                              "f")]}})),
+                                                                      expInfo =
+                                                                        Info
+                                                                          {refsFree =
+                                                                             [Local
+                                                                                (Name
+                                                                                   "a"),
+                                                                              Local
+                                                                                (Name
+                                                                                   "a"),
+                                                                              Imported
+                                                                                (ModuleName
+                                                                                   "Golden.TestValues")
+                                                                                (Name
+                                                                                   "f")]}})
+                                                                  (Exp
+                                                                     {unExp =
+                                                                        Lit
+                                                                          (Integer
+                                                                             0),
+                                                                      expInfo =
+                                                                        Info
+                                                                          {refsFree =
+                                                                             []}}),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     [Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Imported
+                                                                        (ModuleName
+                                                                           "Golden.TestValues")
+                                                                        (Name
+                                                                           "f")]}}),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             [Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Imported
+                                                                (ModuleName
+                                                                   "Golden.TestValues")
+                                                                (Name "f"),
+                                                              Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Imported
+                                                                (ModuleName
+                                                                   "Golden.TestValues")
+                                                                (Name "f"),
+                                                              Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Imported
+                                                                (ModuleName
+                                                                   "Golden.TestValues")
+                                                                (Name "f")]}}),
+                                              expInfo =
+                                                Info
+                                                  {refsFree =
+                                                     [Imported
+                                                        (ModuleName
+                                                           "Golden.TestValues")
+                                                        (Name "f"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Imported
+                                                        (ModuleName
+                                                           "Golden.TestValues")
+                                                        (Name "f"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Imported
+                                                        (ModuleName
+                                                           "Golden.TestValues")
+                                                        (Name "f"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Imported
+                                                        (ModuleName
+                                                           "Golden.TestValues")
+                                                        (Name "f")]}})
+                                          (Exp
+                                             {unExp =
+                                                IfThenElse
+                                                  (Exp
+                                                     {unExp =
+                                                        Prim
+                                                          (Eq
+                                                             (Exp
+                                                                {unExp =
+                                                                   Lit
+                                                                     (Integer
+                                                                        3),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        []}})
+                                                             (Exp
+                                                                {unExp =
+                                                                   RefFree
+                                                                     (Local
+                                                                        (Name
+                                                                           "a")),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        [Local
+                                                                           (Name
+                                                                              "a")]}})),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             [Local
+                                                                (Name "a")]}})
+                                                  (Exp
+                                                     {unExp =
+                                                        Let
+                                                          (LetBinding
+                                                             (Standalone
+                                                                (Name "n4",
+                                                                 Exp
+                                                                   {unExp =
+                                                                      IfThenElse
+                                                                        (Exp
+                                                                           {unExp =
+                                                                              Prim
+                                                                                (Eq
+                                                                                   (Exp
+                                                                                      {unExp =
+                                                                                         Lit
+                                                                                           (Integer
+                                                                                              4),
+                                                                                       expInfo =
+                                                                                         Info
+                                                                                           {refsFree =
+                                                                                              []}})
+                                                                                   (Exp
+                                                                                      {unExp =
+                                                                                         RefFree
+                                                                                           (Local
+                                                                                              (Name
+                                                                                                 "a")),
+                                                                                       expInfo =
+                                                                                         Info
+                                                                                           {refsFree =
+                                                                                              [Local
+                                                                                                 (Name
+                                                                                                    "a")]}})),
+                                                                            expInfo =
+                                                                              Info
+                                                                                {refsFree =
+                                                                                   [Local
+                                                                                      (Name
+                                                                                         "a")]}})
+                                                                        (Exp
+                                                                           {unExp =
+                                                                              Let
+                                                                                (LetBinding
+                                                                                   (Standalone
+                                                                                      (Name
+                                                                                         "n5",
+                                                                                       Exp
+                                                                                         {unExp =
+                                                                                            Lit
+                                                                                              (Integer
+                                                                                                 0),
+                                                                                          expInfo =
+                                                                                            Info
+                                                                                              {refsFree =
+                                                                                                 []}})
+                                                                                      :|
+                                                                                      [Standalone
+                                                                                         (Name
+                                                                                            "y",
+                                                                                          Exp
+                                                                                            {unExp =
+                                                                                               RefFree
+                                                                                                 (Local
+                                                                                                    (Name
+                                                                                                       "a")),
+                                                                                             expInfo =
+                                                                                               Info
+                                                                                                 {refsFree =
+                                                                                                    [Local
+                                                                                                       (Name
+                                                                                                          "a")]}}),
+                                                                                       Standalone
+                                                                                         (Name
+                                                                                            "z",
+                                                                                          Exp
+                                                                                            {unExp =
+                                                                                               RefFree
+                                                                                                 (Local
+                                                                                                    (Name
+                                                                                                       "a")),
+                                                                                             expInfo =
+                                                                                               Info
+                                                                                                 {refsFree =
+                                                                                                    [Local
+                                                                                                       (Name
+                                                                                                          "a")]}})])
+                                                                                   (Exp
+                                                                                      {unExp =
+                                                                                         IfThenElse
+                                                                                           (Exp
+                                                                                              {unExp =
+                                                                                                 App
+                                                                                                   (Exp
+                                                                                                      {unExp =
+                                                                                                         RefFree
+                                                                                                           (Imported
+                                                                                                              (ModuleName
+                                                                                                                 "Golden.TestValues")
+                                                                                                              (Name
+                                                                                                                 "f")),
+                                                                                                       expInfo =
+                                                                                                         Info
+                                                                                                           {refsFree =
+                                                                                                              [Imported
+                                                                                                                 (ModuleName
+                                                                                                                    "Golden.TestValues")
+                                                                                                                 (Name
+                                                                                                                    "f")]}})
+                                                                                                   (Exp
+                                                                                                      {unExp =
+                                                                                                         RefBound
+                                                                                                           (Index
+                                                                                                              {level =
+                                                                                                                 0,
+                                                                                                               offset =
+                                                                                                                 1}),
+                                                                                                       expInfo =
+                                                                                                         Info
+                                                                                                           {refsFree =
+                                                                                                              []}}),
+                                                                                               expInfo =
+                                                                                                 Info
+                                                                                                   {refsFree =
+                                                                                                      [Imported
+                                                                                                         (ModuleName
+                                                                                                            "Golden.TestValues")
+                                                                                                         (Name
+                                                                                                            "f")]}})
+                                                                                           (Exp
+                                                                                              {unExp =
+                                                                                                 RefBound
+                                                                                                   (Index
+                                                                                                      {level =
+                                                                                                         0,
+                                                                                                       offset =
+                                                                                                         2}),
+                                                                                               expInfo =
+                                                                                                 Info
+                                                                                                   {refsFree =
+                                                                                                      []}})
+                                                                                           (Exp
+                                                                                              {unExp =
+                                                                                                 RefBound
+                                                                                                   (Index
+                                                                                                      {level =
+                                                                                                         0,
+                                                                                                       offset =
+                                                                                                         0}),
+                                                                                               expInfo =
+                                                                                                 Info
+                                                                                                   {refsFree =
+                                                                                                      []}}),
+                                                                                       expInfo =
+                                                                                         Info
+                                                                                           {refsFree =
+                                                                                              [Imported
+                                                                                                 (ModuleName
+                                                                                                    "Golden.TestValues")
+                                                                                                 (Name
+                                                                                                    "f")]}})),
+                                                                            expInfo =
+                                                                              Info
+                                                                                {refsFree =
+                                                                                   [Local
+                                                                                      (Name
+                                                                                         "a"),
+                                                                                    Local
+                                                                                      (Name
+                                                                                         "a"),
+                                                                                    Imported
+                                                                                      (ModuleName
+                                                                                         "Golden.TestValues")
+                                                                                      (Name
+                                                                                         "f")]}})
+                                                                        (Exp
+                                                                           {unExp =
+                                                                              Lit
+                                                                                (Integer
+                                                                                   0),
+                                                                            expInfo =
+                                                                              Info
+                                                                                {refsFree =
+                                                                                   []}}),
+                                                                    expInfo =
+                                                                      Info
+                                                                        {refsFree =
+                                                                           [Local
+                                                                              (Name
+                                                                                 "a"),
+                                                                            Local
+                                                                              (Name
+                                                                                 "a"),
+                                                                            Local
+                                                                              (Name
+                                                                                 "a"),
+                                                                            Imported
+                                                                              (ModuleName
+                                                                                 "Golden.TestValues")
+                                                                              (Name
+                                                                                 "f")]}})
+                                                                :|
+                                                                [Standalone
+                                                                   (Name "y",
+                                                                    Exp
+                                                                      {unExp =
+                                                                         RefFree
+                                                                           (Local
+                                                                              (Name
+                                                                                 "a")),
+                                                                       expInfo =
+                                                                         Info
+                                                                           {refsFree =
+                                                                              [Local
+                                                                                 (Name
+                                                                                    "a")]}}),
+                                                                 Standalone
+                                                                   (Name "z",
+                                                                    Exp
+                                                                      {unExp =
+                                                                         RefFree
+                                                                           (Local
+                                                                              (Name
+                                                                                 "a")),
+                                                                       expInfo =
+                                                                         Info
+                                                                           {refsFree =
+                                                                              [Local
+                                                                                 (Name
+                                                                                    "a")]}})])
+                                                             (Exp
+                                                                {unExp =
+                                                                   IfThenElse
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           App
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefFree
+                                                                                     (Imported
+                                                                                        (ModuleName
+                                                                                           "Golden.TestValues")
+                                                                                        (Name
+                                                                                           "f")),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        [Imported
+                                                                                           (ModuleName
+                                                                                              "Golden.TestValues")
+                                                                                           (Name
+                                                                                              "f")]}})
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefBound
+                                                                                     (Index
+                                                                                        {level =
+                                                                                           0,
+                                                                                         offset =
+                                                                                           2}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        []}}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                [Imported
+                                                                                   (ModuleName
+                                                                                      "Golden.TestValues")
+                                                                                   (Name
+                                                                                      "f")]}})
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           RefBound
+                                                                             (Index
+                                                                                {level =
+                                                                                   0,
+                                                                                 offset =
+                                                                                   1}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}})
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           RefBound
+                                                                             (Index
+                                                                                {level =
+                                                                                   0,
+                                                                                 offset =
+                                                                                   0}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}}),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        [Imported
+                                                                           (ModuleName
+                                                                              "Golden.TestValues")
+                                                                           (Name
+                                                                              "f")]}})),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             [Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Imported
+                                                                (ModuleName
+                                                                   "Golden.TestValues")
+                                                                (Name "f"),
+                                                              Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Imported
+                                                                (ModuleName
+                                                                   "Golden.TestValues")
+                                                                (Name "f")]}})
+                                                  (Exp
+                                                     {unExp =
+                                                        IfThenElse
+                                                          (Exp
+                                                             {unExp =
+                                                                Prim
+                                                                  (Eq
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           Lit
+                                                                             (Integer
+                                                                                4),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}})
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           RefFree
+                                                                             (Local
+                                                                                (Name
+                                                                                   "a")),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                [Local
+                                                                                   (Name
+                                                                                      "a")]}})),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     [Local
+                                                                        (Name
+                                                                           "a")]}})
+                                                          (Exp
+                                                             {unExp =
+                                                                Let
+                                                                  (LetBinding
+                                                                     (Standalone
+                                                                        (Name
+                                                                           "n6",
+                                                                         Exp
+                                                                           {unExp =
+                                                                              Lit
+                                                                                (Integer
+                                                                                   0),
+                                                                            expInfo =
+                                                                              Info
+                                                                                {refsFree =
+                                                                                   []}})
+                                                                        :|
+                                                                        [Standalone
+                                                                           (Name
+                                                                              "y",
+                                                                            Exp
+                                                                              {unExp =
+                                                                                 RefFree
+                                                                                   (Local
+                                                                                      (Name
+                                                                                         "a")),
+                                                                               expInfo =
+                                                                                 Info
+                                                                                   {refsFree =
+                                                                                      [Local
+                                                                                         (Name
+                                                                                            "a")]}}),
+                                                                         Standalone
+                                                                           (Name
+                                                                              "z",
+                                                                            Exp
+                                                                              {unExp =
+                                                                                 RefFree
+                                                                                   (Local
+                                                                                      (Name
+                                                                                         "a")),
+                                                                               expInfo =
+                                                                                 Info
+                                                                                   {refsFree =
+                                                                                      [Local
+                                                                                         (Name
+                                                                                            "a")]}})])
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           IfThenElse
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   App
+                                                                                     (Exp
+                                                                                        {unExp =
+                                                                                           RefFree
+                                                                                             (Imported
+                                                                                                (ModuleName
+                                                                                                   "Golden.TestValues")
+                                                                                                (Name
+                                                                                                   "f")),
+                                                                                         expInfo =
+                                                                                           Info
+                                                                                             {refsFree =
+                                                                                                [Imported
+                                                                                                   (ModuleName
+                                                                                                      "Golden.TestValues")
+                                                                                                   (Name
+                                                                                                      "f")]}})
+                                                                                     (Exp
+                                                                                        {unExp =
+                                                                                           RefBound
+                                                                                             (Index
+                                                                                                {level =
+                                                                                                   0,
+                                                                                                 offset =
+                                                                                                   1}),
+                                                                                         expInfo =
+                                                                                           Info
+                                                                                             {refsFree =
+                                                                                                []}}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        [Imported
+                                                                                           (ModuleName
+                                                                                              "Golden.TestValues")
+                                                                                           (Name
+                                                                                              "f")]}})
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefBound
+                                                                                     (Index
+                                                                                        {level =
+                                                                                           0,
+                                                                                         offset =
+                                                                                           2}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        []}})
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefBound
+                                                                                     (Index
+                                                                                        {level =
+                                                                                           0,
+                                                                                         offset =
+                                                                                           0}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        []}}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                [Imported
+                                                                                   (ModuleName
+                                                                                      "Golden.TestValues")
+                                                                                   (Name
+                                                                                      "f")]}})),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     [Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Local
+                                                                        (Name
+                                                                           "a"),
+                                                                      Imported
+                                                                        (ModuleName
+                                                                           "Golden.TestValues")
+                                                                        (Name
+                                                                           "f")]}})
+                                                          (Exp
+                                                             {unExp =
+                                                                Lit (Integer 0),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     []}}),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             [Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Local (Name "a"),
+                                                              Imported
+                                                                (ModuleName
+                                                                   "Golden.TestValues")
+                                                                (Name "f")]}}),
+                                              expInfo =
+                                                Info
+                                                  {refsFree =
+                                                     [Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Imported
+                                                        (ModuleName
+                                                           "Golden.TestValues")
+                                                        (Name "f"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Imported
+                                                        (ModuleName
+                                                           "Golden.TestValues")
+                                                        (Name "f"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Local (Name "a"),
+                                                      Imported
+                                                        (ModuleName
+                                                           "Golden.TestValues")
+                                                        (Name "f")]}}),
+                                      expInfo =
+                                        Info
+                                          {refsFree =
+                                             [Local (Name "a"),
+                                              Imported
+                                                (ModuleName "Golden.TestValues")
+                                                (Name "f"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Imported
+                                                (ModuleName "Golden.TestValues")
+                                                (Name "f"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Imported
+                                                (ModuleName "Golden.TestValues")
+                                                (Name "f"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Imported
+                                                (ModuleName "Golden.TestValues")
+                                                (Name "f"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Imported
+                                                (ModuleName "Golden.TestValues")
+                                                (Name "f"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Imported
+                                                (ModuleName "Golden.TestValues")
+                                                (Name "f"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Local (Name "a"),
+                                              Imported
+                                                (ModuleName "Golden.TestValues")
+                                                (Name "f")]}})),
+                           expInfo =
+                             Info
+                               {refsFree =
+                                  [Local (Name "a"),
+                                   Imported
+                                     (ModuleName "Golden.TestValues")
+                                     (Name "f"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Imported
+                                     (ModuleName "Golden.TestValues")
+                                     (Name "f"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Imported
+                                     (ModuleName "Golden.TestValues")
+                                     (Name "f"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Imported
+                                     (ModuleName "Golden.TestValues")
+                                     (Name "f"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Imported
+                                     (ModuleName "Golden.TestValues")
+                                     (Name "f"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Imported
+                                     (ModuleName "Golden.TestValues")
+                                     (Name "f"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Local (Name "a"),
+                                   Imported
+                                     (ModuleName "Golden.TestValues")
+                                     (Name "f")]}})
+                       :|
+                       [])
+                    (Exp
+                       {unExp =
+                          IfThenElse
+                            (Exp
+                               {unExp =
+                                  Prim
+                                    (Eq
+                                       (Exp
+                                          {unExp = Lit (Integer 1),
+                                           expInfo = Info {refsFree = []}})
+                                       (Exp
+                                          {unExp = RefFree (Local (Name "a")),
+                                           expInfo =
+                                             Info
+                                               {refsFree =
+                                                  [Local (Name "a")]}})),
+                                expInfo = Info {refsFree = [Local (Name "a")]}})
+                            (Exp
+                               {unExp =
+                                  IfThenElse
+                                    (Exp
+                                       {unExp =
+                                          Prim
+                                            (Eq
+                                               (Exp
+                                                  {unExp = Lit (Char 'b'),
+                                                   expInfo =
+                                                     Info {refsFree = []}})
+                                               (Exp
+                                                  {unExp =
+                                                     RefFree (Local (Name "b")),
+                                                   expInfo =
+                                                     Info
+                                                       {refsFree =
+                                                          [Local
+                                                             (Name "b")]}})),
+                                        expInfo =
+                                          Info {refsFree = [Local (Name "b")]}})
+                                    (Exp
+                                       {unExp =
+                                          Let
+                                            (LetBinding
+                                               (Standalone
+                                                  (Name "e7",
+                                                   Exp
+                                                     {unExp =
+                                                        App
+                                                          (Exp
+                                                             {unExp =
+                                                                RefFree
+                                                                  (Imported
+                                                                     (ModuleName
+                                                                        "Golden.TestValues")
+                                                                     (Name
+                                                                        "f")),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     [Imported
+                                                                        (ModuleName
+                                                                           "Golden.TestValues")
+                                                                        (Name
+                                                                           "f")]}})
+                                                          (Exp
+                                                             {unExp =
+                                                                Lit (Integer 2),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     []}}),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             [Imported
+                                                                (ModuleName
+                                                                   "Golden.TestValues")
+                                                                (Name "f")]}})
+                                                  :|
+                                                  [])
+                                               (Exp
+                                                  {unExp =
+                                                     IfThenElse
+                                                       (Exp
+                                                          {unExp =
+                                                             Prim
+                                                               (Eq
+                                                                  (Exp
+                                                                     {unExp =
+                                                                        Lit
+                                                                          (Boolean
+                                                                             True),
+                                                                      expInfo =
+                                                                        Info
+                                                                          {refsFree =
+                                                                             []}})
+                                                                  (Exp
+                                                                     {unExp =
+                                                                        RefBound
+                                                                          (Index
+                                                                             {level =
+                                                                                0,
+                                                                              offset =
+                                                                                0}),
+                                                                      expInfo =
+                                                                        Info
+                                                                          {refsFree =
+                                                                             []}})),
+                                                           expInfo =
+                                                             Info
+                                                               {refsFree = []}})
+                                                       (Exp
+                                                          {unExp =
+                                                             Let
+                                                               (LetBinding
+                                                                  (Standalone
+                                                                     (Name "e8",
+                                                                      Exp
+                                                                        {unExp =
+                                                                           App
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefFree
+                                                                                     (Imported
+                                                                                        (ModuleName
+                                                                                           "Golden.TestValues")
+                                                                                        (Name
+                                                                                           "f")),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        [Imported
+                                                                                           (ModuleName
+                                                                                              "Golden.TestValues")
+                                                                                           (Name
+                                                                                              "f")]}})
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   Lit
+                                                                                     (Integer
+                                                                                        1),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        []}}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                [Imported
+                                                                                   (ModuleName
+                                                                                      "Golden.TestValues")
+                                                                                   (Name
+                                                                                      "f")]}})
+                                                                     :|
+                                                                     [])
+                                                                  (Exp
+                                                                     {unExp =
+                                                                        IfThenElse
+                                                                          (Exp
+                                                                             {unExp =
+                                                                                Prim
+                                                                                  (Eq
+                                                                                     (Exp
+                                                                                        {unExp =
+                                                                                           Lit
+                                                                                             (Boolean
+                                                                                                True),
+                                                                                         expInfo =
+                                                                                           Info
+                                                                                             {refsFree =
+                                                                                                []}})
+                                                                                     (Exp
+                                                                                        {unExp =
+                                                                                           RefBound
+                                                                                             (Index
+                                                                                                {level =
+                                                                                                   0,
+                                                                                                 offset =
+                                                                                                   0}),
+                                                                                         expInfo =
+                                                                                           Info
+                                                                                             {refsFree =
+                                                                                                []}})),
+                                                                              expInfo =
+                                                                                Info
+                                                                                  {refsFree =
+                                                                                     []}})
+                                                                          (Exp
+                                                                             {unExp =
+                                                                                Lit
+                                                                                  (Integer
+                                                                                     42),
+                                                                              expInfo =
+                                                                                Info
+                                                                                  {refsFree =
+                                                                                     []}})
+                                                                          (Exp
+                                                                             {unExp =
+                                                                                App
+                                                                                  (Exp
+                                                                                     {unExp =
+                                                                                        RefBound
+                                                                                          (Index
+                                                                                             {level =
+                                                                                                2,
+                                                                                              offset =
+                                                                                                0}),
+                                                                                      expInfo =
+                                                                                        Info
+                                                                                          {refsFree =
+                                                                                             []}})
+                                                                                  (Exp
+                                                                                     {unExp =
+                                                                                        Lit
+                                                                                          (Boolean
+                                                                                             True),
+                                                                                      expInfo =
+                                                                                        Info
+                                                                                          {refsFree =
+                                                                                             []}}),
+                                                                              expInfo =
+                                                                                Info
+                                                                                  {refsFree =
+                                                                                     []}}),
+                                                                      expInfo =
+                                                                        Info
+                                                                          {refsFree =
+                                                                             []}})),
+                                                           expInfo =
+                                                             Info
+                                                               {refsFree =
+                                                                  [Imported
+                                                                     (ModuleName
+                                                                        "Golden.TestValues")
+                                                                     (Name
+                                                                        "f")]}})
+                                                       (Exp
+                                                          {unExp =
+                                                             App
+                                                               (Exp
+                                                                  {unExp =
+                                                                     RefBound
+                                                                       (Index
+                                                                          {level =
+                                                                             2,
+                                                                           offset =
+                                                                             0}),
+                                                                   expInfo =
+                                                                     Info
+                                                                       {refsFree =
+                                                                          []}})
+                                                               (Exp
+                                                                  {unExp =
+                                                                     Lit
+                                                                       (Boolean
+                                                                          True),
+                                                                   expInfo =
+                                                                     Info
+                                                                       {refsFree =
+                                                                          []}}),
+                                                           expInfo =
+                                                             Info
+                                                               {refsFree =
+                                                                  []}}),
+                                                   expInfo =
+                                                     Info
+                                                       {refsFree =
+                                                          [Imported
+                                                             (ModuleName
+                                                                "Golden.TestValues")
+                                                             (Name "f")]}})),
+                                        expInfo =
+                                          Info
+                                            {refsFree =
+                                               [Imported
+                                                  (ModuleName
+                                                     "Golden.TestValues")
+                                                  (Name "f"),
+                                                Imported
+                                                  (ModuleName
+                                                     "Golden.TestValues")
+                                                  (Name "f")]}})
+                                    (Exp
+                                       {unExp =
+                                          App
+                                            (Exp
+                                               {unExp =
+                                                  RefBound
+                                                    (Index
+                                                       {level = 2, offset = 0}),
+                                                expInfo = Info {refsFree = []}})
+                                            (Exp
+                                               {unExp = Lit (Boolean True),
+                                                expInfo =
+                                                  Info {refsFree = []}}),
+                                        expInfo = Info {refsFree = []}}),
+                                expInfo =
+                                  Info
+                                    {refsFree =
+                                       [Local (Name "b"),
+                                        Imported
+                                          (ModuleName "Golden.TestValues")
+                                          (Name "f"),
+                                        Imported
+                                          (ModuleName "Golden.TestValues")
+                                          (Name "f")]}})
+                            (Exp
+                               {unExp =
+                                  App
+                                    (Exp
+                                       {unExp =
+                                          RefBound
+                                            (Index {level = 2, offset = 0}),
+                                        expInfo = Info {refsFree = []}})
+                                    (Exp
+                                       {unExp = Lit (Boolean True),
+                                        expInfo = Info {refsFree = []}}),
+                                expInfo = Info {refsFree = []}}),
+                        expInfo =
+                          Info
+                            {refsFree =
+                               [Local (Name "a"),
+                                Local (Name "b"),
+                                Imported
+                                  (ModuleName "Golden.TestValues") (Name "f"),
+                                Imported
+                                  (ModuleName "Golden.TestValues")
+                                  (Name "f")]}})),
+             expInfo =
+               Info
+                 {refsFree =
+                    [Local (Name "a"),
+                     Imported (ModuleName "Golden.TestValues") (Name "f"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Imported (ModuleName "Golden.TestValues") (Name "f"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Imported (ModuleName "Golden.TestValues") (Name "f"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Imported (ModuleName "Golden.TestValues") (Name "f"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Imported (ModuleName "Golden.TestValues") (Name "f"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Imported (ModuleName "Golden.TestValues") (Name "f"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Local (Name "a"),
+                     Imported (ModuleName "Golden.TestValues") (Name "f"),
+                     Local (Name "a"),
+                     Local (Name "b"),
+                     Imported (ModuleName "Golden.TestValues") (Name "f"),
+                     Imported
+                       (ModuleName "Golden.TestValues") (Name "f")]}})],
+    moduleImports = [ModuleName "Golden.TestValues"],
+    moduleExports =
+      [Name "a",
+       Name "b",
+       Name "c",
+       Name "J",
+       Name "N",
+       Name "d",
+       Name "multipleGuards"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath = "golden/Golden/TestCaseStatements.purs",
+    dataTypes =
+      fromList
+        [(TyName "M",
+          (SumType,
+           fromList
+             [(CtorName "J", [FieldName "value0"]),
+              (CtorName "N", [])]))]},
+ Module
+   {moduleName = ModuleName "Golden.TestValues",
+    moduleBindings =
+      [Standalone
+         (Name "i",
+          Exp
+            {unExp = Lit (Integer 1),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "f",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    ArgUnused
+                    (Exp
+                       {unExp = Lit (Boolean True),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "c",
+          Exp
+            {unExp = Lit (Char 'c'),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "b",
+          Exp
+            {unExp = Lit (Boolean True),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "o",
+          Exp
+            {unExp =
+               Lit
+                 (Object
+                    [(PropName "i",
+                      Exp
+                        {unExp = RefFree (Local (Name "i")),
+                         expInfo = Info {refsFree = [Local (Name "i")]}}),
+                     (PropName "b",
+                      Exp
+                        {unExp = RefFree (Local (Name "b")),
+                         expInfo = Info {refsFree = [Local (Name "b")]}}),
+                     (PropName "c",
+                      Exp
+                        {unExp = RefFree (Local (Name "c")),
+                         expInfo = Info {refsFree = [Local (Name "c")]}})]),
+             expInfo =
+               Info
+                 {refsFree =
+                    [Local (Name "i"),
+                     Local (Name "b"),
+                     Local (Name "c")]}}),
+       Standalone
+         (Name "a",
+          Exp
+            {unExp =
+               Lit
+                 (Array
+                    [Exp
+                       {unExp = Lit (Integer 1),
+                        expInfo = Info {refsFree = []}},
+                     Exp
+                       {unExp = Lit (Integer 2),
+                        expInfo = Info {refsFree = []}},
+                     Exp
+                       {unExp = Lit (Integer 3),
+                        expInfo = Info {refsFree = []}}]),
+             expInfo = Info {refsFree = []}})],
+    moduleImports = [],
+    moduleExports =
+      [Name "i",
+       Name "b",
+       Name "c",
+       Name "a",
+       Name "o",
+       Name "f"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath = "golden/Golden/TestValues.purs",
+    dataTypes = fromList []}]

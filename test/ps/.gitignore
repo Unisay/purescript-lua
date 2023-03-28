@@ -1,0 +1,16 @@
+/bower_components/
+/node_modules/
+/.pulp-cache/
+/output/*/*.cbor
+/output/*/*.json
+!/output/*/corefn.json
+/output/*/*.js
+/output/*/actual.*
+/output/*.json
+/output-es/
+/generated-docs/
+/.psc-package/
+/.psc*
+/.purs*
+/.psa*
+/.spago

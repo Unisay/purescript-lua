@@ -1,0 +1,69 @@
+[Module
+   {moduleName = ModuleName "Golden.TestCurrying",
+    moduleBindings =
+      [Standalone
+         (Name "f",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    ArgUnused
+                    (Exp
+                       {unExp =
+                          Abs
+                            (AbsBinding
+                               ArgUnused
+                               (Exp
+                                  {unExp =
+                                     Abs
+                                       (AbsBinding
+                                          ArgUnused
+                                          (Exp
+                                             {unExp =
+                                                Abs
+                                                  (AbsBinding
+                                                     ArgUnused
+                                                     (Exp
+                                                        {unExp =
+                                                           Lit (String "ok"),
+                                                         expInfo =
+                                                           Info
+                                                             {refsFree = []}})),
+                                              expInfo = Info {refsFree = []}})),
+                                   expInfo = Info {refsFree = []}})),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "apply",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "f1"))
+                    (Exp
+                       {unExp =
+                          Abs
+                            (AbsBinding
+                               (ArgNamed (Name "x"))
+                               (Exp
+                                  {unExp =
+                                     App
+                                       (Exp
+                                          {unExp =
+                                             RefBound
+                                               (Index {level = 1, offset = 0}),
+                                           expInfo = Info {refsFree = []}})
+                                       (Exp
+                                          {unExp =
+                                             RefBound
+                                               (Index {level = 0, offset = 0}),
+                                           expInfo = Info {refsFree = []}}),
+                                   expInfo = Info {refsFree = []}})),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}})],
+    moduleImports = [],
+    moduleExports = [Name "apply", Name "f"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath = "golden/Golden/TestCurrying.purs",
+    dataTypes = fromList []}]

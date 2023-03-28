@@ -1,0 +1,174 @@
+cabal-version:      2.4
+name:               pslua
+version:            0.1.0.0
+license:            MIT
+copyright:          2023 Yura Lazarev
+author:             Yura Lazarev
+category:           Compiler
+extra-source-files:
+  LICENSE
+  README.md
+
+common shared
+  ghc-options:
+    -O2 -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
+    -Wmissing-deriving-strategies -Wunused-foralls -Wunused-foralls
+    -fprint-explicit-foralls -fprint-explicit-kinds -Wcompat
+    -Widentities -Werror=incomplete-patterns -Wredundant-constraints
+    -Wpartial-fields -Wtabs -Wmissing-local-signatures -fhelpful-errors
+    -fprint-expanded-synonyms -fwarn-unused-do-bind -freverse-errors
+
+  mixins:
+    base hiding (Prelude),
+    relude (Relude as Prelude, Relude.Container.One),
+    relude
+
+  default-extensions:
+    NoStarIsType
+    ApplicativeDo
+    BangPatterns
+    BlockArguments
+    ConstraintKinds
+    DataKinds
+    DeriveAnyClass
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    DerivingStrategies
+    DerivingVia
+    EmptyCase
+    EmptyDataDecls
+    EmptyDataDeriving
+    ExistentialQuantification
+    ExplicitForAll
+    FlexibleContexts
+    FlexibleInstances
+    GADTSyntax
+    GeneralisedNewtypeDeriving
+    ImportQualifiedPost
+    InstanceSigs
+    KindSignatures
+    LambdaCase
+    MultiParamTypeClasses
+    MultiWayIf
+    NamedFieldPuns
+    NumericUnderscores
+    OverloadedStrings
+    PatternSynonyms
+    PolyKinds
+    PostfixOperators
+    RankNTypes
+    RecordWildCards
+    ScopedTypeVariables
+    StandaloneDeriving
+    StandaloneKindSignatures
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    ViewPatterns
+
+  build-depends:
+    , aeson                ^>=2.0.3
+    , array                ^>=0.5.4.0
+    , attoparsec           ^>=0.14.4
+    , base                 ^>=4.16.3
+    , containers           ^>=0.6.5.1
+    , deriving-compat      ^>=0.6.2
+    , filepath             ^>=1.4.2
+    , generically          ^>=0.1.1
+    , monoidal-containers  ^>=0.6.3.0
+    , mtl                  ^>=2.2.2
+    , non-empty-text       ^>=0.2.0
+    , oops                 ^>=0.2
+    , path                 ^>=0.9.2
+    , path-io              ^>=1.8.0
+    , pretty-show          ^>=1.10
+    , prettyprinter        ^>=1.7.1
+    , quiet                ^>=0.2
+    , relude               ^>=1.1
+    , scientific           ^>=0.3.7.0
+    , shower               ^>=0.2.0.3
+    , tagged               ^>=0.8.6.1
+    , template-haskell     ^>=2.18
+    , text                 ^>=1.2.5.0
+    , transformers         ^>=0.5.6.2
+    , vector               ^>=0.12.3.1
+
+  default-language:   Haskell2010
+
+executable pslua
+  import:         shared
+  main-is:        Main.hs
+  hs-source-dirs: exe
+  other-modules:  Cli
+  ghc-options:    -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+    , optparse-applicative  ^>=0.17
+    , pslua
+    , with-utf8             ^>=1.0.2.3
+
+library
+  import:          shared
+  hs-source-dirs:  lib
+  exposed-modules:
+    Language.PureScript.Backend
+    Language.PureScript.Backend.IR
+    Language.PureScript.Backend.IR.DCE
+    Language.PureScript.Backend.IR.Optimizer
+    Language.PureScript.Backend.IR.Query
+    Language.PureScript.Backend.IR.Types
+    Language.PureScript.Backend.Lua
+    Language.PureScript.Backend.Lua.Fixture
+    Language.PureScript.Backend.Lua.Linker
+    Language.PureScript.Backend.Lua.Linker.Foreign
+    Language.PureScript.Backend.Lua.Name
+    Language.PureScript.Backend.Lua.Optimizer
+    Language.PureScript.Backend.Lua.Printer
+    Language.PureScript.Backend.Lua.Traversal
+    Language.PureScript.Backend.Lua.Types
+    Language.PureScript.CoreFn
+    Language.PureScript.CoreFn.Expr
+    Language.PureScript.CoreFn.FromJSON
+    Language.PureScript.CoreFn.Laziness
+    Language.PureScript.CoreFn.Meta
+    Language.PureScript.CoreFn.Module
+    Language.PureScript.CoreFn.Reader
+    Language.PureScript.CoreFn.Traversals
+    Language.PureScript.Names
+    Language.PureScript.PSString
+
+test-suite spec
+  import:         shared
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+  other-modules:
+    Language.PureScript.Backend.IR.DCESpec
+    Language.PureScript.Backend.IR.Gen
+    Language.PureScript.Backend.IR.LocallyNamelessSpec
+    Language.PureScript.Backend.IR.OptimizerSpec
+    Language.PureScript.Backend.IRSpec
+    Language.PureScript.Backend.Lua.GoldenSpec
+    Language.PureScript.Backend.Lua.OptimizerSpec
+    Language.PureScript.Backend.Lua.PrinterSpec
+    Test.Hspec.Expectations.Pretty
+    Test.Hspec.Extra
+    Test.Hspec.Golden
+    Test.Hspec.Hedgehog.Extended
+
+  hs-source-dirs: test
+  ghc-options:    -threaded -rtsopts -fprof-auto -with-rtsopts=-N
+  build-depends:
+    , call-stack                      ^>=0.4.0
+    , hedgehog                        ^>=1.2
+    , hedgehog-corpus                 ^>=0.2
+    , hspec                           ^>=2.10.10
+    , hspec-core                      ^>=2.10.10
+    , hspec-expectations-pretty-diff  ^>=0.7.2.6
+    , hspec-hedgehog                  ^>=0.0.1.2
+    , HUnit                           ^>=1.6.2.0
+    , pslua
+    , typed-process                   ^>=0.2.10.1

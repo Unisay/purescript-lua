@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+echo "Removing all golden files..."
+rm -rf
+find ./test/ps/output -name 'golden.*' -delete

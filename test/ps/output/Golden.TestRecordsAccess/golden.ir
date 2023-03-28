@@ -1,0 +1,120 @@
+[Module
+   {moduleName = ModuleName "Golden.TestRecordsAccess",
+    moduleBindings =
+      [Standalone
+         (Name "test4",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "v"))
+                    (Exp
+                       {unExp =
+                          Let
+                            (LetBinding
+                               (Standalone
+                                  (Name "x",
+                                   Exp
+                                     {unExp =
+                                        ObjectProp
+                                          (Exp
+                                             {unExp =
+                                                RefBound
+                                                  (Index
+                                                     {level = 1, offset = 0}),
+                                              expInfo = Info {refsFree = []}})
+                                          (PropName "x"),
+                                      expInfo = Info {refsFree = []}})
+                                  :|
+                                  [])
+                               (Exp
+                                  {unExp =
+                                     RefBound (Index {level = 0, offset = 0}),
+                                   expInfo = Info {refsFree = []}})),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "test3",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "v"))
+                    (Exp
+                       {unExp =
+                          Let
+                            (LetBinding
+                               (Standalone
+                                  (Name "x",
+                                   Exp
+                                     {unExp =
+                                        ObjectProp
+                                          (Exp
+                                             {unExp =
+                                                RefBound
+                                                  (Index
+                                                     {level = 1, offset = 0}),
+                                              expInfo = Info {refsFree = []}})
+                                          (PropName "x"),
+                                      expInfo = Info {refsFree = []}})
+                                  :|
+                                  [])
+                               (Exp
+                                  {unExp =
+                                     RefBound (Index {level = 0, offset = 0}),
+                                   expInfo = Info {refsFree = []}})),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "test2",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "v"))
+                    (Exp
+                       {unExp =
+                          ObjectProp
+                            (Exp
+                               {unExp =
+                                  RefBound (Index {level = 0, offset = 0}),
+                                expInfo = Info {refsFree = []}})
+                            (PropName "x"),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "r",
+          Exp
+            {unExp =
+               Lit
+                 (Object
+                    [(PropName "x",
+                      Exp
+                        {unExp = Lit (Integer 1),
+                         expInfo = Info {refsFree = []}}),
+                     (PropName "y",
+                      Exp
+                        {unExp = Lit (Boolean True),
+                         expInfo = Info {refsFree = []}})]),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "test1",
+          Exp
+            {unExp =
+               ObjectProp
+                 (Exp
+                    {unExp = RefFree (Local (Name "r")),
+                     expInfo = Info {refsFree = [Local (Name "r")]}})
+                 (PropName "x"),
+             expInfo = Info {refsFree = [Local (Name "r")]}})],
+    moduleImports = [],
+    moduleExports =
+      [Name "r",
+       Name "test1",
+       Name "test2",
+       Name "test3",
+       Name "test4"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath = "golden/Golden/TestRecordsAccess.purs",
+    dataTypes = fromList []}]

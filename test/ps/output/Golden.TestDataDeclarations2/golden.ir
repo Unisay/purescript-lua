@@ -1,0 +1,254 @@
+[Module
+   {moduleName =
+      ModuleName "Golden.TestDataDeclarations1",
+    moduleBindings =
+      [Standalone
+         (Name "U",
+          Exp
+            {unExp =
+               Ctor ProductType (TyName "Unit") (CtorName "U") [],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "CtorSameName",
+          Exp
+            {unExp =
+               Ctor
+                 ProductType
+                 (TyName "TySameName")
+                 (CtorName "CtorSameName")
+                 [],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "S0",
+          Exp
+            {unExp =
+               Ctor SumType (TyName "TSum") (CtorName "S0") [],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "S1",
+          Exp
+            {unExp =
+               Ctor
+                 SumType
+                 (TyName "TSum")
+                 (CtorName "S1")
+                 [FieldName "value0"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "S2",
+          Exp
+            {unExp =
+               Ctor
+                 SumType
+                 (TyName "TSum")
+                 (CtorName "S2")
+                 [FieldName "value0", FieldName "value1"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "PF",
+          Exp
+            {unExp =
+               Ctor
+                 ProductType
+                 (TyName "TProductWithFields")
+                 (CtorName "PF")
+                 [FieldName "value0"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "P3",
+          Exp
+            {unExp =
+               Ctor
+                 ProductType
+                 (TyName "TProduct")
+                 (CtorName "P3")
+                 [FieldName "value0",
+                  FieldName "value1",
+                  FieldName "value2"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "Nop",
+          Exp
+            {unExp =
+               Ctor SumType (TyName "Rec") (CtorName "Nop") [],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "More",
+          Exp
+            {unExp =
+               Ctor
+                 SumType
+                 (TyName "Rec")
+                 (CtorName "More")
+                 [FieldName "value0"],
+             expInfo = Info {refsFree = []}})],
+    moduleImports = [],
+    moduleExports =
+      [Name "U",
+       Name "P3",
+       Name "PF",
+       Name "S0",
+       Name "S1",
+       Name "S2",
+       Name "Nop",
+       Name "More",
+       Name "CtorSameName"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath =
+      "golden/Golden/TestDataDeclarations1.purs",
+    dataTypes =
+      fromList
+        [(TyName "Rec",
+          (SumType,
+           fromList
+             [(CtorName "More", [FieldName "value0"]),
+              (CtorName "Nop", [])])),
+         (TyName "TProduct",
+          (ProductType,
+           fromList
+             [(CtorName "P3",
+               [FieldName "value0",
+                FieldName "value1",
+                FieldName "value2"])])),
+         (TyName "TProductWithFields",
+          (ProductType,
+           fromList [(CtorName "PF", [FieldName "value0"])])),
+         (TyName "TSum",
+          (SumType,
+           fromList
+             [(CtorName "S0", []),
+              (CtorName "S1", [FieldName "value0"]),
+              (CtorName "S2",
+               [FieldName "value0", FieldName "value1"])])),
+         (TyName "TySameName",
+          (ProductType,
+           fromList [(CtorName "CtorSameName", [])])),
+         (TyName "Unit",
+          (ProductType, fromList [(CtorName "U", [])]))]},
+ Module
+   {moduleName =
+      ModuleName "Golden.TestDataDeclarations2",
+    moduleBindings =
+      [Standalone
+         (Name "CtorSameName",
+          Exp
+            {unExp =
+               Ctor
+                 ProductType
+                 (TyName "TySameName")
+                 (CtorName "CtorSameName")
+                 [],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "test",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "v"))
+                    (Exp
+                       {unExp =
+                          Abs
+                            (AbsBinding
+                               (ArgNamed (Name "v1"))
+                               (Exp
+                                  {unExp =
+                                     IfThenElse
+                                       (Exp
+                                          {unExp =
+                                             Prim
+                                               (Eq
+                                                  (Exp
+                                                     {unExp =
+                                                        Lit
+                                                          (String
+                                                             "Golden.TestDataDeclarations1.CtorSameName"),
+                                                      expInfo =
+                                                        Info {refsFree = []}})
+                                                  (Exp
+                                                     {unExp =
+                                                        Prim
+                                                          (ReflectCtor
+                                                             (Exp
+                                                                {unExp =
+                                                                   RefBound
+                                                                     (Index
+                                                                        {level =
+                                                                           1,
+                                                                         offset =
+                                                                           0}),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        []}})),
+                                                      expInfo =
+                                                        Info {refsFree = []}})),
+                                           expInfo = Info {refsFree = []}})
+                                       (Exp
+                                          {unExp =
+                                             IfThenElse
+                                               (Exp
+                                                  {unExp =
+                                                     Prim
+                                                       (Eq
+                                                          (Exp
+                                                             {unExp =
+                                                                Lit
+                                                                  (String
+                                                                     "Golden.TestDataDeclarations2.CtorSameName"),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     []}})
+                                                          (Exp
+                                                             {unExp =
+                                                                Prim
+                                                                  (ReflectCtor
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           RefBound
+                                                                             (Index
+                                                                                {level =
+                                                                                   0,
+                                                                                 offset =
+                                                                                   0}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                []}})),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     []}})),
+                                                   expInfo =
+                                                     Info {refsFree = []}})
+                                               (Exp
+                                                  {unExp = Lit (Boolean True),
+                                                   expInfo =
+                                                     Info {refsFree = []}})
+                                               (Exp
+                                                  {unExp =
+                                                     Exception
+                                                       "No patterns matched",
+                                                   expInfo =
+                                                     Info {refsFree = []}}),
+                                           expInfo = Info {refsFree = []}})
+                                       (Exp
+                                          {unExp =
+                                             Exception "No patterns matched",
+                                           expInfo = Info {refsFree = []}}),
+                                   expInfo = Info {refsFree = []}})),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}})],
+    moduleImports = [],
+    moduleExports = [Name "CtorSameName", Name "test"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath =
+      "golden/Golden/TestDataDeclarations2.purs",
+    dataTypes =
+      fromList
+        [(TyName "TySameName",
+          (ProductType,
+           fromList [(CtorName "CtorSameName", [])]))]}]

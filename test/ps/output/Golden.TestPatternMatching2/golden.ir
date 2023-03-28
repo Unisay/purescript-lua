@@ -1,0 +1,415 @@
+[Module
+   {moduleName =
+      ModuleName "Golden.TestPatternMatching2",
+    moduleBindings =
+      [Standalone
+         (Name "Zero",
+          Exp
+            {unExp =
+               Ctor SumType (TyName "N") (CtorName "Zero") [],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "Succ",
+          Exp
+            {unExp =
+               Ctor
+                 SumType
+                 (TyName "N")
+                 (CtorName "Succ")
+                 [FieldName "value0"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "Add",
+          Exp
+            {unExp =
+               Ctor
+                 SumType
+                 (TyName "N")
+                 (CtorName "Add")
+                 [FieldName "value0", FieldName "value1"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "Mul",
+          Exp
+            {unExp =
+               Ctor
+                 SumType
+                 (TyName "N")
+                 (CtorName "Mul")
+                 [FieldName "value0", FieldName "value1"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "pat",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "e"))
+                    (Exp
+                       {unExp =
+                          IfThenElse
+                            (Exp
+                               {unExp =
+                                  Prim
+                                    (Eq
+                                       (Exp
+                                          {unExp =
+                                             Lit
+                                               (String
+                                                  "Golden.TestPatternMatching2.Add"),
+                                           expInfo = Info {refsFree = []}})
+                                       (Exp
+                                          {unExp =
+                                             Prim
+                                               (ReflectCtor
+                                                  (Exp
+                                                     {unExp =
+                                                        RefBound
+                                                          (Index
+                                                             {level = 0,
+                                                              offset = 0}),
+                                                      expInfo =
+                                                        Info {refsFree = []}})),
+                                           expInfo = Info {refsFree = []}})),
+                                expInfo = Info {refsFree = []}})
+                            (Exp
+                               {unExp =
+                                  IfThenElse
+                                    (Exp
+                                       {unExp =
+                                          Prim
+                                            (Eq
+                                               (Exp
+                                                  {unExp =
+                                                     Lit
+                                                       (String
+                                                          "Golden.TestPatternMatching2.Zero"),
+                                                   expInfo =
+                                                     Info {refsFree = []}})
+                                               (Exp
+                                                  {unExp =
+                                                     Prim
+                                                       (ReflectCtor
+                                                          (Exp
+                                                             {unExp =
+                                                                ArrayIndex
+                                                                  (Exp
+                                                                     {unExp =
+                                                                        RefBound
+                                                                          (Index
+                                                                             {level =
+                                                                                0,
+                                                                              offset =
+                                                                                0}),
+                                                                      expInfo =
+                                                                        Info
+                                                                          {refsFree =
+                                                                             []}})
+                                                                  1,
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     []}})),
+                                                   expInfo =
+                                                     Info {refsFree = []}})),
+                                        expInfo = Info {refsFree = []}})
+                                    (Exp
+                                       {unExp =
+                                          IfThenElse
+                                            (Exp
+                                               {unExp =
+                                                  Prim
+                                                    (Eq
+                                                       (Exp
+                                                          {unExp =
+                                                             Lit
+                                                               (String
+                                                                  "Golden.TestPatternMatching2.Add"),
+                                                           expInfo =
+                                                             Info
+                                                               {refsFree = []}})
+                                                       (Exp
+                                                          {unExp =
+                                                             Prim
+                                                               (ReflectCtor
+                                                                  (Exp
+                                                                     {unExp =
+                                                                        ArrayIndex
+                                                                          (Exp
+                                                                             {unExp =
+                                                                                RefBound
+                                                                                  (Index
+                                                                                     {level =
+                                                                                        0,
+                                                                                      offset =
+                                                                                        0}),
+                                                                              expInfo =
+                                                                                Info
+                                                                                  {refsFree =
+                                                                                     []}})
+                                                                          0,
+                                                                      expInfo =
+                                                                        Info
+                                                                          {refsFree =
+                                                                             []}})),
+                                                           expInfo =
+                                                             Info
+                                                               {refsFree =
+                                                                  []}})),
+                                                expInfo = Info {refsFree = []}})
+                                            (Exp
+                                               {unExp = Lit (Integer 1),
+                                                expInfo = Info {refsFree = []}})
+                                            (Exp
+                                               {unExp =
+                                                  IfThenElse
+                                                    (Exp
+                                                       {unExp =
+                                                          Prim
+                                                            (Eq
+                                                               (Exp
+                                                                  {unExp =
+                                                                     Lit
+                                                                       (String
+                                                                          "Golden.TestPatternMatching2.Mul"),
+                                                                   expInfo =
+                                                                     Info
+                                                                       {refsFree =
+                                                                          []}})
+                                                               (Exp
+                                                                  {unExp =
+                                                                     Prim
+                                                                       (ReflectCtor
+                                                                          (Exp
+                                                                             {unExp =
+                                                                                ArrayIndex
+                                                                                  (Exp
+                                                                                     {unExp =
+                                                                                        RefBound
+                                                                                          (Index
+                                                                                             {level =
+                                                                                                0,
+                                                                                              offset =
+                                                                                                0}),
+                                                                                      expInfo =
+                                                                                        Info
+                                                                                          {refsFree =
+                                                                                             []}})
+                                                                                  0,
+                                                                              expInfo =
+                                                                                Info
+                                                                                  {refsFree =
+                                                                                     []}})),
+                                                                   expInfo =
+                                                                     Info
+                                                                       {refsFree =
+                                                                          []}})),
+                                                        expInfo =
+                                                          Info {refsFree = []}})
+                                                    (Exp
+                                                       {unExp = Lit (Integer 2),
+                                                        expInfo =
+                                                          Info {refsFree = []}})
+                                                    (Exp
+                                                       {unExp = Lit (Integer 5),
+                                                        expInfo =
+                                                          Info
+                                                            {refsFree = []}}),
+                                                expInfo =
+                                                  Info {refsFree = []}}),
+                                        expInfo = Info {refsFree = []}})
+                                    (Exp
+                                       {unExp =
+                                          IfThenElse
+                                            (Exp
+                                               {unExp =
+                                                  Prim
+                                                    (Eq
+                                                       (Exp
+                                                          {unExp =
+                                                             Lit
+                                                               (String
+                                                                  "Golden.TestPatternMatching2.Mul"),
+                                                           expInfo =
+                                                             Info
+                                                               {refsFree = []}})
+                                                       (Exp
+                                                          {unExp =
+                                                             Prim
+                                                               (ReflectCtor
+                                                                  (Exp
+                                                                     {unExp =
+                                                                        ArrayIndex
+                                                                          (Exp
+                                                                             {unExp =
+                                                                                RefBound
+                                                                                  (Index
+                                                                                     {level =
+                                                                                        0,
+                                                                                      offset =
+                                                                                        0}),
+                                                                              expInfo =
+                                                                                Info
+                                                                                  {refsFree =
+                                                                                     []}})
+                                                                          1,
+                                                                      expInfo =
+                                                                        Info
+                                                                          {refsFree =
+                                                                             []}})),
+                                                           expInfo =
+                                                             Info
+                                                               {refsFree =
+                                                                  []}})),
+                                                expInfo = Info {refsFree = []}})
+                                            (Exp
+                                               {unExp = Lit (Integer 3),
+                                                expInfo = Info {refsFree = []}})
+                                            (Exp
+                                               {unExp =
+                                                  IfThenElse
+                                                    (Exp
+                                                       {unExp =
+                                                          Prim
+                                                            (Eq
+                                                               (Exp
+                                                                  {unExp =
+                                                                     Lit
+                                                                       (String
+                                                                          "Golden.TestPatternMatching2.Add"),
+                                                                   expInfo =
+                                                                     Info
+                                                                       {refsFree =
+                                                                          []}})
+                                                               (Exp
+                                                                  {unExp =
+                                                                     Prim
+                                                                       (ReflectCtor
+                                                                          (Exp
+                                                                             {unExp =
+                                                                                ArrayIndex
+                                                                                  (Exp
+                                                                                     {unExp =
+                                                                                        RefBound
+                                                                                          (Index
+                                                                                             {level =
+                                                                                                0,
+                                                                                              offset =
+                                                                                                0}),
+                                                                                      expInfo =
+                                                                                        Info
+                                                                                          {refsFree =
+                                                                                             []}})
+                                                                                  1,
+                                                                              expInfo =
+                                                                                Info
+                                                                                  {refsFree =
+                                                                                     []}})),
+                                                                   expInfo =
+                                                                     Info
+                                                                       {refsFree =
+                                                                          []}})),
+                                                        expInfo =
+                                                          Info {refsFree = []}})
+                                                    (Exp
+                                                       {unExp = Lit (Integer 4),
+                                                        expInfo =
+                                                          Info {refsFree = []}})
+                                                    (Exp
+                                                       {unExp =
+                                                          IfThenElse
+                                                            (Exp
+                                                               {unExp =
+                                                                  Prim
+                                                                    (Eq
+                                                                       (Exp
+                                                                          {unExp =
+                                                                             Lit
+                                                                               (String
+                                                                                  "Golden.TestPatternMatching2.Zero"),
+                                                                           expInfo =
+                                                                             Info
+                                                                               {refsFree =
+                                                                                  []}})
+                                                                       (Exp
+                                                                          {unExp =
+                                                                             Prim
+                                                                               (ReflectCtor
+                                                                                  (Exp
+                                                                                     {unExp =
+                                                                                        ArrayIndex
+                                                                                          (Exp
+                                                                                             {unExp =
+                                                                                                RefBound
+                                                                                                  (Index
+                                                                                                     {level =
+                                                                                                        0,
+                                                                                                      offset =
+                                                                                                        0}),
+                                                                                              expInfo =
+                                                                                                Info
+                                                                                                  {refsFree =
+                                                                                                     []}})
+                                                                                          1,
+                                                                                      expInfo =
+                                                                                        Info
+                                                                                          {refsFree =
+                                                                                             []}})),
+                                                                           expInfo =
+                                                                             Info
+                                                                               {refsFree =
+                                                                                  []}})),
+                                                                expInfo =
+                                                                  Info
+                                                                    {refsFree =
+                                                                       []}})
+                                                            (Exp
+                                                               {unExp =
+                                                                  Lit
+                                                                    (Integer 5),
+                                                                expInfo =
+                                                                  Info
+                                                                    {refsFree =
+                                                                       []}})
+                                                            (Exp
+                                                               {unExp =
+                                                                  Lit
+                                                                    (Integer 6),
+                                                                expInfo =
+                                                                  Info
+                                                                    {refsFree =
+                                                                       []}}),
+                                                        expInfo =
+                                                          Info
+                                                            {refsFree = []}}),
+                                                expInfo =
+                                                  Info {refsFree = []}}),
+                                        expInfo = Info {refsFree = []}}),
+                                expInfo = Info {refsFree = []}})
+                            (Exp
+                               {unExp = Lit (Integer 6),
+                                expInfo = Info {refsFree = []}}),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}})],
+    moduleImports = [],
+    moduleExports =
+      [Name "Zero",
+       Name "Succ",
+       Name "Add",
+       Name "Mul",
+       Name "pat"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath =
+      "golden/Golden/TestPatternMatching2.purs",
+    dataTypes =
+      fromList
+        [(TyName "N",
+          (SumType,
+           fromList
+             [(CtorName "Add",
+               [FieldName "value0", FieldName "value1"]),
+              (CtorName "Mul",
+               [FieldName "value0", FieldName "value1"]),
+              (CtorName "Succ", [FieldName "value0"]),
+              (CtorName "Zero", [])]))]}]

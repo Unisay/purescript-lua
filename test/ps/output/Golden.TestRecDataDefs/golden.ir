@@ -1,0 +1,97 @@
+[Module
+   {moduleName = ModuleName "Golden.TestRecDataDefs",
+    moduleBindings =
+      [Standalone
+         (Name "A",
+          Exp
+            {unExp = Ctor SumType (TyName "A") (CtorName "A") [],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "AB",
+          Exp
+            {unExp =
+               Ctor
+                 SumType
+                 (TyName "A")
+                 (CtorName "AB")
+                 [FieldName "value0"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "B",
+          Exp
+            {unExp = Ctor SumType (TyName "B") (CtorName "B") [],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "BA",
+          Exp
+            {unExp =
+               Ctor
+                 SumType
+                 (TyName "B")
+                 (CtorName "BA")
+                 [FieldName "value0"],
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "b",
+          Exp
+            {unExp = RefFree (Local (Name "B")),
+             expInfo = Info {refsFree = [Local (Name "B")]}}),
+       Standalone
+         (Name "ab",
+          Exp
+            {unExp =
+               App
+                 (Exp
+                    {unExp = RefFree (Local (Name "AB")),
+                     expInfo = Info {refsFree = [Local (Name "AB")]}})
+                 (Exp
+                    {unExp = RefFree (Local (Name "b")),
+                     expInfo = Info {refsFree = [Local (Name "b")]}}),
+             expInfo =
+               Info
+                 {refsFree = [Local (Name "AB"), Local (Name "b")]}}),
+       Standalone
+         (Name "ba",
+          Exp
+            {unExp =
+               App
+                 (Exp
+                    {unExp = RefFree (Local (Name "BA")),
+                     expInfo = Info {refsFree = [Local (Name "BA")]}})
+                 (Exp
+                    {unExp = RefFree (Local (Name "ab")),
+                     expInfo = Info {refsFree = [Local (Name "ab")]}}),
+             expInfo =
+               Info
+                 {refsFree =
+                    [Local (Name "BA"), Local (Name "ab")]}}),
+       Standalone
+         (Name "a",
+          Exp
+            {unExp = RefFree (Local (Name "A")),
+             expInfo = Info {refsFree = [Local (Name "A")]}})],
+    moduleImports = [],
+    moduleExports =
+      [Name "A",
+       Name "AB",
+       Name "B",
+       Name "BA",
+       Name "a",
+       Name "b",
+       Name "ab",
+       Name "ba"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath = "golden/Golden/TestRecDataDefs.purs",
+    dataTypes =
+      fromList
+        [(TyName "A",
+          (SumType,
+           fromList
+             [(CtorName "A", []),
+              (CtorName "AB", [FieldName "value0"])])),
+         (TyName "B",
+          (SumType,
+           fromList
+             [(CtorName "B", []),
+              (CtorName "BA", [FieldName "value0"])]))]}]

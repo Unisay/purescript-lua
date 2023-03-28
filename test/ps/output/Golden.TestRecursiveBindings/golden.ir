@@ -1,0 +1,732 @@
+[Module
+   {moduleName =
+      ModuleName "Golden.TestRecursiveBindings",
+    moduleBindings =
+      [Standalone
+         (Name "whereRec",
+          Exp
+            {unExp =
+               Let
+                 (LetBinding
+                    (RecursiveGroup
+                       ((Name "yes",
+                         Exp
+                           {unExp =
+                              Abs
+                                (AbsBinding
+                                   (ArgNamed (Name "v"))
+                                   (Exp
+                                      {unExp =
+                                         IfThenElse
+                                           (Exp
+                                              {unExp =
+                                                 Prim
+                                                   (Eq
+                                                      (Exp
+                                                         {unExp =
+                                                            Lit (Boolean True),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}})
+                                                      (Exp
+                                                         {unExp =
+                                                            RefBound
+                                                              (Index
+                                                                 {level = 0,
+                                                                  offset = 0}),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree =
+                                                                 []}})),
+                                               expInfo = Info {refsFree = []}})
+                                           (Exp
+                                              {unExp =
+                                                 App
+                                                   (Exp
+                                                      {unExp =
+                                                         RefBound
+                                                           (Index
+                                                              {level = 1,
+                                                               offset = 1}),
+                                                       expInfo =
+                                                         Info {refsFree = []}})
+                                                   (Exp
+                                                      {unExp =
+                                                         Lit (Boolean False),
+                                                       expInfo =
+                                                         Info {refsFree = []}}),
+                                               expInfo = Info {refsFree = []}})
+                                           (Exp
+                                              {unExp =
+                                                 IfThenElse
+                                                   (Exp
+                                                      {unExp =
+                                                         Prim
+                                                           (Eq
+                                                              (Exp
+                                                                 {unExp =
+                                                                    Lit
+                                                                      (Boolean
+                                                                         False),
+                                                                  expInfo =
+                                                                    Info
+                                                                      {refsFree =
+                                                                         []}})
+                                                              (Exp
+                                                                 {unExp =
+                                                                    RefBound
+                                                                      (Index
+                                                                         {level =
+                                                                            0,
+                                                                          offset =
+                                                                            0}),
+                                                                  expInfo =
+                                                                    Info
+                                                                      {refsFree =
+                                                                         []}})),
+                                                       expInfo =
+                                                         Info {refsFree = []}})
+                                                   (Exp
+                                                      {unExp =
+                                                         App
+                                                           (Exp
+                                                              {unExp =
+                                                                 RefBound
+                                                                   (Index
+                                                                      {level =
+                                                                         1,
+                                                                       offset =
+                                                                         1}),
+                                                               expInfo =
+                                                                 Info
+                                                                   {refsFree =
+                                                                      []}})
+                                                           (Exp
+                                                              {unExp =
+                                                                 Lit
+                                                                   (Boolean
+                                                                      True),
+                                                               expInfo =
+                                                                 Info
+                                                                   {refsFree =
+                                                                      []}}),
+                                                       expInfo =
+                                                         Info {refsFree = []}})
+                                                   (Exp
+                                                      {unExp =
+                                                         Exception
+                                                           "No patterns matched",
+                                                       expInfo =
+                                                         Info {refsFree = []}}),
+                                               expInfo = Info {refsFree = []}}),
+                                       expInfo = Info {refsFree = []}})),
+                            expInfo = Info {refsFree = []}})
+                          :|
+                          [(Name "no",
+                            Exp
+                              {unExp =
+                                 Abs
+                                   (AbsBinding
+                                      (ArgNamed (Name "v"))
+                                      (Exp
+                                         {unExp =
+                                            IfThenElse
+                                              (Exp
+                                                 {unExp =
+                                                    Prim
+                                                      (Eq
+                                                         (Exp
+                                                            {unExp =
+                                                               Lit
+                                                                 (Boolean True),
+                                                             expInfo =
+                                                               Info
+                                                                 {refsFree =
+                                                                    []}})
+                                                         (Exp
+                                                            {unExp =
+                                                               RefBound
+                                                                 (Index
+                                                                    {level = 0,
+                                                                     offset =
+                                                                       0}),
+                                                             expInfo =
+                                                               Info
+                                                                 {refsFree =
+                                                                    []}})),
+                                                  expInfo =
+                                                    Info {refsFree = []}})
+                                              (Exp
+                                                 {unExp =
+                                                    App
+                                                      (Exp
+                                                         {unExp =
+                                                            RefBound
+                                                              (Index
+                                                                 {level = 1,
+                                                                  offset = 0}),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}})
+                                                      (Exp
+                                                         {unExp =
+                                                            Lit (Boolean False),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}}),
+                                                  expInfo =
+                                                    Info {refsFree = []}})
+                                              (Exp
+                                                 {unExp =
+                                                    IfThenElse
+                                                      (Exp
+                                                         {unExp =
+                                                            Prim
+                                                              (Eq
+                                                                 (Exp
+                                                                    {unExp =
+                                                                       Lit
+                                                                         (Boolean
+                                                                            False),
+                                                                     expInfo =
+                                                                       Info
+                                                                         {refsFree =
+                                                                            []}})
+                                                                 (Exp
+                                                                    {unExp =
+                                                                       RefBound
+                                                                         (Index
+                                                                            {level =
+                                                                               0,
+                                                                             offset =
+                                                                               0}),
+                                                                     expInfo =
+                                                                       Info
+                                                                         {refsFree =
+                                                                            []}})),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}})
+                                                      (Exp
+                                                         {unExp =
+                                                            App
+                                                              (Exp
+                                                                 {unExp =
+                                                                    RefBound
+                                                                      (Index
+                                                                         {level =
+                                                                            1,
+                                                                          offset =
+                                                                            0}),
+                                                                  expInfo =
+                                                                    Info
+                                                                      {refsFree =
+                                                                         []}})
+                                                              (Exp
+                                                                 {unExp =
+                                                                    Lit
+                                                                      (Boolean
+                                                                         True),
+                                                                  expInfo =
+                                                                    Info
+                                                                      {refsFree =
+                                                                         []}}),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}})
+                                                      (Exp
+                                                         {unExp =
+                                                            Exception
+                                                              "No patterns matched",
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}}),
+                                                  expInfo =
+                                                    Info {refsFree = []}}),
+                                          expInfo = Info {refsFree = []}})),
+                               expInfo = Info {refsFree = []}})])
+                       :|
+                       [])
+                    (Exp
+                       {unExp =
+                          App
+                            (Exp
+                               {unExp =
+                                  RefBound (Index {level = 0, offset = 1}),
+                                expInfo = Info {refsFree = []}})
+                            (Exp
+                               {unExp = Lit (Boolean False),
+                                expInfo = Info {refsFree = []}}),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "letRecMixed",
+          Exp
+            {unExp =
+               Let
+                 (LetBinding
+                    (Standalone
+                       (Name "z",
+                        Exp
+                          {unExp = Lit (Integer 1),
+                           expInfo = Info {refsFree = []}})
+                       :|
+                       [RecursiveGroup
+                          ((Name "b",
+                            Exp
+                              {unExp =
+                                 Abs
+                                   (AbsBinding
+                                      ArgUnused
+                                      (Exp
+                                         {unExp =
+                                            App
+                                              (Exp
+                                                 {unExp =
+                                                    RefBound
+                                                      (Index
+                                                         {level = 1,
+                                                          offset = 2}),
+                                                  expInfo =
+                                                    Info {refsFree = []}})
+                                              (Exp
+                                                 {unExp =
+                                                    RefBound
+                                                      (Index
+                                                         {level = 1,
+                                                          offset = 0}),
+                                                  expInfo =
+                                                    Info {refsFree = []}}),
+                                          expInfo = Info {refsFree = []}})),
+                               expInfo = Info {refsFree = []}})
+                             :|
+                             [(Name "a",
+                               Exp
+                                 {unExp =
+                                    Abs
+                                      (AbsBinding
+                                         ArgUnused
+                                         (Exp
+                                            {unExp =
+                                               App
+                                                 (Exp
+                                                    {unExp =
+                                                       RefBound
+                                                         (Index
+                                                            {level = 1,
+                                                             offset = 1}),
+                                                     expInfo =
+                                                       Info {refsFree = []}})
+                                                 (Exp
+                                                    {unExp =
+                                                       RefBound
+                                                         (Index
+                                                            {level = 1,
+                                                             offset = 0}),
+                                                     expInfo =
+                                                       Info {refsFree = []}}),
+                                             expInfo = Info {refsFree = []}})),
+                                  expInfo = Info {refsFree = []}})]),
+                        Standalone
+                          (Name "f",
+                           Exp
+                             {unExp =
+                                Abs
+                                  (AbsBinding
+                                     ArgUnused
+                                     (Exp
+                                        {unExp =
+                                           Abs
+                                             (AbsBinding
+                                                (ArgNamed (Name "k"))
+                                                (Exp
+                                                   {unExp =
+                                                      App
+                                                        (Exp
+                                                           {unExp =
+                                                              RefBound
+                                                                (Index
+                                                                   {level = 2,
+                                                                    offset =
+                                                                      2}),
+                                                            expInfo =
+                                                              Info
+                                                                {refsFree =
+                                                                   []}})
+                                                        (Exp
+                                                           {unExp =
+                                                              RefBound
+                                                                (Index
+                                                                   {level = 0,
+                                                                    offset =
+                                                                      0}),
+                                                            expInfo =
+                                                              Info
+                                                                {refsFree =
+                                                                   []}}),
+                                                    expInfo =
+                                                      Info {refsFree = []}})),
+                                         expInfo = Info {refsFree = []}})),
+                              expInfo = Info {refsFree = []}}),
+                        Standalone
+                          (Name "y",
+                           Exp
+                             {unExp =
+                                App
+                                  (Exp
+                                     {unExp =
+                                        App
+                                          (Exp
+                                             {unExp =
+                                                RefBound
+                                                  (Index
+                                                     {level = 0, offset = 3}),
+                                              expInfo = Info {refsFree = []}})
+                                          (Exp
+                                             {unExp =
+                                                RefBound
+                                                  (Index
+                                                     {level = 0, offset = 0}),
+                                              expInfo = Info {refsFree = []}}),
+                                      expInfo = Info {refsFree = []}})
+                                  (Exp
+                                     {unExp =
+                                        RefBound
+                                          (Index {level = 0, offset = 0}),
+                                      expInfo = Info {refsFree = []}}),
+                              expInfo = Info {refsFree = []}}),
+                        Standalone
+                          (Name "x",
+                           Exp
+                             {unExp =
+                                App
+                                  (Exp
+                                     {unExp =
+                                        App
+                                          (Exp
+                                             {unExp =
+                                                RefBound
+                                                  (Index
+                                                     {level = 0, offset = 3}),
+                                              expInfo = Info {refsFree = []}})
+                                          (Exp
+                                             {unExp =
+                                                RefBound
+                                                  (Index
+                                                     {level = 0, offset = 4}),
+                                              expInfo = Info {refsFree = []}}),
+                                      expInfo = Info {refsFree = []}})
+                                  (Exp
+                                     {unExp =
+                                        RefBound
+                                          (Index {level = 0, offset = 4}),
+                                      expInfo = Info {refsFree = []}}),
+                              expInfo = Info {refsFree = []}})])
+                    (Exp
+                       {unExp =
+                          App
+                            (Exp
+                               {unExp =
+                                  App
+                                    (Exp
+                                       {unExp =
+                                          RefBound
+                                            (Index {level = 0, offset = 3}),
+                                        expInfo = Info {refsFree = []}})
+                                    (Exp
+                                       {unExp =
+                                          RefBound
+                                            (Index {level = 0, offset = 5}),
+                                        expInfo = Info {refsFree = []}}),
+                                expInfo = Info {refsFree = []}})
+                            (Exp
+                               {unExp =
+                                  App
+                                    (Exp
+                                       {unExp =
+                                          App
+                                            (Exp
+                                               {unExp =
+                                                  RefBound
+                                                    (Index
+                                                       {level = 0, offset = 3}),
+                                                expInfo = Info {refsFree = []}})
+                                            (Exp
+                                               {unExp =
+                                                  RefBound
+                                                    (Index
+                                                       {level = 0, offset = 4}),
+                                                expInfo =
+                                                  Info {refsFree = []}}),
+                                        expInfo = Info {refsFree = []}})
+                                    (Exp
+                                       {unExp = Lit (Integer 0),
+                                        expInfo = Info {refsFree = []}}),
+                                expInfo = Info {refsFree = []}}),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "letRec",
+          Exp
+            {unExp =
+               Let
+                 (LetBinding
+                    (RecursiveGroup
+                       ((Name "yes",
+                         Exp
+                           {unExp =
+                              Abs
+                                (AbsBinding
+                                   (ArgNamed (Name "v"))
+                                   (Exp
+                                      {unExp =
+                                         IfThenElse
+                                           (Exp
+                                              {unExp =
+                                                 Prim
+                                                   (Eq
+                                                      (Exp
+                                                         {unExp =
+                                                            Lit (Boolean True),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}})
+                                                      (Exp
+                                                         {unExp =
+                                                            RefBound
+                                                              (Index
+                                                                 {level = 0,
+                                                                  offset = 0}),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree =
+                                                                 []}})),
+                                               expInfo = Info {refsFree = []}})
+                                           (Exp
+                                              {unExp =
+                                                 App
+                                                   (Exp
+                                                      {unExp =
+                                                         RefBound
+                                                           (Index
+                                                              {level = 1,
+                                                               offset = 1}),
+                                                       expInfo =
+                                                         Info {refsFree = []}})
+                                                   (Exp
+                                                      {unExp =
+                                                         Lit (Boolean False),
+                                                       expInfo =
+                                                         Info {refsFree = []}}),
+                                               expInfo = Info {refsFree = []}})
+                                           (Exp
+                                              {unExp =
+                                                 IfThenElse
+                                                   (Exp
+                                                      {unExp =
+                                                         Prim
+                                                           (Eq
+                                                              (Exp
+                                                                 {unExp =
+                                                                    Lit
+                                                                      (Boolean
+                                                                         False),
+                                                                  expInfo =
+                                                                    Info
+                                                                      {refsFree =
+                                                                         []}})
+                                                              (Exp
+                                                                 {unExp =
+                                                                    RefBound
+                                                                      (Index
+                                                                         {level =
+                                                                            0,
+                                                                          offset =
+                                                                            0}),
+                                                                  expInfo =
+                                                                    Info
+                                                                      {refsFree =
+                                                                         []}})),
+                                                       expInfo =
+                                                         Info {refsFree = []}})
+                                                   (Exp
+                                                      {unExp =
+                                                         App
+                                                           (Exp
+                                                              {unExp =
+                                                                 RefBound
+                                                                   (Index
+                                                                      {level =
+                                                                         1,
+                                                                       offset =
+                                                                         1}),
+                                                               expInfo =
+                                                                 Info
+                                                                   {refsFree =
+                                                                      []}})
+                                                           (Exp
+                                                              {unExp =
+                                                                 Lit
+                                                                   (Boolean
+                                                                      True),
+                                                               expInfo =
+                                                                 Info
+                                                                   {refsFree =
+                                                                      []}}),
+                                                       expInfo =
+                                                         Info {refsFree = []}})
+                                                   (Exp
+                                                      {unExp =
+                                                         Exception
+                                                           "No patterns matched",
+                                                       expInfo =
+                                                         Info {refsFree = []}}),
+                                               expInfo = Info {refsFree = []}}),
+                                       expInfo = Info {refsFree = []}})),
+                            expInfo = Info {refsFree = []}})
+                          :|
+                          [(Name "no",
+                            Exp
+                              {unExp =
+                                 Abs
+                                   (AbsBinding
+                                      (ArgNamed (Name "v"))
+                                      (Exp
+                                         {unExp =
+                                            IfThenElse
+                                              (Exp
+                                                 {unExp =
+                                                    Prim
+                                                      (Eq
+                                                         (Exp
+                                                            {unExp =
+                                                               Lit
+                                                                 (Boolean True),
+                                                             expInfo =
+                                                               Info
+                                                                 {refsFree =
+                                                                    []}})
+                                                         (Exp
+                                                            {unExp =
+                                                               RefBound
+                                                                 (Index
+                                                                    {level = 0,
+                                                                     offset =
+                                                                       0}),
+                                                             expInfo =
+                                                               Info
+                                                                 {refsFree =
+                                                                    []}})),
+                                                  expInfo =
+                                                    Info {refsFree = []}})
+                                              (Exp
+                                                 {unExp =
+                                                    App
+                                                      (Exp
+                                                         {unExp =
+                                                            RefBound
+                                                              (Index
+                                                                 {level = 1,
+                                                                  offset = 0}),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}})
+                                                      (Exp
+                                                         {unExp =
+                                                            Lit (Boolean False),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}}),
+                                                  expInfo =
+                                                    Info {refsFree = []}})
+                                              (Exp
+                                                 {unExp =
+                                                    IfThenElse
+                                                      (Exp
+                                                         {unExp =
+                                                            Prim
+                                                              (Eq
+                                                                 (Exp
+                                                                    {unExp =
+                                                                       Lit
+                                                                         (Boolean
+                                                                            False),
+                                                                     expInfo =
+                                                                       Info
+                                                                         {refsFree =
+                                                                            []}})
+                                                                 (Exp
+                                                                    {unExp =
+                                                                       RefBound
+                                                                         (Index
+                                                                            {level =
+                                                                               0,
+                                                                             offset =
+                                                                               0}),
+                                                                     expInfo =
+                                                                       Info
+                                                                         {refsFree =
+                                                                            []}})),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}})
+                                                      (Exp
+                                                         {unExp =
+                                                            App
+                                                              (Exp
+                                                                 {unExp =
+                                                                    RefBound
+                                                                      (Index
+                                                                         {level =
+                                                                            1,
+                                                                          offset =
+                                                                            0}),
+                                                                  expInfo =
+                                                                    Info
+                                                                      {refsFree =
+                                                                         []}})
+                                                              (Exp
+                                                                 {unExp =
+                                                                    Lit
+                                                                      (Boolean
+                                                                         True),
+                                                                  expInfo =
+                                                                    Info
+                                                                      {refsFree =
+                                                                         []}}),
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}})
+                                                      (Exp
+                                                         {unExp =
+                                                            Exception
+                                                              "No patterns matched",
+                                                          expInfo =
+                                                            Info
+                                                              {refsFree = []}}),
+                                                  expInfo =
+                                                    Info {refsFree = []}}),
+                                          expInfo = Info {refsFree = []}})),
+                               expInfo = Info {refsFree = []}})])
+                       :|
+                       [])
+                    (Exp
+                       {unExp =
+                          App
+                            (Exp
+                               {unExp =
+                                  RefBound (Index {level = 0, offset = 1}),
+                                expInfo = Info {refsFree = []}})
+                            (Exp
+                               {unExp = Lit (Boolean False),
+                                expInfo = Info {refsFree = []}}),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}})],
+    moduleImports = [],
+    moduleExports =
+      [Name "letRec", Name "whereRec", Name "letRecMixed"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath =
+      "golden/Golden/TestRecursiveBindings.purs",
+    dataTypes = fromList []}]

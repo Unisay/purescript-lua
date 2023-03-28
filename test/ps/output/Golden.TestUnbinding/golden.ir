@@ -1,0 +1,89 @@
+[Module
+   {moduleName = ModuleName "Golden.TestUnbinding",
+    moduleBindings =
+      [Standalone
+         (Name "f",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    ArgUnused
+                    (Exp
+                       {unExp =
+                          Abs
+                            (AbsBinding
+                               ArgUnused
+                               (Exp
+                                  {unExp = Lit (Integer 3),
+                                   expInfo = Info {refsFree = []}})),
+                        expInfo = Info {refsFree = []}})),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "b",
+          Exp
+            {unExp = Lit (Integer 2),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "a",
+          Exp
+            {unExp = Lit (Integer 1),
+             expInfo = Info {refsFree = []}}),
+       Standalone
+         (Name "c",
+          Exp
+            {unExp =
+               App
+                 (Exp
+                    {unExp =
+                       App
+                         (Exp
+                            {unExp = RefFree (Local (Name "f")),
+                             expInfo = Info {refsFree = [Local (Name "f")]}})
+                         (Exp
+                            {unExp = RefFree (Local (Name "a")),
+                             expInfo = Info {refsFree = [Local (Name "a")]}}),
+                     expInfo =
+                       Info
+                         {refsFree = [Local (Name "f"), Local (Name "a")]}})
+                 (Exp
+                    {unExp =
+                       App
+                         (Exp
+                            {unExp =
+                               App
+                                 (Exp
+                                    {unExp = RefFree (Local (Name "f")),
+                                     expInfo =
+                                       Info {refsFree = [Local (Name "f")]}})
+                                 (Exp
+                                    {unExp = RefFree (Local (Name "b")),
+                                     expInfo =
+                                       Info {refsFree = [Local (Name "b")]}}),
+                             expInfo =
+                               Info
+                                 {refsFree =
+                                    [Local (Name "f"), Local (Name "b")]}})
+                         (Exp
+                            {unExp = RefFree (Local (Name "a")),
+                             expInfo = Info {refsFree = [Local (Name "a")]}}),
+                     expInfo =
+                       Info
+                         {refsFree =
+                            [Local (Name "f"),
+                             Local (Name "b"),
+                             Local (Name "a")]}}),
+             expInfo =
+               Info
+                 {refsFree =
+                    [Local (Name "f"),
+                     Local (Name "a"),
+                     Local (Name "f"),
+                     Local (Name "b"),
+                     Local (Name "a")]}})],
+    moduleImports = [],
+    moduleExports =
+      [Name "a", Name "b", Name "f", Name "c"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath = "golden/Golden/TestUnbinding.purs",
+    dataTypes = fromList []}]
