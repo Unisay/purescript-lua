@@ -169,7 +169,7 @@ compileCorefn outputDir moduleName = do
       & Oops.runOops
       & liftIO
 
-  optimizeAll DCE.PreserveAllTopLevel
+  optimizeAll DCE.EntryPointsAllModules
     <$> traverse
       (either (fail . show) (pure . snd) . IR.mkModule)
       (toList cfnModules)

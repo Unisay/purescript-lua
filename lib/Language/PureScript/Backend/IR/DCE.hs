@@ -35,9 +35,9 @@ import Language.PureScript.Backend.IR.Types
 import Relude.Unsafe qualified as Unsafe
 
 data Strategy
-  = PreserveSpecified (NonEmpty (ModuleName, NonEmpty Name))
-  | PreserveModuleTopLevel (NonEmpty ModuleName)
-  | PreserveAllTopLevel
+  = EntryPoints (NonEmpty (ModuleName, NonEmpty Name))
+  | EntryPointsSomeModules (NonEmpty ModuleName)
+  | EntryPointsAllModules
   deriving stock (Show)
 
 eliminateDeadCode :: Strategy -> [Module] -> [Module]
@@ -62,11 +62,20 @@ eliminateDeadCode strategy modules = uncurry dceModule <$> reachableByModule
    where
     entryPoints :: [(ModuleName, [Name])]
     entryPoints = case strategy of
-      PreserveSpecified points -> toList (toList <<$>> points)
-      PreserveAllTopLevel -> (moduleName &&& topLevelNames) <$> modules
-      PreserveModuleTopLevel moduleNames ->
-        modules >>= \m@Module {moduleName = name} ->
-          guard (name `elem` moduleNames) $> (name, topLevelNames m)
+      EntryPoints points ->
+        toList (toList <<$>> points)
+      EntryPointsAllModules ->
+        modules >>= moduleEntryPoints
+      EntryPointsSomeModules modulesNames ->
+        filter (\m -> moduleName m `elem` modulesNames) modules
+          >>= moduleEntryPoints
+
+    moduleEntryPoints :: Module -> [(ModuleName, [Name])]
+    moduleEntryPoints Module {..} =
+      mconcat
+        [ [(moduleName, moduleForeigns <> (moduleBindings >>= bindingNames))]
+        , Map.toList moduleReExports
+        ]
 
   (graph, vertexToV, keyToVertex) = buildGraph modules
 
@@ -117,15 +126,6 @@ eliminateDeadCode strategy modules = uncurry dceModule <$> reachableByModule
      where
       reachableQNames :: [QName] =
         [n | (_, qname, deps) <- adjacencies, n <- qname : deps]
-
-topLevelNames :: Module -> [Name]
-topLevelNames Module {moduleBindings, moduleForeigns} =
-  moduleForeigns <> namesFroBindings
- where
-  namesFroBindings =
-    moduleBindings >>= \case
-      Standalone (name, _) -> [name]
-      RecursiveGroup bindings -> fst <$> toList bindings
 
 type QName = (ModuleName, Name)
 

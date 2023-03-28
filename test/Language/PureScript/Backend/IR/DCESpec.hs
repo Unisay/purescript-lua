@@ -18,7 +18,7 @@ import Test.Hspec.Hedgehog.Extended (test)
 spec :: Spec
 spec = describe "IR Dead Code Elimination" do
   test "test not eliminate a module with an exported entry point" do
-    let strategy = PreserveSpecified $ NE.singleton mainEntryPoint
+    let strategy = EntryPoints $ NE.singleton mainEntryPoint
     [entryPointModule] === eliminateDeadCode strategy [entryPointModule]
 
   test "eliminates unused non-exported binding" do
@@ -27,7 +27,7 @@ spec = describe "IR Dead Code Elimination" do
             { moduleBindings =
                 binding_ "unused" : moduleBindings entryPointModule
             }
-        strategy = PreserveSpecified $ NE.singleton mainEntryPoint
+        strategy = EntryPoints $ NE.singleton mainEntryPoint
     [entryModule {moduleBindings = [binding_ "main"]}]
       === eliminateDeadCode strategy [entryModule]
 
@@ -47,7 +47,7 @@ spec = describe "IR Dead Code Elimination" do
           , moduleBindings = [b]
           , moduleExports = [name]
           }
-      strategy = PreserveSpecified $ NE.singleton mainEntryPoint
+      strategy = EntryPoints $ NE.singleton mainEntryPoint
 
     [entryModule, otherModule]
       === eliminateDeadCode strategy [entryModule, otherModule]
@@ -66,7 +66,7 @@ spec = describe "IR Dead Code Elimination" do
             , moduleBindings = [binding_ "foo"]
             , moduleExports = [Name "foo"]
             }
-        strategy = PreserveSpecified $ NE.singleton mainEntryPoint
+        strategy = EntryPoints $ NE.singleton mainEntryPoint
     [entryModule]
       === eliminateDeadCode strategy [entryModule, otherModule]
 
