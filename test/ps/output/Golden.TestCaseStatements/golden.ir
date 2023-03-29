@@ -2106,11 +2106,6 @@
    {moduleName = ModuleName "Golden.TestValues",
     moduleBindings =
       [Standalone
-         (Name "i",
-          Exp
-            {unExp = Lit (Integer 1),
-             expInfo = Info {refsFree = []}}),
-       Standalone
          (Name "f",
           Exp
             {unExp =
@@ -2120,65 +2115,9 @@
                     (Exp
                        {unExp = Lit (Boolean True),
                         expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}}),
-       Standalone
-         (Name "c",
-          Exp
-            {unExp = Lit (Char 'c'),
-             expInfo = Info {refsFree = []}}),
-       Standalone
-         (Name "b",
-          Exp
-            {unExp = Lit (Boolean True),
-             expInfo = Info {refsFree = []}}),
-       Standalone
-         (Name "o",
-          Exp
-            {unExp =
-               Lit
-                 (Object
-                    [(PropName "i",
-                      Exp
-                        {unExp = RefFree (Local (Name "i")),
-                         expInfo = Info {refsFree = [Local (Name "i")]}}),
-                     (PropName "b",
-                      Exp
-                        {unExp = RefFree (Local (Name "b")),
-                         expInfo = Info {refsFree = [Local (Name "b")]}}),
-                     (PropName "c",
-                      Exp
-                        {unExp = RefFree (Local (Name "c")),
-                         expInfo = Info {refsFree = [Local (Name "c")]}})]),
-             expInfo =
-               Info
-                 {refsFree =
-                    [Local (Name "i"),
-                     Local (Name "b"),
-                     Local (Name "c")]}}),
-       Standalone
-         (Name "a",
-          Exp
-            {unExp =
-               Lit
-                 (Array
-                    [Exp
-                       {unExp = Lit (Integer 1),
-                        expInfo = Info {refsFree = []}},
-                     Exp
-                       {unExp = Lit (Integer 2),
-                        expInfo = Info {refsFree = []}},
-                     Exp
-                       {unExp = Lit (Integer 3),
-                        expInfo = Info {refsFree = []}}]),
              expInfo = Info {refsFree = []}})],
     moduleImports = [],
-    moduleExports =
-      [Name "i",
-       Name "b",
-       Name "c",
-       Name "a",
-       Name "o",
-       Name "f"],
+    moduleExports = [Name "f"],
     moduleReExports = fromList [],
     moduleForeigns = [],
     modulePath = "golden/Golden/TestValues.purs",

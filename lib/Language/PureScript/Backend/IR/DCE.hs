@@ -62,20 +62,15 @@ eliminateDeadCode strategy modules = uncurry dceModule <$> reachableByModule
    where
     entryPoints :: [(ModuleName, [Name])]
     entryPoints = case strategy of
-      EntryPoints points ->
-        toList (toList <<$>> points)
-      EntryPointsAllModules ->
-        modules >>= moduleEntryPoints
+      EntryPoints points -> toList (toList <<$>> points)
+      EntryPointsAllModules -> moduleEntryPoints <$> modules
       EntryPointsSomeModules modulesNames ->
-        filter (\m -> moduleName m `elem` modulesNames) modules
-          >>= moduleEntryPoints
+        moduleEntryPoints
+          <$> filter (moduleName >>> (`elem` modulesNames)) modules
 
-    moduleEntryPoints :: Module -> [(ModuleName, [Name])]
+    moduleEntryPoints :: Module -> (ModuleName, [Name])
     moduleEntryPoints Module {..} =
-      mconcat
-        [ [(moduleName, moduleForeigns <> (moduleBindings >>= bindingNames))]
-        , Map.toList moduleReExports
-        ]
+      (moduleName, moduleForeigns <> (moduleBindings >>= bindingNames))
 
   (graph, vertexToV, keyToVertex) = buildGraph modules
 

@@ -5,6 +5,7 @@ module Language.PureScript.Backend.Lua.GoldenSpec where
 
 import Control.Monad.Oops qualified as Oops
 import Data.List qualified as List
+import Data.List.NonEmpty qualified as NE
 import Data.String qualified as String
 import Data.Tagged (Tagged (..))
 import Data.Text qualified as Text
@@ -73,7 +74,7 @@ spec = do
                 [ "purs"
                 , "compile"
                 , "-v"
-                , "'golden/Golden/*.purs'"
+                , "'golden/Golden/**/*.purs'"
                 , "'src/**/*.purs'"
                 , -- , "'.spago/prelude/v6.0.0/src/**/*.purs'"
                   "-g"
@@ -169,7 +170,8 @@ compileCorefn outputDir moduleName = do
       & Oops.runOops
       & liftIO
 
-  optimizeAll DCE.EntryPointsAllModules
+  let irModuleName = IR.mkModuleName moduleName
+  optimizeAll (DCE.EntryPointsSomeModules (NE.singleton irModuleName))
     <$> traverse
       (either (fail . show) (pure . snd) . IR.mkModule)
       (toList cfnModules)

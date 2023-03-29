@@ -1,0 +1,16 @@
+[Module
+   {moduleName = ModuleName "Golden.Reexport.ReExports",
+    moduleBindings =
+      [Standalone
+         (Name "binding2",
+          Exp
+            {unExp = Lit (Integer 2),
+             expInfo = Info {refsFree = []}})],
+    moduleImports = [],
+    moduleExports = [Name "binding2"],
+    moduleReExports =
+      fromList
+        [(ModuleName "Golden.Reexport.Exports", [])],
+    moduleForeigns = [],
+    modulePath = "golden/Golden/Reexport/ReExports.purs",
+    dataTypes = fromList []}]
