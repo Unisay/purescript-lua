@@ -82,10 +82,10 @@ compileModules outputDir foreignDir appOrModule = do
   dceStrategy =
     case appOrModule of
       AsApplication (AppEntryPoint modul entryIdent) ->
-        DCE.PreserveSpecified $
+        DCE.EntryPoints $
           NE.singleton
             ( IR.mkModuleName modul
             , NE.singleton (IR.identToName entryIdent)
             )
       AsModule (ModuleEntryPoint modul) ->
-        DCE.PreserveModuleTopLevel (NE.singleton (IR.mkModuleName modul))
+        DCE.EntryPointsSomeModules (NE.singleton (IR.mkModuleName modul))
