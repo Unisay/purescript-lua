@@ -8,6 +8,7 @@ Status: experimental (expect bugs)
 - [X] FFI with Lua.
 - [x] Dead Code Elimination (DCE).
 - [ ] Code inlining.
+- [ ] Package Set for libraries.
 
 ## Quick Start
 
