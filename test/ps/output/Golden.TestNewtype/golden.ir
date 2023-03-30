@@ -10,13 +10,14 @@
                     (ArgNamed (Name "x"))
                     (Exp
                        {unExp = RefBound (Index {level = 0, offset = 0}),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}}),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "g",
           Exp
             {unExp = RefFree (Local (Name "NT")),
-             expInfo = Info {refsFree = [Local (Name "NT")]}}),
+             expInfo =
+               Info {refsFree = fromList [Local (Name "NT")]}}),
        Standalone
          (Name "f",
           Exp
@@ -34,7 +35,7 @@
                                      {unExp =
                                         RefBound
                                           (Index {level = 1, offset = 0}),
-                                      expInfo = Info {refsFree = []}})
+                                      expInfo = Info {refsFree = fromList []}})
                                   :|
                                   [])
                                (Exp
@@ -44,11 +45,12 @@
                                           {unExp =
                                              RefBound
                                                (Index {level = 0, offset = 0}),
-                                           expInfo = Info {refsFree = []}})
+                                           expInfo =
+                                             Info {refsFree = fromList []}})
                                        (PropName "foo"),
-                                   expInfo = Info {refsFree = []}})),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}})],
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports = [Name "NT", Name "f", Name "g"],
     moduleReExports = fromList [],

@@ -5,7 +5,7 @@
          (Name "binding1",
           Exp
             {unExp = Lit (Integer 1),
-             expInfo = Info {refsFree = []}})],
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports = [Name "binding1"],
     moduleReExports = fromList [],

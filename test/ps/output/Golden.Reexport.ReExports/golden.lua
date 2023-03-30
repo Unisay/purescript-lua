@@ -1,4 +1,1 @@
-local Golden_Reexport_ReExports = (function()
-  local binding2 = 2
-  return { binding2 = binding2 }
-end)()
+local Golden_Reexport_ReExports_I_binding2 = 2

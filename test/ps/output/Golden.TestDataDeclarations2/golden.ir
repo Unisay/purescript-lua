@@ -11,7 +11,7 @@
                  (TyName "TySameName")
                  (CtorName "CtorSameName")
                  [],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "test",
           Exp
@@ -37,7 +37,9 @@
                                                           (String
                                                              "Golden.TestDataDeclarations1.CtorSameName"),
                                                       expInfo =
-                                                        Info {refsFree = []}})
+                                                        Info
+                                                          {refsFree =
+                                                             fromList []}})
                                                   (Exp
                                                      {unExp =
                                                         Prim
@@ -53,10 +55,14 @@
                                                                  expInfo =
                                                                    Info
                                                                      {refsFree =
-                                                                        []}})),
+                                                                        fromList
+                                                                          []}})),
                                                       expInfo =
-                                                        Info {refsFree = []}})),
-                                           expInfo = Info {refsFree = []}})
+                                                        Info
+                                                          {refsFree =
+                                                             fromList []}})),
+                                           expInfo =
+                                             Info {refsFree = fromList []}})
                                        (Exp
                                           {unExp =
                                              IfThenElse
@@ -72,7 +78,8 @@
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     []}})
+                                                                     fromList
+                                                                       []}})
                                                           (Exp
                                                              {unExp =
                                                                 Prim
@@ -88,31 +95,41 @@
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}})),
+                                                                                fromList
+                                                                                  []}})),
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     []}})),
+                                                                     fromList
+                                                                       []}})),
                                                    expInfo =
-                                                     Info {refsFree = []}})
+                                                     Info
+                                                       {refsFree =
+                                                          fromList []}})
                                                (Exp
                                                   {unExp = Lit (Boolean True),
                                                    expInfo =
-                                                     Info {refsFree = []}})
+                                                     Info
+                                                       {refsFree =
+                                                          fromList []}})
                                                (Exp
                                                   {unExp =
                                                      Exception
                                                        "No patterns matched",
                                                    expInfo =
-                                                     Info {refsFree = []}}),
-                                           expInfo = Info {refsFree = []}})
+                                                     Info
+                                                       {refsFree =
+                                                          fromList []}}),
+                                           expInfo =
+                                             Info {refsFree = fromList []}})
                                        (Exp
                                           {unExp =
                                              Exception "No patterns matched",
-                                           expInfo = Info {refsFree = []}}),
-                                   expInfo = Info {refsFree = []}})),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}})],
+                                           expInfo =
+                                             Info {refsFree = fromList []}}),
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports = [Name "CtorSameName", Name "test"],
     moduleReExports = fromList [],

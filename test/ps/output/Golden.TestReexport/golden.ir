@@ -5,7 +5,7 @@
          (Name "binding1",
           Exp
             {unExp = Lit (Integer 1),
-             expInfo = Info {refsFree = []}})],
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports = [Name "binding1"],
     moduleReExports = fromList [],
@@ -19,7 +19,7 @@
          (Name "binding2",
           Exp
             {unExp = Lit (Integer 2),
-             expInfo = Info {refsFree = []}})],
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports = [Name "binding2"],
     moduleReExports =
@@ -46,9 +46,10 @@
                         expInfo =
                           Info
                             {refsFree =
-                               [Imported
-                                  (ModuleName "Golden.Reexport.Exports")
-                                  (Name "binding1")]}},
+                               fromList
+                                 [Imported
+                                    (ModuleName "Golden.Reexport.Exports")
+                                    (Name "binding1")]}},
                      Exp
                        {unExp =
                           RefFree
@@ -58,18 +59,20 @@
                         expInfo =
                           Info
                             {refsFree =
-                               [Imported
-                                  (ModuleName "Golden.Reexport.ReExports")
-                                  (Name "binding2")]}}]),
+                               fromList
+                                 [Imported
+                                    (ModuleName "Golden.Reexport.ReExports")
+                                    (Name "binding2")]}}]),
              expInfo =
                Info
                  {refsFree =
-                    [Imported
-                       (ModuleName "Golden.Reexport.Exports")
-                       (Name "binding1"),
-                     Imported
-                       (ModuleName "Golden.Reexport.ReExports")
-                       (Name "binding2")]}})],
+                    fromList
+                      [Imported
+                         (ModuleName "Golden.Reexport.Exports")
+                         (Name "binding1"),
+                       Imported
+                         (ModuleName "Golden.Reexport.ReExports")
+                         (Name "binding2")]}})],
     moduleImports =
       [ModuleName "Golden.Reexport.Exports",
        ModuleName "Golden.Reexport.ReExports"],

@@ -12,6 +12,7 @@ import Data.List.NonEmpty qualified as NE
 import Data.Text qualified as Text
 import Data.Traversable (for)
 import Language.PureScript.Backend.IR.Types qualified as IR
+import Language.PureScript.Backend.Lua.Linker qualified as Linker
 import Language.PureScript.Backend.Lua.Name (Name)
 import Language.PureScript.Backend.Lua.Name qualified as Name
 import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
@@ -110,9 +111,7 @@ fromExp modname origExp = go origExp
         pure case qualifiedName of
           IR.Local name -> varName (fromName name)
           IR.Imported modname' name ->
-            varField
-              (varName (unModuleName (fromModuleName modname')))
-              (fromName name)
+            Linker.linkedVar (fromModuleName modname') (fromName name)
       IR.RefBound index -> throwError $ UnexpectedRefBound origExp index
       IR.Let binding -> do
         (bindings, bodyExp) <- IR.unbindLet binding

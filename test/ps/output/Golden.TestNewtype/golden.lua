@@ -1,6 +1,3 @@
-local Golden_TestNewtype = (function()
-  local NT = function(x0) return x0 end
-  local g = NT
-  local f = function(v1) local n2 = v1 return n2.foo end
-  return { NT = NT, f = f, g = g }
-end)()
+local Golden_TestNewtype_I_NT = function(x0) return x0 end
+local Golden_TestNewtype_I_g = Golden_TestNewtype_I_NT
+local Golden_TestNewtype_I_f = function(v1) local n2 = v1 return n2.foo end

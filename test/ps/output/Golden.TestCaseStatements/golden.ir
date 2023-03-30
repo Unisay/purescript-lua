@@ -10,17 +10,17 @@
                  (TyName "M")
                  (CtorName "J")
                  [FieldName "value0"],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "N",
           Exp
             {unExp = Ctor SumType (TyName "M") (CtorName "N") [],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "multipleGuards",
           Exp
             {unExp = Lit (Integer 1),
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "d",
           Exp
@@ -64,7 +64,8 @@
                                                                                           expInfo =
                                                                                             Info
                                                                                               {refsFree =
-                                                                                                 []}})
+                                                                                                 fromList
+                                                                                                   []}})
                                                                                       (Exp
                                                                                          {unExp =
                                                                                             RefBound
@@ -76,11 +77,13 @@
                                                                                           expInfo =
                                                                                             Info
                                                                                               {refsFree =
-                                                                                                 []}})),
+                                                                                                 fromList
+                                                                                                   []}})),
                                                                                expInfo =
                                                                                  Info
                                                                                    {refsFree =
-                                                                                      []}})
+                                                                                      fromList
+                                                                                        []}})
                                                                            (Exp
                                                                               {unExp =
                                                                                  Lit
@@ -89,7 +92,8 @@
                                                                                expInfo =
                                                                                  Info
                                                                                    {refsFree =
-                                                                                      []}})
+                                                                                      fromList
+                                                                                        []}})
                                                                            (Exp
                                                                               {unExp =
                                                                                  Lit
@@ -98,15 +102,18 @@
                                                                                expInfo =
                                                                                  Info
                                                                                    {refsFree =
-                                                                                      []}}),
+                                                                                      fromList
+                                                                                        []}}),
                                                                        expInfo =
                                                                          Info
                                                                            {refsFree =
-                                                                              []}})),
+                                                                              fromList
+                                                                                []}})),
                                                             expInfo =
                                                               Info
                                                                 {refsFree =
-                                                                   []}})
+                                                                   fromList
+                                                                     []}})
                                                         :|
                                                         [])
                                                      (Exp
@@ -124,7 +131,8 @@
                                                                             expInfo =
                                                                               Info
                                                                                 {refsFree =
-                                                                                   []}})
+                                                                                   fromList
+                                                                                     []}})
                                                                         (Exp
                                                                            {unExp =
                                                                               RefBound
@@ -136,11 +144,13 @@
                                                                             expInfo =
                                                                               Info
                                                                                 {refsFree =
-                                                                                   []}})),
+                                                                                   fromList
+                                                                                     []}})),
                                                                  expInfo =
                                                                    Info
                                                                      {refsFree =
-                                                                        []}})
+                                                                        fromList
+                                                                          []}})
                                                              (Exp
                                                                 {unExp =
                                                                    IfThenElse
@@ -156,7 +166,8 @@
                                                                                     expInfo =
                                                                                       Info
                                                                                         {refsFree =
-                                                                                           []}})
+                                                                                           fromList
+                                                                                             []}})
                                                                                 (Exp
                                                                                    {unExp =
                                                                                       Prim
@@ -172,15 +183,18 @@
                                                                                                expInfo =
                                                                                                  Info
                                                                                                    {refsFree =
-                                                                                                      []}})),
+                                                                                                      fromList
+                                                                                                        []}})),
                                                                                     expInfo =
                                                                                       Info
                                                                                         {refsFree =
-                                                                                           []}})),
+                                                                                           fromList
+                                                                                             []}})),
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}})
+                                                                                fromList
+                                                                                  []}})
                                                                      (Exp
                                                                         {unExp =
                                                                            Let
@@ -202,12 +216,14 @@
                                                                                                expInfo =
                                                                                                  Info
                                                                                                    {refsFree =
-                                                                                                      []}})
+                                                                                                      fromList
+                                                                                                        []}})
                                                                                            0,
                                                                                        expInfo =
                                                                                          Info
                                                                                            {refsFree =
-                                                                                              []}})
+                                                                                              fromList
+                                                                                                []}})
                                                                                    :|
                                                                                    [])
                                                                                 (Exp
@@ -225,7 +241,8 @@
                                                                                                        expInfo =
                                                                                                          Info
                                                                                                            {refsFree =
-                                                                                                              []}})
+                                                                                                              fromList
+                                                                                                                []}})
                                                                                                    (Exp
                                                                                                       {unExp =
                                                                                                          Prim
@@ -241,15 +258,18 @@
                                                                                                                   expInfo =
                                                                                                                     Info
                                                                                                                       {refsFree =
-                                                                                                                         []}})),
+                                                                                                                         fromList
+                                                                                                                           []}})),
                                                                                                        expInfo =
                                                                                                          Info
                                                                                                            {refsFree =
-                                                                                                              []}})),
+                                                                                                              fromList
+                                                                                                                []}})),
                                                                                             expInfo =
                                                                                               Info
                                                                                                 {refsFree =
-                                                                                                   []}})
+                                                                                                   fromList
+                                                                                                     []}})
                                                                                         (Exp
                                                                                            {unExp =
                                                                                               RefBound
@@ -261,7 +281,8 @@
                                                                                             expInfo =
                                                                                               Info
                                                                                                 {refsFree =
-                                                                                                   []}})
+                                                                                                   fromList
+                                                                                                     []}})
                                                                                         (Exp
                                                                                            {unExp =
                                                                                               App
@@ -276,7 +297,8 @@
                                                                                                     expInfo =
                                                                                                       Info
                                                                                                         {refsFree =
-                                                                                                           []}})
+                                                                                                           fromList
+                                                                                                             []}})
                                                                                                 (Exp
                                                                                                    {unExp =
                                                                                                       Lit
@@ -285,19 +307,23 @@
                                                                                                     expInfo =
                                                                                                       Info
                                                                                                         {refsFree =
-                                                                                                           []}}),
+                                                                                                           fromList
+                                                                                                             []}}),
                                                                                             expInfo =
                                                                                               Info
                                                                                                 {refsFree =
-                                                                                                   []}}),
+                                                                                                   fromList
+                                                                                                     []}}),
                                                                                     expInfo =
                                                                                       Info
                                                                                         {refsFree =
-                                                                                           []}})),
+                                                                                           fromList
+                                                                                             []}})),
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}})
+                                                                                fromList
+                                                                                  []}})
                                                                      (Exp
                                                                         {unExp =
                                                                            App
@@ -312,7 +338,8 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        []}})
+                                                                                        fromList
+                                                                                          []}})
                                                                              (Exp
                                                                                 {unExp =
                                                                                    Lit
@@ -321,15 +348,18 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        []}}),
+                                                                                        fromList
+                                                                                          []}}),
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}}),
+                                                                                fromList
+                                                                                  []}}),
                                                                  expInfo =
                                                                    Info
                                                                      {refsFree =
-                                                                        []}})
+                                                                        fromList
+                                                                          []}})
                                                              (Exp
                                                                 {unExp =
                                                                    App
@@ -344,7 +374,8 @@
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}})
+                                                                                fromList
+                                                                                  []}})
                                                                      (Exp
                                                                         {unExp =
                                                                            Lit
@@ -353,28 +384,33 @@
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}}),
+                                                                                fromList
+                                                                                  []}}),
                                                                  expInfo =
                                                                    Info
                                                                      {refsFree =
-                                                                        []}}),
+                                                                        fromList
+                                                                          []}}),
                                                          expInfo =
                                                            Info
-                                                             {refsFree = []}})),
-                                              expInfo = Info {refsFree = []}})),
-                                   expInfo = Info {refsFree = []}})),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}}),
+                                                             {refsFree =
+                                                                fromList []}})),
+                                              expInfo =
+                                                Info
+                                                  {refsFree = fromList []}})),
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "b",
           Exp
             {unExp = Lit (Char 'b'),
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "a",
           Exp
             {unExp = Lit (Integer 1),
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "c",
           Exp
@@ -400,7 +436,8 @@
                                                            Lit (Integer 2),
                                                          expInfo =
                                                            Info
-                                                             {refsFree = []}})
+                                                             {refsFree =
+                                                                fromList []}})
                                                      (Exp
                                                         {unExp =
                                                            RefFree
@@ -408,13 +445,15 @@
                                                          expInfo =
                                                            Info
                                                              {refsFree =
-                                                                [Local
-                                                                   (Name
-                                                                      "a")]}})),
+                                                                fromList
+                                                                  [Local
+                                                                     (Name
+                                                                        "a")]}})),
                                               expInfo =
                                                 Info
                                                   {refsFree =
-                                                     [Local (Name "a")]}})
+                                                     fromList
+                                                       [Local (Name "a")]}})
                                           (Exp
                                              {unExp =
                                                 IfThenElse
@@ -432,29 +471,34 @@
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     [Imported
-                                                                        (ModuleName
-                                                                           "Golden.TestValues")
-                                                                        (Name
-                                                                           "f")]}})
+                                                                     fromList
+                                                                       [Imported
+                                                                          (ModuleName
+                                                                             "Golden.TestValues")
+                                                                          (Name
+                                                                             "f")]}})
                                                           (Exp
                                                              {unExp =
                                                                 Lit (Integer 0),
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     []}}),
+                                                                     fromList
+                                                                       []}}),
                                                       expInfo =
                                                         Info
                                                           {refsFree =
-                                                             [Imported
-                                                                (ModuleName
-                                                                   "Golden.TestValues")
-                                                                (Name "f")]}})
+                                                             fromList
+                                                               [Imported
+                                                                  (ModuleName
+                                                                     "Golden.TestValues")
+                                                                  (Name "f")]}})
                                                   (Exp
                                                      {unExp = Lit (Integer 10),
                                                       expInfo =
-                                                        Info {refsFree = []}})
+                                                        Info
+                                                          {refsFree =
+                                                             fromList []}})
                                                   (Exp
                                                      {unExp =
                                                         IfThenElse
@@ -470,7 +514,8 @@
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}})
+                                                                                fromList
+                                                                                  []}})
                                                                      (Exp
                                                                         {unExp =
                                                                            RefFree
@@ -480,15 +525,17 @@
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                [Local
-                                                                                   (Name
-                                                                                      "a")]}})),
+                                                                                fromList
+                                                                                  [Local
+                                                                                     (Name
+                                                                                        "a")]}})),
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     [Local
-                                                                        (Name
-                                                                           "a")]}})
+                                                                     fromList
+                                                                       [Local
+                                                                          (Name
+                                                                             "a")]}})
                                                           (Exp
                                                              {unExp =
                                                                 Let
@@ -511,7 +558,8 @@
                                                                                                expInfo =
                                                                                                  Info
                                                                                                    {refsFree =
-                                                                                                      []}})
+                                                                                                      fromList
+                                                                                                        []}})
                                                                                            (Exp
                                                                                               {unExp =
                                                                                                  RefFree
@@ -521,15 +569,17 @@
                                                                                                expInfo =
                                                                                                  Info
                                                                                                    {refsFree =
-                                                                                                      [Local
-                                                                                                         (Name
-                                                                                                            "a")]}})),
+                                                                                                      fromList
+                                                                                                        [Local
+                                                                                                           (Name
+                                                                                                              "a")]}})),
                                                                                     expInfo =
                                                                                       Info
                                                                                         {refsFree =
-                                                                                           [Local
-                                                                                              (Name
-                                                                                                 "a")]}})
+                                                                                           fromList
+                                                                                             [Local
+                                                                                                (Name
+                                                                                                   "a")]}})
                                                                                 (Exp
                                                                                    {unExp =
                                                                                       Let
@@ -545,7 +595,8 @@
                                                                                                   expInfo =
                                                                                                     Info
                                                                                                       {refsFree =
-                                                                                                         []}})
+                                                                                                         fromList
+                                                                                                           []}})
                                                                                               :|
                                                                                               [Standalone
                                                                                                  (Name
@@ -559,9 +610,10 @@
                                                                                                      expInfo =
                                                                                                        Info
                                                                                                          {refsFree =
-                                                                                                            [Local
-                                                                                                               (Name
-                                                                                                                  "a")]}}),
+                                                                                                            fromList
+                                                                                                              [Local
+                                                                                                                 (Name
+                                                                                                                    "a")]}}),
                                                                                                Standalone
                                                                                                  (Name
                                                                                                     "z",
@@ -574,9 +626,10 @@
                                                                                                      expInfo =
                                                                                                        Info
                                                                                                          {refsFree =
-                                                                                                            [Local
-                                                                                                               (Name
-                                                                                                                  "a")]}})])
+                                                                                                            fromList
+                                                                                                              [Local
+                                                                                                                 (Name
+                                                                                                                    "a")]}})])
                                                                                            (Exp
                                                                                               {unExp =
                                                                                                  IfThenElse
@@ -594,11 +647,12 @@
                                                                                                                expInfo =
                                                                                                                  Info
                                                                                                                    {refsFree =
-                                                                                                                      [Imported
-                                                                                                                         (ModuleName
-                                                                                                                            "Golden.TestValues")
-                                                                                                                         (Name
-                                                                                                                            "f")]}})
+                                                                                                                      fromList
+                                                                                                                        [Imported
+                                                                                                                           (ModuleName
+                                                                                                                              "Golden.TestValues")
+                                                                                                                           (Name
+                                                                                                                              "f")]}})
                                                                                                            (Exp
                                                                                                               {unExp =
                                                                                                                  RefBound
@@ -610,15 +664,17 @@
                                                                                                                expInfo =
                                                                                                                  Info
                                                                                                                    {refsFree =
-                                                                                                                      []}}),
+                                                                                                                      fromList
+                                                                                                                        []}}),
                                                                                                        expInfo =
                                                                                                          Info
                                                                                                            {refsFree =
-                                                                                                              [Imported
-                                                                                                                 (ModuleName
-                                                                                                                    "Golden.TestValues")
-                                                                                                                 (Name
-                                                                                                                    "f")]}})
+                                                                                                              fromList
+                                                                                                                [Imported
+                                                                                                                   (ModuleName
+                                                                                                                      "Golden.TestValues")
+                                                                                                                   (Name
+                                                                                                                      "f")]}})
                                                                                                    (Exp
                                                                                                       {unExp =
                                                                                                          RefBound
@@ -630,7 +686,8 @@
                                                                                                        expInfo =
                                                                                                          Info
                                                                                                            {refsFree =
-                                                                                                              []}})
+                                                                                                              fromList
+                                                                                                                []}})
                                                                                                    (Exp
                                                                                                       {unExp =
                                                                                                          RefBound
@@ -642,29 +699,29 @@
                                                                                                        expInfo =
                                                                                                          Info
                                                                                                            {refsFree =
-                                                                                                              []}}),
+                                                                                                              fromList
+                                                                                                                []}}),
                                                                                                expInfo =
                                                                                                  Info
                                                                                                    {refsFree =
-                                                                                                      [Imported
-                                                                                                         (ModuleName
-                                                                                                            "Golden.TestValues")
-                                                                                                         (Name
-                                                                                                            "f")]}})),
+                                                                                                      fromList
+                                                                                                        [Imported
+                                                                                                           (ModuleName
+                                                                                                              "Golden.TestValues")
+                                                                                                           (Name
+                                                                                                              "f")]}})),
                                                                                     expInfo =
                                                                                       Info
                                                                                         {refsFree =
-                                                                                           [Local
-                                                                                              (Name
-                                                                                                 "a"),
-                                                                                            Local
-                                                                                              (Name
-                                                                                                 "a"),
-                                                                                            Imported
-                                                                                              (ModuleName
-                                                                                                 "Golden.TestValues")
-                                                                                              (Name
-                                                                                                 "f")]}})
+                                                                                           fromList
+                                                                                             [Local
+                                                                                                (Name
+                                                                                                   "a"),
+                                                                                              Imported
+                                                                                                (ModuleName
+                                                                                                   "Golden.TestValues")
+                                                                                                (Name
+                                                                                                   "f")]}})
                                                                                 (Exp
                                                                                    {unExp =
                                                                                       Lit
@@ -673,24 +730,20 @@
                                                                                     expInfo =
                                                                                       Info
                                                                                         {refsFree =
-                                                                                           []}}),
+                                                                                           fromList
+                                                                                             []}}),
                                                                             expInfo =
                                                                               Info
                                                                                 {refsFree =
-                                                                                   [Local
-                                                                                      (Name
-                                                                                         "a"),
-                                                                                    Local
-                                                                                      (Name
-                                                                                         "a"),
-                                                                                    Local
-                                                                                      (Name
-                                                                                         "a"),
-                                                                                    Imported
-                                                                                      (ModuleName
-                                                                                         "Golden.TestValues")
-                                                                                      (Name
-                                                                                         "f")]}})
+                                                                                   fromList
+                                                                                     [Local
+                                                                                        (Name
+                                                                                           "a"),
+                                                                                      Imported
+                                                                                        (ModuleName
+                                                                                           "Golden.TestValues")
+                                                                                        (Name
+                                                                                           "f")]}})
                                                                         :|
                                                                         [Standalone
                                                                            (Name
@@ -704,9 +757,10 @@
                                                                                expInfo =
                                                                                  Info
                                                                                    {refsFree =
-                                                                                      [Local
-                                                                                         (Name
-                                                                                            "a")]}}),
+                                                                                      fromList
+                                                                                        [Local
+                                                                                           (Name
+                                                                                              "a")]}}),
                                                                          Standalone
                                                                            (Name
                                                                               "z",
@@ -719,9 +773,10 @@
                                                                                expInfo =
                                                                                  Info
                                                                                    {refsFree =
-                                                                                      [Local
-                                                                                         (Name
-                                                                                            "a")]}})])
+                                                                                      fromList
+                                                                                        [Local
+                                                                                           (Name
+                                                                                              "a")]}})])
                                                                      (Exp
                                                                         {unExp =
                                                                            IfThenElse
@@ -739,11 +794,12 @@
                                                                                          expInfo =
                                                                                            Info
                                                                                              {refsFree =
-                                                                                                [Imported
-                                                                                                   (ModuleName
-                                                                                                      "Golden.TestValues")
-                                                                                                   (Name
-                                                                                                      "f")]}})
+                                                                                                fromList
+                                                                                                  [Imported
+                                                                                                     (ModuleName
+                                                                                                        "Golden.TestValues")
+                                                                                                     (Name
+                                                                                                        "f")]}})
                                                                                      (Exp
                                                                                         {unExp =
                                                                                            RefBound
@@ -755,15 +811,17 @@
                                                                                          expInfo =
                                                                                            Info
                                                                                              {refsFree =
-                                                                                                []}}),
+                                                                                                fromList
+                                                                                                  []}}),
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        [Imported
-                                                                                           (ModuleName
-                                                                                              "Golden.TestValues")
-                                                                                           (Name
-                                                                                              "f")]}})
+                                                                                        fromList
+                                                                                          [Imported
+                                                                                             (ModuleName
+                                                                                                "Golden.TestValues")
+                                                                                             (Name
+                                                                                                "f")]}})
                                                                              (Exp
                                                                                 {unExp =
                                                                                    RefBound
@@ -775,7 +833,8 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        []}})
+                                                                                        fromList
+                                                                                          []}})
                                                                              (Exp
                                                                                 {unExp =
                                                                                    RefBound
@@ -787,43 +846,29 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        []}}),
+                                                                                        fromList
+                                                                                          []}}),
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                [Imported
-                                                                                   (ModuleName
-                                                                                      "Golden.TestValues")
-                                                                                   (Name
-                                                                                      "f")]}})),
+                                                                                fromList
+                                                                                  [Imported
+                                                                                     (ModuleName
+                                                                                        "Golden.TestValues")
+                                                                                     (Name
+                                                                                        "f")]}})),
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     [Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Imported
-                                                                        (ModuleName
-                                                                           "Golden.TestValues")
-                                                                        (Name
-                                                                           "f"),
-                                                                      Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Imported
-                                                                        (ModuleName
-                                                                           "Golden.TestValues")
-                                                                        (Name
-                                                                           "f")]}})
+                                                                     fromList
+                                                                       [Local
+                                                                          (Name
+                                                                             "a"),
+                                                                        Imported
+                                                                          (ModuleName
+                                                                             "Golden.TestValues")
+                                                                          (Name
+                                                                             "f")]}})
                                                           (Exp
                                                              {unExp =
                                                                 IfThenElse
@@ -839,7 +884,8 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        []}})
+                                                                                        fromList
+                                                                                          []}})
                                                                              (Exp
                                                                                 {unExp =
                                                                                    RefFree
@@ -849,15 +895,17 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        [Local
-                                                                                           (Name
-                                                                                              "a")]}})),
+                                                                                        fromList
+                                                                                          [Local
+                                                                                             (Name
+                                                                                                "a")]}})),
                                                                       expInfo =
                                                                         Info
                                                                           {refsFree =
-                                                                             [Local
-                                                                                (Name
-                                                                                   "a")]}})
+                                                                             fromList
+                                                                               [Local
+                                                                                  (Name
+                                                                                     "a")]}})
                                                                   (Exp
                                                                      {unExp =
                                                                         Let
@@ -873,7 +921,8 @@
                                                                                     expInfo =
                                                                                       Info
                                                                                         {refsFree =
-                                                                                           []}})
+                                                                                           fromList
+                                                                                             []}})
                                                                                 :|
                                                                                 [Standalone
                                                                                    (Name
@@ -887,9 +936,10 @@
                                                                                        expInfo =
                                                                                          Info
                                                                                            {refsFree =
-                                                                                              [Local
-                                                                                                 (Name
-                                                                                                    "a")]}}),
+                                                                                              fromList
+                                                                                                [Local
+                                                                                                   (Name
+                                                                                                      "a")]}}),
                                                                                  Standalone
                                                                                    (Name
                                                                                       "z",
@@ -902,9 +952,10 @@
                                                                                        expInfo =
                                                                                          Info
                                                                                            {refsFree =
-                                                                                              [Local
-                                                                                                 (Name
-                                                                                                    "a")]}})])
+                                                                                              fromList
+                                                                                                [Local
+                                                                                                   (Name
+                                                                                                      "a")]}})])
                                                                              (Exp
                                                                                 {unExp =
                                                                                    IfThenElse
@@ -922,11 +973,12 @@
                                                                                                  expInfo =
                                                                                                    Info
                                                                                                      {refsFree =
-                                                                                                        [Imported
-                                                                                                           (ModuleName
-                                                                                                              "Golden.TestValues")
-                                                                                                           (Name
-                                                                                                              "f")]}})
+                                                                                                        fromList
+                                                                                                          [Imported
+                                                                                                             (ModuleName
+                                                                                                                "Golden.TestValues")
+                                                                                                             (Name
+                                                                                                                "f")]}})
                                                                                              (Exp
                                                                                                 {unExp =
                                                                                                    RefBound
@@ -938,15 +990,17 @@
                                                                                                  expInfo =
                                                                                                    Info
                                                                                                      {refsFree =
-                                                                                                        []}}),
+                                                                                                        fromList
+                                                                                                          []}}),
                                                                                          expInfo =
                                                                                            Info
                                                                                              {refsFree =
-                                                                                                [Imported
-                                                                                                   (ModuleName
-                                                                                                      "Golden.TestValues")
-                                                                                                   (Name
-                                                                                                      "f")]}})
+                                                                                                fromList
+                                                                                                  [Imported
+                                                                                                     (ModuleName
+                                                                                                        "Golden.TestValues")
+                                                                                                     (Name
+                                                                                                        "f")]}})
                                                                                      (Exp
                                                                                         {unExp =
                                                                                            RefBound
@@ -958,7 +1012,8 @@
                                                                                          expInfo =
                                                                                            Info
                                                                                              {refsFree =
-                                                                                                []}})
+                                                                                                fromList
+                                                                                                  []}})
                                                                                      (Exp
                                                                                         {unExp =
                                                                                            RefBound
@@ -970,29 +1025,29 @@
                                                                                          expInfo =
                                                                                            Info
                                                                                              {refsFree =
-                                                                                                []}}),
+                                                                                                fromList
+                                                                                                  []}}),
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        [Imported
-                                                                                           (ModuleName
-                                                                                              "Golden.TestValues")
-                                                                                           (Name
-                                                                                              "f")]}})),
+                                                                                        fromList
+                                                                                          [Imported
+                                                                                             (ModuleName
+                                                                                                "Golden.TestValues")
+                                                                                             (Name
+                                                                                                "f")]}})),
                                                                       expInfo =
                                                                         Info
                                                                           {refsFree =
-                                                                             [Local
-                                                                                (Name
-                                                                                   "a"),
-                                                                              Local
-                                                                                (Name
-                                                                                   "a"),
-                                                                              Imported
-                                                                                (ModuleName
-                                                                                   "Golden.TestValues")
-                                                                                (Name
-                                                                                   "f")]}})
+                                                                             fromList
+                                                                               [Local
+                                                                                  (Name
+                                                                                     "a"),
+                                                                                Imported
+                                                                                  (ModuleName
+                                                                                     "Golden.TestValues")
+                                                                                  (Name
+                                                                                     "f")]}})
                                                                   (Exp
                                                                      {unExp =
                                                                         Lit
@@ -1001,76 +1056,40 @@
                                                                       expInfo =
                                                                         Info
                                                                           {refsFree =
-                                                                             []}}),
+                                                                             fromList
+                                                                               []}}),
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     [Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Imported
-                                                                        (ModuleName
-                                                                           "Golden.TestValues")
-                                                                        (Name
-                                                                           "f")]}}),
+                                                                     fromList
+                                                                       [Local
+                                                                          (Name
+                                                                             "a"),
+                                                                        Imported
+                                                                          (ModuleName
+                                                                             "Golden.TestValues")
+                                                                          (Name
+                                                                             "f")]}}),
                                                       expInfo =
                                                         Info
                                                           {refsFree =
-                                                             [Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Imported
-                                                                (ModuleName
-                                                                   "Golden.TestValues")
-                                                                (Name "f"),
-                                                              Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Imported
-                                                                (ModuleName
-                                                                   "Golden.TestValues")
-                                                                (Name "f"),
-                                                              Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Imported
-                                                                (ModuleName
-                                                                   "Golden.TestValues")
-                                                                (Name "f")]}}),
+                                                             fromList
+                                                               [Local
+                                                                  (Name "a"),
+                                                                Imported
+                                                                  (ModuleName
+                                                                     "Golden.TestValues")
+                                                                  (Name
+                                                                     "f")]}}),
                                               expInfo =
                                                 Info
                                                   {refsFree =
-                                                     [Imported
-                                                        (ModuleName
-                                                           "Golden.TestValues")
-                                                        (Name "f"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Imported
-                                                        (ModuleName
-                                                           "Golden.TestValues")
-                                                        (Name "f"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Imported
-                                                        (ModuleName
-                                                           "Golden.TestValues")
-                                                        (Name "f"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Imported
-                                                        (ModuleName
-                                                           "Golden.TestValues")
-                                                        (Name "f")]}})
+                                                     fromList
+                                                       [Local (Name "a"),
+                                                        Imported
+                                                          (ModuleName
+                                                             "Golden.TestValues")
+                                                          (Name "f")]}})
                                           (Exp
                                              {unExp =
                                                 IfThenElse
@@ -1086,7 +1105,8 @@
                                                                  expInfo =
                                                                    Info
                                                                      {refsFree =
-                                                                        []}})
+                                                                        fromList
+                                                                          []}})
                                                              (Exp
                                                                 {unExp =
                                                                    RefFree
@@ -1096,14 +1116,16 @@
                                                                  expInfo =
                                                                    Info
                                                                      {refsFree =
-                                                                        [Local
-                                                                           (Name
-                                                                              "a")]}})),
+                                                                        fromList
+                                                                          [Local
+                                                                             (Name
+                                                                                "a")]}})),
                                                       expInfo =
                                                         Info
                                                           {refsFree =
-                                                             [Local
-                                                                (Name "a")]}})
+                                                             fromList
+                                                               [Local
+                                                                  (Name "a")]}})
                                                   (Exp
                                                      {unExp =
                                                         Let
@@ -1125,7 +1147,8 @@
                                                                                        expInfo =
                                                                                          Info
                                                                                            {refsFree =
-                                                                                              []}})
+                                                                                              fromList
+                                                                                                []}})
                                                                                    (Exp
                                                                                       {unExp =
                                                                                          RefFree
@@ -1135,15 +1158,17 @@
                                                                                        expInfo =
                                                                                          Info
                                                                                            {refsFree =
-                                                                                              [Local
-                                                                                                 (Name
-                                                                                                    "a")]}})),
+                                                                                              fromList
+                                                                                                [Local
+                                                                                                   (Name
+                                                                                                      "a")]}})),
                                                                             expInfo =
                                                                               Info
                                                                                 {refsFree =
-                                                                                   [Local
-                                                                                      (Name
-                                                                                         "a")]}})
+                                                                                   fromList
+                                                                                     [Local
+                                                                                        (Name
+                                                                                           "a")]}})
                                                                         (Exp
                                                                            {unExp =
                                                                               Let
@@ -1159,7 +1184,8 @@
                                                                                           expInfo =
                                                                                             Info
                                                                                               {refsFree =
-                                                                                                 []}})
+                                                                                                 fromList
+                                                                                                   []}})
                                                                                       :|
                                                                                       [Standalone
                                                                                          (Name
@@ -1173,9 +1199,10 @@
                                                                                              expInfo =
                                                                                                Info
                                                                                                  {refsFree =
-                                                                                                    [Local
-                                                                                                       (Name
-                                                                                                          "a")]}}),
+                                                                                                    fromList
+                                                                                                      [Local
+                                                                                                         (Name
+                                                                                                            "a")]}}),
                                                                                        Standalone
                                                                                          (Name
                                                                                             "z",
@@ -1188,9 +1215,10 @@
                                                                                              expInfo =
                                                                                                Info
                                                                                                  {refsFree =
-                                                                                                    [Local
-                                                                                                       (Name
-                                                                                                          "a")]}})])
+                                                                                                    fromList
+                                                                                                      [Local
+                                                                                                         (Name
+                                                                                                            "a")]}})])
                                                                                    (Exp
                                                                                       {unExp =
                                                                                          IfThenElse
@@ -1208,11 +1236,12 @@
                                                                                                        expInfo =
                                                                                                          Info
                                                                                                            {refsFree =
-                                                                                                              [Imported
-                                                                                                                 (ModuleName
-                                                                                                                    "Golden.TestValues")
-                                                                                                                 (Name
-                                                                                                                    "f")]}})
+                                                                                                              fromList
+                                                                                                                [Imported
+                                                                                                                   (ModuleName
+                                                                                                                      "Golden.TestValues")
+                                                                                                                   (Name
+                                                                                                                      "f")]}})
                                                                                                    (Exp
                                                                                                       {unExp =
                                                                                                          RefBound
@@ -1224,15 +1253,17 @@
                                                                                                        expInfo =
                                                                                                          Info
                                                                                                            {refsFree =
-                                                                                                              []}}),
+                                                                                                              fromList
+                                                                                                                []}}),
                                                                                                expInfo =
                                                                                                  Info
                                                                                                    {refsFree =
-                                                                                                      [Imported
-                                                                                                         (ModuleName
-                                                                                                            "Golden.TestValues")
-                                                                                                         (Name
-                                                                                                            "f")]}})
+                                                                                                      fromList
+                                                                                                        [Imported
+                                                                                                           (ModuleName
+                                                                                                              "Golden.TestValues")
+                                                                                                           (Name
+                                                                                                              "f")]}})
                                                                                            (Exp
                                                                                               {unExp =
                                                                                                  RefBound
@@ -1244,7 +1275,8 @@
                                                                                                expInfo =
                                                                                                  Info
                                                                                                    {refsFree =
-                                                                                                      []}})
+                                                                                                      fromList
+                                                                                                        []}})
                                                                                            (Exp
                                                                                               {unExp =
                                                                                                  RefBound
@@ -1256,29 +1288,29 @@
                                                                                                expInfo =
                                                                                                  Info
                                                                                                    {refsFree =
-                                                                                                      []}}),
+                                                                                                      fromList
+                                                                                                        []}}),
                                                                                        expInfo =
                                                                                          Info
                                                                                            {refsFree =
-                                                                                              [Imported
-                                                                                                 (ModuleName
-                                                                                                    "Golden.TestValues")
-                                                                                                 (Name
-                                                                                                    "f")]}})),
+                                                                                              fromList
+                                                                                                [Imported
+                                                                                                   (ModuleName
+                                                                                                      "Golden.TestValues")
+                                                                                                   (Name
+                                                                                                      "f")]}})),
                                                                             expInfo =
                                                                               Info
                                                                                 {refsFree =
-                                                                                   [Local
-                                                                                      (Name
-                                                                                         "a"),
-                                                                                    Local
-                                                                                      (Name
-                                                                                         "a"),
-                                                                                    Imported
-                                                                                      (ModuleName
-                                                                                         "Golden.TestValues")
-                                                                                      (Name
-                                                                                         "f")]}})
+                                                                                   fromList
+                                                                                     [Local
+                                                                                        (Name
+                                                                                           "a"),
+                                                                                      Imported
+                                                                                        (ModuleName
+                                                                                           "Golden.TestValues")
+                                                                                        (Name
+                                                                                           "f")]}})
                                                                         (Exp
                                                                            {unExp =
                                                                               Lit
@@ -1287,24 +1319,20 @@
                                                                             expInfo =
                                                                               Info
                                                                                 {refsFree =
-                                                                                   []}}),
+                                                                                   fromList
+                                                                                     []}}),
                                                                     expInfo =
                                                                       Info
                                                                         {refsFree =
-                                                                           [Local
-                                                                              (Name
-                                                                                 "a"),
-                                                                            Local
-                                                                              (Name
-                                                                                 "a"),
-                                                                            Local
-                                                                              (Name
-                                                                                 "a"),
-                                                                            Imported
-                                                                              (ModuleName
-                                                                                 "Golden.TestValues")
-                                                                              (Name
-                                                                                 "f")]}})
+                                                                           fromList
+                                                                             [Local
+                                                                                (Name
+                                                                                   "a"),
+                                                                              Imported
+                                                                                (ModuleName
+                                                                                   "Golden.TestValues")
+                                                                                (Name
+                                                                                   "f")]}})
                                                                 :|
                                                                 [Standalone
                                                                    (Name "y",
@@ -1317,9 +1345,10 @@
                                                                        expInfo =
                                                                          Info
                                                                            {refsFree =
-                                                                              [Local
-                                                                                 (Name
-                                                                                    "a")]}}),
+                                                                              fromList
+                                                                                [Local
+                                                                                   (Name
+                                                                                      "a")]}}),
                                                                  Standalone
                                                                    (Name "z",
                                                                     Exp
@@ -1331,9 +1360,10 @@
                                                                        expInfo =
                                                                          Info
                                                                            {refsFree =
-                                                                              [Local
-                                                                                 (Name
-                                                                                    "a")]}})])
+                                                                              fromList
+                                                                                [Local
+                                                                                   (Name
+                                                                                      "a")]}})])
                                                              (Exp
                                                                 {unExp =
                                                                    IfThenElse
@@ -1351,11 +1381,12 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        [Imported
-                                                                                           (ModuleName
-                                                                                              "Golden.TestValues")
-                                                                                           (Name
-                                                                                              "f")]}})
+                                                                                        fromList
+                                                                                          [Imported
+                                                                                             (ModuleName
+                                                                                                "Golden.TestValues")
+                                                                                             (Name
+                                                                                                "f")]}})
                                                                              (Exp
                                                                                 {unExp =
                                                                                    RefBound
@@ -1367,15 +1398,17 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        []}}),
+                                                                                        fromList
+                                                                                          []}}),
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                [Imported
-                                                                                   (ModuleName
-                                                                                      "Golden.TestValues")
-                                                                                   (Name
-                                                                                      "f")]}})
+                                                                                fromList
+                                                                                  [Imported
+                                                                                     (ModuleName
+                                                                                        "Golden.TestValues")
+                                                                                     (Name
+                                                                                        "f")]}})
                                                                      (Exp
                                                                         {unExp =
                                                                            RefBound
@@ -1387,7 +1420,8 @@
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}})
+                                                                                fromList
+                                                                                  []}})
                                                                      (Exp
                                                                         {unExp =
                                                                            RefBound
@@ -1399,31 +1433,27 @@
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}}),
+                                                                                fromList
+                                                                                  []}}),
                                                                  expInfo =
                                                                    Info
                                                                      {refsFree =
-                                                                        [Imported
-                                                                           (ModuleName
-                                                                              "Golden.TestValues")
-                                                                           (Name
-                                                                              "f")]}})),
+                                                                        fromList
+                                                                          [Imported
+                                                                             (ModuleName
+                                                                                "Golden.TestValues")
+                                                                             (Name
+                                                                                "f")]}})),
                                                       expInfo =
                                                         Info
                                                           {refsFree =
-                                                             [Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Imported
-                                                                (ModuleName
-                                                                   "Golden.TestValues")
-                                                                (Name "f"),
-                                                              Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Imported
-                                                                (ModuleName
-                                                                   "Golden.TestValues")
-                                                                (Name "f")]}})
+                                                             fromList
+                                                               [Local
+                                                                  (Name "a"),
+                                                                Imported
+                                                                  (ModuleName
+                                                                     "Golden.TestValues")
+                                                                  (Name "f")]}})
                                                   (Exp
                                                      {unExp =
                                                         IfThenElse
@@ -1439,7 +1469,8 @@
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                []}})
+                                                                                fromList
+                                                                                  []}})
                                                                      (Exp
                                                                         {unExp =
                                                                            RefFree
@@ -1449,15 +1480,17 @@
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                [Local
-                                                                                   (Name
-                                                                                      "a")]}})),
+                                                                                fromList
+                                                                                  [Local
+                                                                                     (Name
+                                                                                        "a")]}})),
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     [Local
-                                                                        (Name
-                                                                           "a")]}})
+                                                                     fromList
+                                                                       [Local
+                                                                          (Name
+                                                                             "a")]}})
                                                           (Exp
                                                              {unExp =
                                                                 Let
@@ -1473,7 +1506,8 @@
                                                                             expInfo =
                                                                               Info
                                                                                 {refsFree =
-                                                                                   []}})
+                                                                                   fromList
+                                                                                     []}})
                                                                         :|
                                                                         [Standalone
                                                                            (Name
@@ -1487,9 +1521,10 @@
                                                                                expInfo =
                                                                                  Info
                                                                                    {refsFree =
-                                                                                      [Local
-                                                                                         (Name
-                                                                                            "a")]}}),
+                                                                                      fromList
+                                                                                        [Local
+                                                                                           (Name
+                                                                                              "a")]}}),
                                                                          Standalone
                                                                            (Name
                                                                               "z",
@@ -1502,9 +1537,10 @@
                                                                                expInfo =
                                                                                  Info
                                                                                    {refsFree =
-                                                                                      [Local
-                                                                                         (Name
-                                                                                            "a")]}})])
+                                                                                      fromList
+                                                                                        [Local
+                                                                                           (Name
+                                                                                              "a")]}})])
                                                                      (Exp
                                                                         {unExp =
                                                                            IfThenElse
@@ -1522,11 +1558,12 @@
                                                                                          expInfo =
                                                                                            Info
                                                                                              {refsFree =
-                                                                                                [Imported
-                                                                                                   (ModuleName
-                                                                                                      "Golden.TestValues")
-                                                                                                   (Name
-                                                                                                      "f")]}})
+                                                                                                fromList
+                                                                                                  [Imported
+                                                                                                     (ModuleName
+                                                                                                        "Golden.TestValues")
+                                                                                                     (Name
+                                                                                                        "f")]}})
                                                                                      (Exp
                                                                                         {unExp =
                                                                                            RefBound
@@ -1538,15 +1575,17 @@
                                                                                          expInfo =
                                                                                            Info
                                                                                              {refsFree =
-                                                                                                []}}),
+                                                                                                fromList
+                                                                                                  []}}),
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        [Imported
-                                                                                           (ModuleName
-                                                                                              "Golden.TestValues")
-                                                                                           (Name
-                                                                                              "f")]}})
+                                                                                        fromList
+                                                                                          [Imported
+                                                                                             (ModuleName
+                                                                                                "Golden.TestValues")
+                                                                                             (Name
+                                                                                                "f")]}})
                                                                              (Exp
                                                                                 {unExp =
                                                                                    RefBound
@@ -1558,7 +1597,8 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        []}})
+                                                                                        fromList
+                                                                                          []}})
                                                                              (Exp
                                                                                 {unExp =
                                                                                    RefBound
@@ -1570,156 +1610,74 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        []}}),
+                                                                                        fromList
+                                                                                          []}}),
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                [Imported
-                                                                                   (ModuleName
-                                                                                      "Golden.TestValues")
-                                                                                   (Name
-                                                                                      "f")]}})),
+                                                                                fromList
+                                                                                  [Imported
+                                                                                     (ModuleName
+                                                                                        "Golden.TestValues")
+                                                                                     (Name
+                                                                                        "f")]}})),
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     [Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Local
-                                                                        (Name
-                                                                           "a"),
-                                                                      Imported
-                                                                        (ModuleName
-                                                                           "Golden.TestValues")
-                                                                        (Name
-                                                                           "f")]}})
+                                                                     fromList
+                                                                       [Local
+                                                                          (Name
+                                                                             "a"),
+                                                                        Imported
+                                                                          (ModuleName
+                                                                             "Golden.TestValues")
+                                                                          (Name
+                                                                             "f")]}})
                                                           (Exp
                                                              {unExp =
                                                                 Lit (Integer 0),
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     []}}),
+                                                                     fromList
+                                                                       []}}),
                                                       expInfo =
                                                         Info
                                                           {refsFree =
-                                                             [Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Local (Name "a"),
-                                                              Imported
-                                                                (ModuleName
-                                                                   "Golden.TestValues")
-                                                                (Name "f")]}}),
+                                                             fromList
+                                                               [Local
+                                                                  (Name "a"),
+                                                                Imported
+                                                                  (ModuleName
+                                                                     "Golden.TestValues")
+                                                                  (Name
+                                                                     "f")]}}),
                                               expInfo =
                                                 Info
                                                   {refsFree =
-                                                     [Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Imported
-                                                        (ModuleName
-                                                           "Golden.TestValues")
-                                                        (Name "f"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Imported
-                                                        (ModuleName
-                                                           "Golden.TestValues")
-                                                        (Name "f"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Local (Name "a"),
-                                                      Imported
-                                                        (ModuleName
-                                                           "Golden.TestValues")
-                                                        (Name "f")]}}),
+                                                     fromList
+                                                       [Local (Name "a"),
+                                                        Imported
+                                                          (ModuleName
+                                                             "Golden.TestValues")
+                                                          (Name "f")]}}),
                                       expInfo =
                                         Info
                                           {refsFree =
-                                             [Local (Name "a"),
-                                              Imported
-                                                (ModuleName "Golden.TestValues")
-                                                (Name "f"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Imported
-                                                (ModuleName "Golden.TestValues")
-                                                (Name "f"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Imported
-                                                (ModuleName "Golden.TestValues")
-                                                (Name "f"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Imported
-                                                (ModuleName "Golden.TestValues")
-                                                (Name "f"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Imported
-                                                (ModuleName "Golden.TestValues")
-                                                (Name "f"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Imported
-                                                (ModuleName "Golden.TestValues")
-                                                (Name "f"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Local (Name "a"),
-                                              Imported
-                                                (ModuleName "Golden.TestValues")
-                                                (Name "f")]}})),
+                                             fromList
+                                               [Local (Name "a"),
+                                                Imported
+                                                  (ModuleName
+                                                     "Golden.TestValues")
+                                                  (Name "f")]}})),
                            expInfo =
                              Info
                                {refsFree =
-                                  [Local (Name "a"),
-                                   Imported
-                                     (ModuleName "Golden.TestValues")
-                                     (Name "f"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Imported
-                                     (ModuleName "Golden.TestValues")
-                                     (Name "f"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Imported
-                                     (ModuleName "Golden.TestValues")
-                                     (Name "f"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Imported
-                                     (ModuleName "Golden.TestValues")
-                                     (Name "f"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Imported
-                                     (ModuleName "Golden.TestValues")
-                                     (Name "f"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Imported
-                                     (ModuleName "Golden.TestValues")
-                                     (Name "f"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Local (Name "a"),
-                                   Imported
-                                     (ModuleName "Golden.TestValues")
-                                     (Name "f")]}})
+                                  fromList
+                                    [Local (Name "a"),
+                                     Imported
+                                       (ModuleName "Golden.TestValues")
+                                       (Name "f")]}})
                        :|
                        [])
                     (Exp
@@ -1731,14 +1689,18 @@
                                     (Eq
                                        (Exp
                                           {unExp = Lit (Integer 1),
-                                           expInfo = Info {refsFree = []}})
+                                           expInfo =
+                                             Info {refsFree = fromList []}})
                                        (Exp
                                           {unExp = RefFree (Local (Name "a")),
                                            expInfo =
                                              Info
                                                {refsFree =
-                                                  [Local (Name "a")]}})),
-                                expInfo = Info {refsFree = [Local (Name "a")]}})
+                                                  fromList
+                                                    [Local (Name "a")]}})),
+                                expInfo =
+                                  Info
+                                    {refsFree = fromList [Local (Name "a")]}})
                             (Exp
                                {unExp =
                                   IfThenElse
@@ -1749,17 +1711,22 @@
                                                (Exp
                                                   {unExp = Lit (Char 'b'),
                                                    expInfo =
-                                                     Info {refsFree = []}})
+                                                     Info
+                                                       {refsFree =
+                                                          fromList []}})
                                                (Exp
                                                   {unExp =
                                                      RefFree (Local (Name "b")),
                                                    expInfo =
                                                      Info
                                                        {refsFree =
-                                                          [Local
-                                                             (Name "b")]}})),
+                                                          fromList
+                                                            [Local
+                                                               (Name "b")]}})),
                                         expInfo =
-                                          Info {refsFree = [Local (Name "b")]}})
+                                          Info
+                                            {refsFree =
+                                               fromList [Local (Name "b")]}})
                                     (Exp
                                        {unExp =
                                           Let
@@ -1780,25 +1747,28 @@
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     [Imported
-                                                                        (ModuleName
-                                                                           "Golden.TestValues")
-                                                                        (Name
-                                                                           "f")]}})
+                                                                     fromList
+                                                                       [Imported
+                                                                          (ModuleName
+                                                                             "Golden.TestValues")
+                                                                          (Name
+                                                                             "f")]}})
                                                           (Exp
                                                              {unExp =
                                                                 Lit (Integer 2),
                                                               expInfo =
                                                                 Info
                                                                   {refsFree =
-                                                                     []}}),
+                                                                     fromList
+                                                                       []}}),
                                                       expInfo =
                                                         Info
                                                           {refsFree =
-                                                             [Imported
-                                                                (ModuleName
-                                                                   "Golden.TestValues")
-                                                                (Name "f")]}})
+                                                             fromList
+                                                               [Imported
+                                                                  (ModuleName
+                                                                     "Golden.TestValues")
+                                                                  (Name "f")]}})
                                                   :|
                                                   [])
                                                (Exp
@@ -1816,7 +1786,8 @@
                                                                       expInfo =
                                                                         Info
                                                                           {refsFree =
-                                                                             []}})
+                                                                             fromList
+                                                                               []}})
                                                                   (Exp
                                                                      {unExp =
                                                                         RefBound
@@ -1828,10 +1799,12 @@
                                                                       expInfo =
                                                                         Info
                                                                           {refsFree =
-                                                                             []}})),
+                                                                             fromList
+                                                                               []}})),
                                                            expInfo =
                                                              Info
-                                                               {refsFree = []}})
+                                                               {refsFree =
+                                                                  fromList []}})
                                                        (Exp
                                                           {unExp =
                                                              Let
@@ -1852,11 +1825,12 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        [Imported
-                                                                                           (ModuleName
-                                                                                              "Golden.TestValues")
-                                                                                           (Name
-                                                                                              "f")]}})
+                                                                                        fromList
+                                                                                          [Imported
+                                                                                             (ModuleName
+                                                                                                "Golden.TestValues")
+                                                                                             (Name
+                                                                                                "f")]}})
                                                                              (Exp
                                                                                 {unExp =
                                                                                    Lit
@@ -1865,15 +1839,17 @@
                                                                                  expInfo =
                                                                                    Info
                                                                                      {refsFree =
-                                                                                        []}}),
+                                                                                        fromList
+                                                                                          []}}),
                                                                          expInfo =
                                                                            Info
                                                                              {refsFree =
-                                                                                [Imported
-                                                                                   (ModuleName
-                                                                                      "Golden.TestValues")
-                                                                                   (Name
-                                                                                      "f")]}})
+                                                                                fromList
+                                                                                  [Imported
+                                                                                     (ModuleName
+                                                                                        "Golden.TestValues")
+                                                                                     (Name
+                                                                                        "f")]}})
                                                                      :|
                                                                      [])
                                                                   (Exp
@@ -1891,7 +1867,8 @@
                                                                                          expInfo =
                                                                                            Info
                                                                                              {refsFree =
-                                                                                                []}})
+                                                                                                fromList
+                                                                                                  []}})
                                                                                      (Exp
                                                                                         {unExp =
                                                                                            RefBound
@@ -1903,11 +1880,13 @@
                                                                                          expInfo =
                                                                                            Info
                                                                                              {refsFree =
-                                                                                                []}})),
+                                                                                                fromList
+                                                                                                  []}})),
                                                                               expInfo =
                                                                                 Info
                                                                                   {refsFree =
-                                                                                     []}})
+                                                                                     fromList
+                                                                                       []}})
                                                                           (Exp
                                                                              {unExp =
                                                                                 Lit
@@ -1916,7 +1895,8 @@
                                                                               expInfo =
                                                                                 Info
                                                                                   {refsFree =
-                                                                                     []}})
+                                                                                     fromList
+                                                                                       []}})
                                                                           (Exp
                                                                              {unExp =
                                                                                 App
@@ -1931,7 +1911,8 @@
                                                                                       expInfo =
                                                                                         Info
                                                                                           {refsFree =
-                                                                                             []}})
+                                                                                             fromList
+                                                                                               []}})
                                                                                   (Exp
                                                                                      {unExp =
                                                                                         Lit
@@ -1940,23 +1921,27 @@
                                                                                       expInfo =
                                                                                         Info
                                                                                           {refsFree =
-                                                                                             []}}),
+                                                                                             fromList
+                                                                                               []}}),
                                                                               expInfo =
                                                                                 Info
                                                                                   {refsFree =
-                                                                                     []}}),
+                                                                                     fromList
+                                                                                       []}}),
                                                                       expInfo =
                                                                         Info
                                                                           {refsFree =
-                                                                             []}})),
+                                                                             fromList
+                                                                               []}})),
                                                            expInfo =
                                                              Info
                                                                {refsFree =
-                                                                  [Imported
-                                                                     (ModuleName
-                                                                        "Golden.TestValues")
-                                                                     (Name
-                                                                        "f")]}})
+                                                                  fromList
+                                                                    [Imported
+                                                                       (ModuleName
+                                                                          "Golden.TestValues")
+                                                                       (Name
+                                                                          "f")]}})
                                                        (Exp
                                                           {unExp =
                                                              App
@@ -1971,7 +1956,8 @@
                                                                    expInfo =
                                                                      Info
                                                                        {refsFree =
-                                                                          []}})
+                                                                          fromList
+                                                                            []}})
                                                                (Exp
                                                                   {unExp =
                                                                      Lit
@@ -1980,29 +1966,29 @@
                                                                    expInfo =
                                                                      Info
                                                                        {refsFree =
-                                                                          []}}),
+                                                                          fromList
+                                                                            []}}),
                                                            expInfo =
                                                              Info
                                                                {refsFree =
-                                                                  []}}),
+                                                                  fromList
+                                                                    []}}),
                                                    expInfo =
                                                      Info
                                                        {refsFree =
-                                                          [Imported
-                                                             (ModuleName
-                                                                "Golden.TestValues")
-                                                             (Name "f")]}})),
+                                                          fromList
+                                                            [Imported
+                                                               (ModuleName
+                                                                  "Golden.TestValues")
+                                                               (Name "f")]}})),
                                         expInfo =
                                           Info
                                             {refsFree =
-                                               [Imported
-                                                  (ModuleName
-                                                     "Golden.TestValues")
-                                                  (Name "f"),
-                                                Imported
-                                                  (ModuleName
-                                                     "Golden.TestValues")
-                                                  (Name "f")]}})
+                                               fromList
+                                                 [Imported
+                                                    (ModuleName
+                                                       "Golden.TestValues")
+                                                    (Name "f")]}})
                                     (Exp
                                        {unExp =
                                           App
@@ -2011,22 +1997,24 @@
                                                   RefBound
                                                     (Index
                                                        {level = 2, offset = 0}),
-                                                expInfo = Info {refsFree = []}})
+                                                expInfo =
+                                                  Info
+                                                    {refsFree = fromList []}})
                                             (Exp
                                                {unExp = Lit (Boolean True),
                                                 expInfo =
-                                                  Info {refsFree = []}}),
-                                        expInfo = Info {refsFree = []}}),
+                                                  Info
+                                                    {refsFree = fromList []}}),
+                                        expInfo =
+                                          Info {refsFree = fromList []}}),
                                 expInfo =
                                   Info
                                     {refsFree =
-                                       [Local (Name "b"),
-                                        Imported
-                                          (ModuleName "Golden.TestValues")
-                                          (Name "f"),
-                                        Imported
-                                          (ModuleName "Golden.TestValues")
-                                          (Name "f")]}})
+                                       fromList
+                                         [Local (Name "b"),
+                                          Imported
+                                            (ModuleName "Golden.TestValues")
+                                            (Name "f")]}})
                             (Exp
                                {unExp =
                                   App
@@ -2034,55 +2022,30 @@
                                        {unExp =
                                           RefBound
                                             (Index {level = 2, offset = 0}),
-                                        expInfo = Info {refsFree = []}})
+                                        expInfo =
+                                          Info {refsFree = fromList []}})
                                     (Exp
                                        {unExp = Lit (Boolean True),
-                                        expInfo = Info {refsFree = []}}),
-                                expInfo = Info {refsFree = []}}),
+                                        expInfo =
+                                          Info {refsFree = fromList []}}),
+                                expInfo = Info {refsFree = fromList []}}),
                         expInfo =
                           Info
                             {refsFree =
-                               [Local (Name "a"),
-                                Local (Name "b"),
-                                Imported
-                                  (ModuleName "Golden.TestValues") (Name "f"),
-                                Imported
-                                  (ModuleName "Golden.TestValues")
-                                  (Name "f")]}})),
+                               fromList
+                                 [Local (Name "a"),
+                                  Local (Name "b"),
+                                  Imported
+                                    (ModuleName "Golden.TestValues")
+                                    (Name "f")]}})),
              expInfo =
                Info
                  {refsFree =
-                    [Local (Name "a"),
-                     Imported (ModuleName "Golden.TestValues") (Name "f"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Imported (ModuleName "Golden.TestValues") (Name "f"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Imported (ModuleName "Golden.TestValues") (Name "f"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Imported (ModuleName "Golden.TestValues") (Name "f"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Imported (ModuleName "Golden.TestValues") (Name "f"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Imported (ModuleName "Golden.TestValues") (Name "f"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Local (Name "a"),
-                     Imported (ModuleName "Golden.TestValues") (Name "f"),
-                     Local (Name "a"),
-                     Local (Name "b"),
-                     Imported (ModuleName "Golden.TestValues") (Name "f"),
-                     Imported
-                       (ModuleName "Golden.TestValues") (Name "f")]}})],
+                    fromList
+                      [Local (Name "a"),
+                       Local (Name "b"),
+                       Imported
+                         (ModuleName "Golden.TestValues") (Name "f")]}})],
     moduleImports = [ModuleName "Golden.TestValues"],
     moduleExports =
       [Name "a",
@@ -2114,8 +2077,8 @@
                     ArgUnused
                     (Exp
                        {unExp = Lit (Boolean True),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}})],
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports = [Name "f"],
     moduleReExports = fromList [],

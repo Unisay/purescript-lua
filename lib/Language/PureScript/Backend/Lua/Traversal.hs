@@ -34,7 +34,7 @@ everywhereExpM f g = goe
       f $ TableCtor tableRows
     UnOp op e -> f . UnOp op =<< goe e
     BinOp op e1 e2 -> f =<< BinOp op <$> goe e1 <*> goe e2
-    FunctionCall name args -> f . FunctionCall name =<< traverse goe args
+    FunctionCall fn args -> f =<< FunctionCall <$> goe fn <*> traverse goe args
     other -> f other
 
 everywhereStatM

@@ -4,6 +4,7 @@ module Language.PureScript.Backend.IR.Types where
 
 import Data.Deriving (deriveEq1, deriveOrd1, deriveShow1)
 import Data.List (elemIndex)
+import Data.Set qualified as Set
 import Data.Tagged (Tagged (..), untag)
 import Data.Text qualified as Text
 import Data.Traversable (for)
@@ -39,7 +40,7 @@ bindingNames = fmap fst . listGrouping
 bindingExprs :: Grouping (name, Exp) -> [Exp]
 bindingExprs = fmap snd . listGrouping
 
-newtype Info = Info {refsFree :: [Qualified Name]}
+newtype Info = Info {refsFree :: Set (Qualified Name)}
   deriving stock (Generic)
   deriving (Semigroup, Monoid) via Generically Info
 
@@ -327,7 +328,7 @@ wrapExpF e = Exp e case e of
   ObjectProp a _prop -> expInfo a
   ObjectUpdate a patches -> expInfo a <> foldMap (expInfo . snd) patches
   App f x -> expInfo f <> expInfo x
-  RefFree ref -> mempty {refsFree = pure ref}
+  RefFree ref -> mempty {refsFree = Set.singleton ref}
   RefBound _index -> mempty
   Abs (AbsBinding _arg (LocallyNameless expr)) -> expInfo expr
   Let (LetBinding binds (LocallyNameless body)) ->

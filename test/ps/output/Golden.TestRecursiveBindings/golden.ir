@@ -27,7 +27,8 @@
                                                             Lit (Boolean True),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}})
+                                                              {refsFree =
+                                                                 fromList []}})
                                                       (Exp
                                                          {unExp =
                                                             RefBound
@@ -37,8 +38,10 @@
                                                           expInfo =
                                                             Info
                                                               {refsFree =
-                                                                 []}})),
-                                               expInfo = Info {refsFree = []}})
+                                                                 fromList
+                                                                   []}})),
+                                               expInfo =
+                                                 Info {refsFree = fromList []}})
                                            (Exp
                                               {unExp =
                                                  App
@@ -49,13 +52,18 @@
                                                               {level = 1,
                                                                offset = 1}),
                                                        expInfo =
-                                                         Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}})
                                                    (Exp
                                                       {unExp =
                                                          Lit (Boolean False),
                                                        expInfo =
-                                                         Info {refsFree = []}}),
-                                               expInfo = Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}}),
+                                               expInfo =
+                                                 Info {refsFree = fromList []}})
                                            (Exp
                                               {unExp =
                                                  IfThenElse
@@ -71,7 +79,8 @@
                                                                   expInfo =
                                                                     Info
                                                                       {refsFree =
-                                                                         []}})
+                                                                         fromList
+                                                                           []}})
                                                               (Exp
                                                                  {unExp =
                                                                     RefBound
@@ -83,9 +92,12 @@
                                                                   expInfo =
                                                                     Info
                                                                       {refsFree =
-                                                                         []}})),
+                                                                         fromList
+                                                                           []}})),
                                                        expInfo =
-                                                         Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}})
                                                    (Exp
                                                       {unExp =
                                                          App
@@ -100,7 +112,8 @@
                                                                expInfo =
                                                                  Info
                                                                    {refsFree =
-                                                                      []}})
+                                                                      fromList
+                                                                        []}})
                                                            (Exp
                                                               {unExp =
                                                                  Lit
@@ -109,18 +122,26 @@
                                                                expInfo =
                                                                  Info
                                                                    {refsFree =
-                                                                      []}}),
+                                                                      fromList
+                                                                        []}}),
                                                        expInfo =
-                                                         Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}})
                                                    (Exp
                                                       {unExp =
                                                          Exception
                                                            "No patterns matched",
                                                        expInfo =
-                                                         Info {refsFree = []}}),
-                                               expInfo = Info {refsFree = []}}),
-                                       expInfo = Info {refsFree = []}})),
-                            expInfo = Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}}),
+                                               expInfo =
+                                                 Info
+                                                   {refsFree = fromList []}}),
+                                       expInfo =
+                                         Info {refsFree = fromList []}})),
+                            expInfo = Info {refsFree = fromList []}})
                           :|
                           [(Name "no",
                             Exp
@@ -142,7 +163,8 @@
                                                              expInfo =
                                                                Info
                                                                  {refsFree =
-                                                                    []}})
+                                                                    fromList
+                                                                      []}})
                                                          (Exp
                                                             {unExp =
                                                                RefBound
@@ -153,9 +175,11 @@
                                                              expInfo =
                                                                Info
                                                                  {refsFree =
-                                                                    []}})),
+                                                                    fromList
+                                                                      []}})),
                                                   expInfo =
-                                                    Info {refsFree = []}})
+                                                    Info
+                                                      {refsFree = fromList []}})
                                               (Exp
                                                  {unExp =
                                                     App
@@ -167,15 +191,18 @@
                                                                   offset = 0}),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}})
+                                                              {refsFree =
+                                                                 fromList []}})
                                                       (Exp
                                                          {unExp =
                                                             Lit (Boolean False),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}}),
+                                                              {refsFree =
+                                                                 fromList []}}),
                                                   expInfo =
-                                                    Info {refsFree = []}})
+                                                    Info
+                                                      {refsFree = fromList []}})
                                               (Exp
                                                  {unExp =
                                                     IfThenElse
@@ -191,7 +218,8 @@
                                                                      expInfo =
                                                                        Info
                                                                          {refsFree =
-                                                                            []}})
+                                                                            fromList
+                                                                              []}})
                                                                  (Exp
                                                                     {unExp =
                                                                        RefBound
@@ -203,10 +231,12 @@
                                                                      expInfo =
                                                                        Info
                                                                          {refsFree =
-                                                                            []}})),
+                                                                            fromList
+                                                                              []}})),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}})
+                                                              {refsFree =
+                                                                 fromList []}})
                                                       (Exp
                                                          {unExp =
                                                             App
@@ -221,7 +251,8 @@
                                                                   expInfo =
                                                                     Info
                                                                       {refsFree =
-                                                                         []}})
+                                                                         fromList
+                                                                           []}})
                                                               (Exp
                                                                  {unExp =
                                                                     Lit
@@ -230,21 +261,27 @@
                                                                   expInfo =
                                                                     Info
                                                                       {refsFree =
-                                                                         []}}),
+                                                                         fromList
+                                                                           []}}),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}})
+                                                              {refsFree =
+                                                                 fromList []}})
                                                       (Exp
                                                          {unExp =
                                                             Exception
                                                               "No patterns matched",
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}}),
+                                                              {refsFree =
+                                                                 fromList []}}),
                                                   expInfo =
-                                                    Info {refsFree = []}}),
-                                          expInfo = Info {refsFree = []}})),
-                               expInfo = Info {refsFree = []}})])
+                                                    Info
+                                                      {refsFree =
+                                                         fromList []}}),
+                                          expInfo =
+                                            Info {refsFree = fromList []}})),
+                               expInfo = Info {refsFree = fromList []}})])
                        :|
                        [])
                     (Exp
@@ -253,12 +290,12 @@
                             (Exp
                                {unExp =
                                   RefBound (Index {level = 0, offset = 1}),
-                                expInfo = Info {refsFree = []}})
+                                expInfo = Info {refsFree = fromList []}})
                             (Exp
                                {unExp = Lit (Boolean False),
-                                expInfo = Info {refsFree = []}}),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}}),
+                                expInfo = Info {refsFree = fromList []}}),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "letRecMixed",
           Exp
@@ -269,7 +306,7 @@
                        (Name "z",
                         Exp
                           {unExp = Lit (Integer 1),
-                           expInfo = Info {refsFree = []}})
+                           expInfo = Info {refsFree = fromList []}})
                        :|
                        [RecursiveGroup
                           ((Name "b",
@@ -288,7 +325,8 @@
                                                          {level = 1,
                                                           offset = 2}),
                                                   expInfo =
-                                                    Info {refsFree = []}})
+                                                    Info
+                                                      {refsFree = fromList []}})
                                               (Exp
                                                  {unExp =
                                                     RefBound
@@ -296,9 +334,12 @@
                                                          {level = 1,
                                                           offset = 0}),
                                                   expInfo =
-                                                    Info {refsFree = []}}),
-                                          expInfo = Info {refsFree = []}})),
-                               expInfo = Info {refsFree = []}})
+                                                    Info
+                                                      {refsFree =
+                                                         fromList []}}),
+                                          expInfo =
+                                            Info {refsFree = fromList []}})),
+                               expInfo = Info {refsFree = fromList []}})
                              :|
                              [(Name "a",
                                Exp
@@ -316,7 +357,9 @@
                                                             {level = 1,
                                                              offset = 1}),
                                                      expInfo =
-                                                       Info {refsFree = []}})
+                                                       Info
+                                                         {refsFree =
+                                                            fromList []}})
                                                  (Exp
                                                     {unExp =
                                                        RefBound
@@ -324,9 +367,12 @@
                                                             {level = 1,
                                                              offset = 0}),
                                                      expInfo =
-                                                       Info {refsFree = []}}),
-                                             expInfo = Info {refsFree = []}})),
-                                  expInfo = Info {refsFree = []}})]),
+                                                       Info
+                                                         {refsFree =
+                                                            fromList []}}),
+                                             expInfo =
+                                               Info {refsFree = fromList []}})),
+                                  expInfo = Info {refsFree = fromList []}})]),
                         Standalone
                           (Name "f",
                            Exp
@@ -352,7 +398,8 @@
                                                             expInfo =
                                                               Info
                                                                 {refsFree =
-                                                                   []}})
+                                                                   fromList
+                                                                     []}})
                                                         (Exp
                                                            {unExp =
                                                               RefBound
@@ -363,11 +410,15 @@
                                                             expInfo =
                                                               Info
                                                                 {refsFree =
-                                                                   []}}),
+                                                                   fromList
+                                                                     []}}),
                                                     expInfo =
-                                                      Info {refsFree = []}})),
-                                         expInfo = Info {refsFree = []}})),
-                              expInfo = Info {refsFree = []}}),
+                                                      Info
+                                                        {refsFree =
+                                                           fromList []}})),
+                                         expInfo =
+                                           Info {refsFree = fromList []}})),
+                              expInfo = Info {refsFree = fromList []}}),
                         Standalone
                           (Name "y",
                            Exp
@@ -381,20 +432,22 @@
                                                 RefBound
                                                   (Index
                                                      {level = 0, offset = 3}),
-                                              expInfo = Info {refsFree = []}})
+                                              expInfo =
+                                                Info {refsFree = fromList []}})
                                           (Exp
                                              {unExp =
                                                 RefBound
                                                   (Index
                                                      {level = 0, offset = 0}),
-                                              expInfo = Info {refsFree = []}}),
-                                      expInfo = Info {refsFree = []}})
+                                              expInfo =
+                                                Info {refsFree = fromList []}}),
+                                      expInfo = Info {refsFree = fromList []}})
                                   (Exp
                                      {unExp =
                                         RefBound
                                           (Index {level = 0, offset = 0}),
-                                      expInfo = Info {refsFree = []}}),
-                              expInfo = Info {refsFree = []}}),
+                                      expInfo = Info {refsFree = fromList []}}),
+                              expInfo = Info {refsFree = fromList []}}),
                         Standalone
                           (Name "x",
                            Exp
@@ -408,20 +461,22 @@
                                                 RefBound
                                                   (Index
                                                      {level = 0, offset = 3}),
-                                              expInfo = Info {refsFree = []}})
+                                              expInfo =
+                                                Info {refsFree = fromList []}})
                                           (Exp
                                              {unExp =
                                                 RefBound
                                                   (Index
                                                      {level = 0, offset = 4}),
-                                              expInfo = Info {refsFree = []}}),
-                                      expInfo = Info {refsFree = []}})
+                                              expInfo =
+                                                Info {refsFree = fromList []}}),
+                                      expInfo = Info {refsFree = fromList []}})
                                   (Exp
                                      {unExp =
                                         RefBound
                                           (Index {level = 0, offset = 4}),
-                                      expInfo = Info {refsFree = []}}),
-                              expInfo = Info {refsFree = []}})])
+                                      expInfo = Info {refsFree = fromList []}}),
+                              expInfo = Info {refsFree = fromList []}})])
                     (Exp
                        {unExp =
                           App
@@ -432,13 +487,15 @@
                                        {unExp =
                                           RefBound
                                             (Index {level = 0, offset = 3}),
-                                        expInfo = Info {refsFree = []}})
+                                        expInfo =
+                                          Info {refsFree = fromList []}})
                                     (Exp
                                        {unExp =
                                           RefBound
                                             (Index {level = 0, offset = 5}),
-                                        expInfo = Info {refsFree = []}}),
-                                expInfo = Info {refsFree = []}})
+                                        expInfo =
+                                          Info {refsFree = fromList []}}),
+                                expInfo = Info {refsFree = fromList []}})
                             (Exp
                                {unExp =
                                   App
@@ -450,21 +507,26 @@
                                                   RefBound
                                                     (Index
                                                        {level = 0, offset = 3}),
-                                                expInfo = Info {refsFree = []}})
+                                                expInfo =
+                                                  Info
+                                                    {refsFree = fromList []}})
                                             (Exp
                                                {unExp =
                                                   RefBound
                                                     (Index
                                                        {level = 0, offset = 4}),
                                                 expInfo =
-                                                  Info {refsFree = []}}),
-                                        expInfo = Info {refsFree = []}})
+                                                  Info
+                                                    {refsFree = fromList []}}),
+                                        expInfo =
+                                          Info {refsFree = fromList []}})
                                     (Exp
                                        {unExp = Lit (Integer 0),
-                                        expInfo = Info {refsFree = []}}),
-                                expInfo = Info {refsFree = []}}),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}}),
+                                        expInfo =
+                                          Info {refsFree = fromList []}}),
+                                expInfo = Info {refsFree = fromList []}}),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "letRec",
           Exp
@@ -490,7 +552,8 @@
                                                             Lit (Boolean True),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}})
+                                                              {refsFree =
+                                                                 fromList []}})
                                                       (Exp
                                                          {unExp =
                                                             RefBound
@@ -500,8 +563,10 @@
                                                           expInfo =
                                                             Info
                                                               {refsFree =
-                                                                 []}})),
-                                               expInfo = Info {refsFree = []}})
+                                                                 fromList
+                                                                   []}})),
+                                               expInfo =
+                                                 Info {refsFree = fromList []}})
                                            (Exp
                                               {unExp =
                                                  App
@@ -512,13 +577,18 @@
                                                               {level = 1,
                                                                offset = 1}),
                                                        expInfo =
-                                                         Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}})
                                                    (Exp
                                                       {unExp =
                                                          Lit (Boolean False),
                                                        expInfo =
-                                                         Info {refsFree = []}}),
-                                               expInfo = Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}}),
+                                               expInfo =
+                                                 Info {refsFree = fromList []}})
                                            (Exp
                                               {unExp =
                                                  IfThenElse
@@ -534,7 +604,8 @@
                                                                   expInfo =
                                                                     Info
                                                                       {refsFree =
-                                                                         []}})
+                                                                         fromList
+                                                                           []}})
                                                               (Exp
                                                                  {unExp =
                                                                     RefBound
@@ -546,9 +617,12 @@
                                                                   expInfo =
                                                                     Info
                                                                       {refsFree =
-                                                                         []}})),
+                                                                         fromList
+                                                                           []}})),
                                                        expInfo =
-                                                         Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}})
                                                    (Exp
                                                       {unExp =
                                                          App
@@ -563,7 +637,8 @@
                                                                expInfo =
                                                                  Info
                                                                    {refsFree =
-                                                                      []}})
+                                                                      fromList
+                                                                        []}})
                                                            (Exp
                                                               {unExp =
                                                                  Lit
@@ -572,18 +647,26 @@
                                                                expInfo =
                                                                  Info
                                                                    {refsFree =
-                                                                      []}}),
+                                                                      fromList
+                                                                        []}}),
                                                        expInfo =
-                                                         Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}})
                                                    (Exp
                                                       {unExp =
                                                          Exception
                                                            "No patterns matched",
                                                        expInfo =
-                                                         Info {refsFree = []}}),
-                                               expInfo = Info {refsFree = []}}),
-                                       expInfo = Info {refsFree = []}})),
-                            expInfo = Info {refsFree = []}})
+                                                         Info
+                                                           {refsFree =
+                                                              fromList []}}),
+                                               expInfo =
+                                                 Info
+                                                   {refsFree = fromList []}}),
+                                       expInfo =
+                                         Info {refsFree = fromList []}})),
+                            expInfo = Info {refsFree = fromList []}})
                           :|
                           [(Name "no",
                             Exp
@@ -605,7 +688,8 @@
                                                              expInfo =
                                                                Info
                                                                  {refsFree =
-                                                                    []}})
+                                                                    fromList
+                                                                      []}})
                                                          (Exp
                                                             {unExp =
                                                                RefBound
@@ -616,9 +700,11 @@
                                                              expInfo =
                                                                Info
                                                                  {refsFree =
-                                                                    []}})),
+                                                                    fromList
+                                                                      []}})),
                                                   expInfo =
-                                                    Info {refsFree = []}})
+                                                    Info
+                                                      {refsFree = fromList []}})
                                               (Exp
                                                  {unExp =
                                                     App
@@ -630,15 +716,18 @@
                                                                   offset = 0}),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}})
+                                                              {refsFree =
+                                                                 fromList []}})
                                                       (Exp
                                                          {unExp =
                                                             Lit (Boolean False),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}}),
+                                                              {refsFree =
+                                                                 fromList []}}),
                                                   expInfo =
-                                                    Info {refsFree = []}})
+                                                    Info
+                                                      {refsFree = fromList []}})
                                               (Exp
                                                  {unExp =
                                                     IfThenElse
@@ -654,7 +743,8 @@
                                                                      expInfo =
                                                                        Info
                                                                          {refsFree =
-                                                                            []}})
+                                                                            fromList
+                                                                              []}})
                                                                  (Exp
                                                                     {unExp =
                                                                        RefBound
@@ -666,10 +756,12 @@
                                                                      expInfo =
                                                                        Info
                                                                          {refsFree =
-                                                                            []}})),
+                                                                            fromList
+                                                                              []}})),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}})
+                                                              {refsFree =
+                                                                 fromList []}})
                                                       (Exp
                                                          {unExp =
                                                             App
@@ -684,7 +776,8 @@
                                                                   expInfo =
                                                                     Info
                                                                       {refsFree =
-                                                                         []}})
+                                                                         fromList
+                                                                           []}})
                                                               (Exp
                                                                  {unExp =
                                                                     Lit
@@ -693,21 +786,27 @@
                                                                   expInfo =
                                                                     Info
                                                                       {refsFree =
-                                                                         []}}),
+                                                                         fromList
+                                                                           []}}),
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}})
+                                                              {refsFree =
+                                                                 fromList []}})
                                                       (Exp
                                                          {unExp =
                                                             Exception
                                                               "No patterns matched",
                                                           expInfo =
                                                             Info
-                                                              {refsFree = []}}),
+                                                              {refsFree =
+                                                                 fromList []}}),
                                                   expInfo =
-                                                    Info {refsFree = []}}),
-                                          expInfo = Info {refsFree = []}})),
-                               expInfo = Info {refsFree = []}})])
+                                                    Info
+                                                      {refsFree =
+                                                         fromList []}}),
+                                          expInfo =
+                                            Info {refsFree = fromList []}})),
+                               expInfo = Info {refsFree = fromList []}})])
                        :|
                        [])
                     (Exp
@@ -716,12 +815,12 @@
                             (Exp
                                {unExp =
                                   RefBound (Index {level = 0, offset = 1}),
-                                expInfo = Info {refsFree = []}})
+                                expInfo = Info {refsFree = fromList []}})
                             (Exp
                                {unExp = Lit (Boolean False),
-                                expInfo = Info {refsFree = []}}),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}})],
+                                expInfo = Info {refsFree = fromList []}}),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports =
       [Name "letRec", Name "whereRec", Name "letRecMixed"],

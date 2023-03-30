@@ -10,9 +10,9 @@ import Language.PureScript.Backend.IR.Types
   , Literal (Boolean)
   , Module (moduleBindings, moduleImports)
   , ModuleName (..)
-  , Qualified (Imported)
   , everywhereTopDownExp
   , listGrouping
+  , qualified
   )
 
 optimizeAll :: DCE.Strategy -> [Module] -> [Module]
@@ -40,10 +40,7 @@ groupingsExprs groupings = [e | g <- groupings, (_name, e) <- listGrouping g]
 
 collectImportedModules :: Exp -> Set ModuleName
 collectImportedModules Exp {expInfo = Info {refsFree}} =
-  Set.fromList $
-    refsFree >>= \case
-      Imported modname _ -> [modname]
-      _ -> []
+  foldMap (qualified mempty \m _ -> Set.singleton m) refsFree
 
 optimizeDecls :: [Grouping (name, Exp)] -> [Grouping (name, Exp)]
 optimizeDecls = (fmap . fmap . fmap) optimizeExpression
