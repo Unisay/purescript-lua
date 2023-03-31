@@ -8,7 +8,7 @@ Status: experimental (expect bugs)
 - [X] FFI with Lua.
 - [x] Dead Code Elimination (DCE).
 - [ ] Code inlining.
-- [ ] Package Set for libraries.
+- [x] [Package Set](https://github.com/Unisay/purescript-lua-package-sets) for PureScript/Lua libs.
 
 ## Quick Start
 
