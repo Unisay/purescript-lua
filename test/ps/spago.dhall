@@ -1,8 +1,5 @@
 { name = "test-project"
-, dependencies = [ ] : List Text
+, dependencies = [ "lua-effect", "lua-prelude" ]
 , packages = ./packages.dhall
-, sources =
-    [ "src/**/*.purs"
-    , "golden/**/*.purs"
-    ]
+, sources = [ "golden/**/*.purs" ]
 }

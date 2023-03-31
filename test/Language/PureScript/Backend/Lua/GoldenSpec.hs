@@ -3,6 +3,7 @@
 
 module Language.PureScript.Backend.Lua.GoldenSpec where
 
+import Control.Monad.Catch (MonadMask)
 import Control.Monad.Oops qualified as Oops
 import Data.List qualified as List
 import Data.List.NonEmpty qualified as NE
@@ -13,7 +14,9 @@ import Data.Traversable (for)
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Optimizer (optimizeAll)
+import Language.PureScript.Backend.IR.Query qualified as Query
 import Language.PureScript.Backend.Lua qualified as Lua
+import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Linker qualified as Linker
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
@@ -38,6 +41,7 @@ import Path.IO
   , ensureDir
   , makeAbsolute
   , walkDirAccum
+  , withCurrentDir
   )
 import Path.Posix (mkRelFile)
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
@@ -70,16 +74,7 @@ spec = do
           putText "Comipling PureScript sources"
           exitCode <-
             runProcess . setWorkingDir "test/ps" . shell $
-              String.unwords
-                [ "purs"
-                , "compile"
-                , "-v"
-                , "'golden/Golden/**/*.purs'"
-                , "'src/**/*.purs'"
-                , -- , "'.spago/prelude/v6.0.0/src/**/*.purs'"
-                  "-g"
-                , "corefn"
-                ]
+              String.unwords ["spago", "build", "-u", "'-g corefn'"]
           exitCode `shouldBe` ExitSuccess
         psOutputPath = $(mkRelDir "test/ps/output/")
     describe "compiles corefn files to lua" $ beforeAll_ compilePs do
@@ -176,18 +171,26 @@ compileCorefn outputDir moduleName = do
       (either (fail . show) (pure . snd) . IR.mkModule)
       (toList cfnModules)
 
-compileIr :: MonadIO m => [IR.Module] -> m Text
-compileIr irModules = do
+compileIr :: (MonadIO m, MonadMask m) => [IR.Module] -> m Text
+compileIr irModules = withCurrentDir [reldir|test/ps|] do
+  let addPrimModule =
+        if any Query.usesPrimModule irModules
+          then (Fixture.primModule :)
+          else identity
+  let addRuntimeLazy =
+        if any Query.usesRuntimeLazy irModules
+          then (Fixture.runtimeLazy :)
+          else identity
   luaModules <- for irModules \irModule -> do
     Lua.fromIrModule irModule
       & either (die . show) pure
-  foreignPath <- Tagged <$> makeAbsolute [reldir|test/ps/foreign|]
+  foreignPath <- Tagged <$> makeAbsolute [reldir|foreign|]
   luaChunk <-
-    Linker.linkModules foreignPath luaModules
+    Linker.linkModules foreignPath (addPrimModule luaModules)
       & handleLinkerError
       & Oops.runOops
       & liftIO
-  let doc = Printer.printLuaChunk luaChunk
+  let doc = Printer.printLuaChunk (addRuntimeLazy luaChunk)
   let addTrailingLf = (<> "\n")
   pure $ addTrailingLf $ renderStrict $ layoutPretty defaultLayoutOptions doc
 

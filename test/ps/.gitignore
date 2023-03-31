@@ -3,7 +3,7 @@
 /.pulp-cache/
 /output/*/*.cbor
 /output/*/*.json
-!/output/*/corefn.json
+!/output/Golden*/corefn.json
 /output/*/*.js
 /output/*/actual.*
 /output/*.json
