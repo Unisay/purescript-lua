@@ -2,6 +2,7 @@ module Language.PureScript.Backend where
 
 import Control.Monad.Oops (CouldBeAnyOf, Variant)
 import Control.Monad.Oops qualified as Oops
+import Data.List qualified as List
 import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
 import Data.Tagged (Tagged (..), untag)
@@ -46,8 +47,8 @@ compileModules
   -> AppOrModule
   -> ExceptT (Variant e) IO Lua.Chunk
 compileModules outputDir foreignDir appOrModule = do
-  let entryModule = entryPointModule appOrModule
-  cfnModules <- CoreFn.readModuleRecursively outputDir entryModule
+  let entryModuleName = entryPointModule appOrModule
+  cfnModules <- CoreFn.readModuleRecursively outputDir entryModuleName
   irResults <- forM (Map.toList cfnModules) \(_psModuleName, cfnModule) ->
     Oops.hoistEither $ IR.mkModule cfnModule
   let (needsRuntimeLazys, irModules) = unzip irResults
@@ -66,9 +67,15 @@ compileModules outputDir foreignDir appOrModule = do
   pure $
     addRuntimeLazy chunk
       <> [ Lua.Return case appOrModule of
-            AsModule (ModuleEntryPoint modul) ->
-              Lua.varName . Lua.unModuleName . Lua.fromModuleName $
-                IR.mkModuleName modul
+            AsModule (ModuleEntryPoint modname) ->
+              let luaModName = Lua.fromModuleName (IR.mkModuleName modname)
+                  entryModule =
+                    List.find ((== luaModName) . Lua.moduleName) luaModules
+               in Lua.table $
+                    maybe [] Lua.moduleExports entryModule <&> \name ->
+                      Lua.TableRowNV
+                        name
+                        (Lua.varName (Linker.qualifyName luaModName name))
             AsApplication (AppEntryPoint modul ident) ->
               Lua.functionCall
                 ( Linker.linkedVar
