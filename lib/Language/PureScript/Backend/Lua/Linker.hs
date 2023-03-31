@@ -7,6 +7,7 @@ import Control.Monad.Oops qualified as Oops
 import Data.Graph (graphFromEdges', reverseTopSort)
 import Data.Set qualified as Set
 import Data.Tagged (Tagged (..))
+import Data.Text qualified as Text
 import Data.Traversable (for)
 import Language.PureScript.Backend.Lua.Linker.Foreign qualified as Foreign
 import Language.PureScript.Backend.Lua.Name qualified as Lua
@@ -31,7 +32,7 @@ linkModules (Tagged foreigns) luaModules =
           moduleForeign <-
             liftIO (Foreign.resolveForModule modulePath foreigns)
               >>= Oops.hoistEither . first LinkerErrorForeign
-          pure . Lua.ForeignSourceCode . decodeUtf8
+          pure . Lua.ForeignSourceCode . Text.strip . decodeUtf8
             <$> readFileBS (toFilePath moduleForeign)
 
     let fname = qualifyName moduleName [Lua.name|foreign|]
