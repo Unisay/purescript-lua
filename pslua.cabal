@@ -163,6 +163,7 @@ test-suite spec
   ghc-options:    -threaded -rtsopts -fprof-auto -with-rtsopts=-N
   build-depends:
     , call-stack                      ^>=0.4.0
+    , exceptions                      ^>=0.10.7
     , hedgehog                        ^>=1.2
     , hedgehog-corpus                 ^>=0.2
     , hspec                           ^>=2.10.10

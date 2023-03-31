@@ -25,7 +25,11 @@
         version = "latest";
       };
     };
-    buildInputs =
-      [ pkgs.purescript pkgs.lua53Packages.lua pkgs.lua53Packages.luacheck ];
+    buildInputs = with pkgs; [
+      lua53Packages.lua
+      lua53Packages.luacheck
+      purescript
+      spago
+    ];
   };
 }

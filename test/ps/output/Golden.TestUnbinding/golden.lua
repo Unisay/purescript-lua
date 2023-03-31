@@ -1,7 +1,4 @@
-local Golden_TestUnbinding = (function()
-  local f = function() return function() return 3 end end
-  local b = 2
-  local a = 1
-  local c = f(a)(f(b)(a))
-  return { a = a, b = b, f = f, c = c }
-end)()
+local Golden_TestUnbinding_I_f = function() return function() return 3 end end
+local Golden_TestUnbinding_I_b = 2
+local Golden_TestUnbinding_I_a = 1
+local Golden_TestUnbinding_I_c = Golden_TestUnbinding_I_f(Golden_TestUnbinding_I_a)(Golden_TestUnbinding_I_f(Golden_TestUnbinding_I_b)(Golden_TestUnbinding_I_a))

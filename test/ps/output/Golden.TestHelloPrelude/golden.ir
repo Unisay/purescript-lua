@@ -1,0 +1,1374 @@
+[Module
+   {moduleName = ModuleName "Control.Applicative",
+    moduleBindings =
+      [Standalone
+         (Name "pure",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "dict"))
+                    (Exp
+                       {unExp =
+                          Let
+                            (LetBinding
+                               (Standalone
+                                  (Name "v",
+                                   Exp
+                                     {unExp =
+                                        RefBound
+                                          (Index {level = 1, offset = 0}),
+                                      expInfo = Info {refsFree = fromList []}})
+                                  :|
+                                  [])
+                               (Exp
+                                  {unExp =
+                                     ObjectProp
+                                       (Exp
+                                          {unExp =
+                                             RefBound
+                                               (Index {level = 0, offset = 0}),
+                                           expInfo =
+                                             Info {refsFree = fromList []}})
+                                       (PropName "pure"),
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}}),
+       Standalone
+         (Name "liftA1",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "dictApplicative"))
+                    (Exp
+                       {unExp =
+                          Let
+                            (LetBinding
+                               (Standalone
+                                  (Name "apply",
+                                   Exp
+                                     {unExp =
+                                        App
+                                          (Exp
+                                             {unExp =
+                                                RefFree
+                                                  (Imported
+                                                     (ModuleName
+                                                        "Control.Apply")
+                                                     (Name "apply")),
+                                              expInfo =
+                                                Info
+                                                  {refsFree =
+                                                     fromList
+                                                       [Imported
+                                                          (ModuleName
+                                                             "Control.Apply")
+                                                          (Name "apply")]}})
+                                          (Exp
+                                             {unExp =
+                                                App
+                                                  (Exp
+                                                     {unExp =
+                                                        ObjectProp
+                                                          (Exp
+                                                             {unExp =
+                                                                RefBound
+                                                                  (Index
+                                                                     {level = 1,
+                                                                      offset =
+                                                                        0}),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     fromList
+                                                                       []}})
+                                                          (PropName "Apply0"),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             fromList []}})
+                                                  (Exp
+                                                     {unExp =
+                                                        RefFree
+                                                          (Imported
+                                                             (ModuleName "Prim")
+                                                             (Name
+                                                                "undefined")),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             fromList
+                                                               [Imported
+                                                                  (ModuleName
+                                                                     "Prim")
+                                                                  (Name
+                                                                     "undefined")]}}),
+                                              expInfo =
+                                                Info
+                                                  {refsFree =
+                                                     fromList
+                                                       [Imported
+                                                          (ModuleName "Prim")
+                                                          (Name
+                                                             "undefined")]}}),
+                                      expInfo =
+                                        Info
+                                          {refsFree =
+                                             fromList
+                                               [Imported
+                                                  (ModuleName "Control.Apply")
+                                                  (Name "apply"),
+                                                Imported
+                                                  (ModuleName "Prim")
+                                                  (Name "undefined")]}})
+                                  :|
+                                  [Standalone
+                                     (Name "pure1",
+                                      Exp
+                                        {unExp =
+                                           App
+                                             (Exp
+                                                {unExp =
+                                                   RefFree
+                                                     (Local (Name "pure")),
+                                                 expInfo =
+                                                   Info
+                                                     {refsFree =
+                                                        fromList
+                                                          [Local
+                                                             (Name "pure")]}})
+                                             (Exp
+                                                {unExp =
+                                                   RefBound
+                                                     (Index
+                                                        {level = 1,
+                                                         offset = 0}),
+                                                 expInfo =
+                                                   Info
+                                                     {refsFree = fromList []}}),
+                                         expInfo =
+                                           Info
+                                             {refsFree =
+                                                fromList
+                                                  [Local (Name "pure")]}})])
+                               (Exp
+                                  {unExp =
+                                     Abs
+                                       (AbsBinding
+                                          (ArgNamed (Name "f"))
+                                          (Exp
+                                             {unExp =
+                                                Abs
+                                                  (AbsBinding
+                                                     (ArgNamed (Name "a"))
+                                                     (Exp
+                                                        {unExp =
+                                                           App
+                                                             (Exp
+                                                                {unExp =
+                                                                   App
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           RefBound
+                                                                             (Index
+                                                                                {level =
+                                                                                   2,
+                                                                                 offset =
+                                                                                   0}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                fromList
+                                                                                  []}})
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           App
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefBound
+                                                                                     (Index
+                                                                                        {level =
+                                                                                           2,
+                                                                                         offset =
+                                                                                           1}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        fromList
+                                                                                          []}})
+                                                                             (Exp
+                                                                                {unExp =
+                                                                                   RefBound
+                                                                                     (Index
+                                                                                        {level =
+                                                                                           1,
+                                                                                         offset =
+                                                                                           0}),
+                                                                                 expInfo =
+                                                                                   Info
+                                                                                     {refsFree =
+                                                                                        fromList
+                                                                                          []}}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                fromList
+                                                                                  []}}),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        fromList
+                                                                          []}})
+                                                             (Exp
+                                                                {unExp =
+                                                                   RefBound
+                                                                     (Index
+                                                                        {level =
+                                                                           0,
+                                                                         offset =
+                                                                           0}),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        fromList
+                                                                          []}}),
+                                                         expInfo =
+                                                           Info
+                                                             {refsFree =
+                                                                fromList []}})),
+                                              expInfo =
+                                                Info
+                                                  {refsFree = fromList []}})),
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo =
+                          Info
+                            {refsFree =
+                               fromList
+                                 [Local (Name "pure"),
+                                  Imported
+                                    (ModuleName "Control.Apply") (Name "apply"),
+                                  Imported
+                                    (ModuleName "Prim") (Name "undefined")]}})),
+             expInfo =
+               Info
+                 {refsFree =
+                    fromList
+                      [Local (Name "pure"),
+                       Imported (ModuleName "Control.Apply") (Name "apply"),
+                       Imported (ModuleName "Prim") (Name "undefined")]}})],
+    moduleImports =
+      [ModuleName "Control.Apply", ModuleName "Prim"],
+    moduleExports = [Name "pure", Name "liftA1"],
+    moduleReExports =
+      fromList
+        [(ModuleName "Control.Apply", []),
+         (ModuleName "Data.Functor", [])],
+    moduleForeigns = [],
+    modulePath =
+      ".spago/lua-prelude/v6.0.2/src/Control/Applicative.purs",
+    dataTypes = fromList []},
+ Module
+   {moduleName = ModuleName "Control.Apply",
+    moduleBindings =
+      [Standalone
+         (Name "apply",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "dict"))
+                    (Exp
+                       {unExp =
+                          Let
+                            (LetBinding
+                               (Standalone
+                                  (Name "v",
+                                   Exp
+                                     {unExp =
+                                        RefBound
+                                          (Index {level = 1, offset = 0}),
+                                      expInfo = Info {refsFree = fromList []}})
+                                  :|
+                                  [])
+                               (Exp
+                                  {unExp =
+                                     ObjectProp
+                                       (Exp
+                                          {unExp =
+                                             RefBound
+                                               (Index {level = 0, offset = 0}),
+                                           expInfo =
+                                             Info {refsFree = fromList []}})
+                                       (PropName "apply"),
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}})],
+    moduleImports = [],
+    moduleExports = [Name "apply"],
+    moduleReExports =
+      fromList [(ModuleName "Data.Functor", [])],
+    moduleForeigns = [],
+    modulePath =
+      ".spago/lua-prelude/v6.0.2/src/Control/Apply.purs",
+    dataTypes = fromList []},
+ Module
+   {moduleName = ModuleName "Control.Bind",
+    moduleBindings =
+      [Standalone
+         (Name "bind",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "dict"))
+                    (Exp
+                       {unExp =
+                          Let
+                            (LetBinding
+                               (Standalone
+                                  (Name "v",
+                                   Exp
+                                     {unExp =
+                                        RefBound
+                                          (Index {level = 1, offset = 0}),
+                                      expInfo = Info {refsFree = fromList []}})
+                                  :|
+                                  [])
+                               (Exp
+                                  {unExp =
+                                     ObjectProp
+                                       (Exp
+                                          {unExp =
+                                             RefBound
+                                               (Index {level = 0, offset = 0}),
+                                           expInfo =
+                                             Info {refsFree = fromList []}})
+                                       (PropName "bind"),
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}})],
+    moduleImports = [],
+    moduleExports = [Name "bind"],
+    moduleReExports =
+      fromList
+        [(ModuleName "Control.Applicative", []),
+         (ModuleName "Control.Apply", []),
+         (ModuleName "Data.Functor", [])],
+    moduleForeigns = [],
+    modulePath =
+      ".spago/lua-prelude/v6.0.2/src/Control/Bind.purs",
+    dataTypes = fromList []},
+ Module
+   {moduleName = ModuleName "Control.Monad",
+    moduleBindings =
+      [Standalone
+         (Name "ap",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "dictMonad"))
+                    (Exp
+                       {unExp =
+                          Let
+                            (LetBinding
+                               (Standalone
+                                  (Name "bind",
+                                   Exp
+                                     {unExp =
+                                        App
+                                          (Exp
+                                             {unExp =
+                                                RefFree
+                                                  (Imported
+                                                     (ModuleName "Control.Bind")
+                                                     (Name "bind")),
+                                              expInfo =
+                                                Info
+                                                  {refsFree =
+                                                     fromList
+                                                       [Imported
+                                                          (ModuleName
+                                                             "Control.Bind")
+                                                          (Name "bind")]}})
+                                          (Exp
+                                             {unExp =
+                                                App
+                                                  (Exp
+                                                     {unExp =
+                                                        ObjectProp
+                                                          (Exp
+                                                             {unExp =
+                                                                RefBound
+                                                                  (Index
+                                                                     {level = 1,
+                                                                      offset =
+                                                                        0}),
+                                                              expInfo =
+                                                                Info
+                                                                  {refsFree =
+                                                                     fromList
+                                                                       []}})
+                                                          (PropName "Bind1"),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             fromList []}})
+                                                  (Exp
+                                                     {unExp =
+                                                        RefFree
+                                                          (Imported
+                                                             (ModuleName "Prim")
+                                                             (Name
+                                                                "undefined")),
+                                                      expInfo =
+                                                        Info
+                                                          {refsFree =
+                                                             fromList
+                                                               [Imported
+                                                                  (ModuleName
+                                                                     "Prim")
+                                                                  (Name
+                                                                     "undefined")]}}),
+                                              expInfo =
+                                                Info
+                                                  {refsFree =
+                                                     fromList
+                                                       [Imported
+                                                          (ModuleName "Prim")
+                                                          (Name
+                                                             "undefined")]}}),
+                                      expInfo =
+                                        Info
+                                          {refsFree =
+                                             fromList
+                                               [Imported
+                                                  (ModuleName "Control.Bind")
+                                                  (Name "bind"),
+                                                Imported
+                                                  (ModuleName "Prim")
+                                                  (Name "undefined")]}})
+                                  :|
+                                  [Standalone
+                                     (Name "pure",
+                                      Exp
+                                        {unExp =
+                                           App
+                                             (Exp
+                                                {unExp =
+                                                   RefFree
+                                                     (Imported
+                                                        (ModuleName
+                                                           "Control.Applicative")
+                                                        (Name "pure")),
+                                                 expInfo =
+                                                   Info
+                                                     {refsFree =
+                                                        fromList
+                                                          [Imported
+                                                             (ModuleName
+                                                                "Control.Applicative")
+                                                             (Name "pure")]}})
+                                             (Exp
+                                                {unExp =
+                                                   App
+                                                     (Exp
+                                                        {unExp =
+                                                           ObjectProp
+                                                             (Exp
+                                                                {unExp =
+                                                                   RefBound
+                                                                     (Index
+                                                                        {level =
+                                                                           1,
+                                                                         offset =
+                                                                           0}),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        fromList
+                                                                          []}})
+                                                             (PropName
+                                                                "Applicative0"),
+                                                         expInfo =
+                                                           Info
+                                                             {refsFree =
+                                                                fromList []}})
+                                                     (Exp
+                                                        {unExp =
+                                                           RefFree
+                                                             (Imported
+                                                                (ModuleName
+                                                                   "Prim")
+                                                                (Name
+                                                                   "undefined")),
+                                                         expInfo =
+                                                           Info
+                                                             {refsFree =
+                                                                fromList
+                                                                  [Imported
+                                                                     (ModuleName
+                                                                        "Prim")
+                                                                     (Name
+                                                                        "undefined")]}}),
+                                                 expInfo =
+                                                   Info
+                                                     {refsFree =
+                                                        fromList
+                                                          [Imported
+                                                             (ModuleName "Prim")
+                                                             (Name
+                                                                "undefined")]}}),
+                                         expInfo =
+                                           Info
+                                             {refsFree =
+                                                fromList
+                                                  [Imported
+                                                     (ModuleName
+                                                        "Control.Applicative")
+                                                     (Name "pure"),
+                                                   Imported
+                                                     (ModuleName "Prim")
+                                                     (Name "undefined")]}})])
+                               (Exp
+                                  {unExp =
+                                     Abs
+                                       (AbsBinding
+                                          (ArgNamed (Name "f"))
+                                          (Exp
+                                             {unExp =
+                                                Abs
+                                                  (AbsBinding
+                                                     (ArgNamed (Name "a"))
+                                                     (Exp
+                                                        {unExp =
+                                                           App
+                                                             (Exp
+                                                                {unExp =
+                                                                   App
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           RefBound
+                                                                             (Index
+                                                                                {level =
+                                                                                   2,
+                                                                                 offset =
+                                                                                   0}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                fromList
+                                                                                  []}})
+                                                                     (Exp
+                                                                        {unExp =
+                                                                           RefBound
+                                                                             (Index
+                                                                                {level =
+                                                                                   1,
+                                                                                 offset =
+                                                                                   0}),
+                                                                         expInfo =
+                                                                           Info
+                                                                             {refsFree =
+                                                                                fromList
+                                                                                  []}}),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        fromList
+                                                                          []}})
+                                                             (Exp
+                                                                {unExp =
+                                                                   Abs
+                                                                     (AbsBinding
+                                                                        (ArgNamed
+                                                                           (Name
+                                                                              "f'"))
+                                                                        (Exp
+                                                                           {unExp =
+                                                                              App
+                                                                                (Exp
+                                                                                   {unExp =
+                                                                                      App
+                                                                                        (Exp
+                                                                                           {unExp =
+                                                                                              RefBound
+                                                                                                (Index
+                                                                                                   {level =
+                                                                                                      3,
+                                                                                                    offset =
+                                                                                                      0}),
+                                                                                            expInfo =
+                                                                                              Info
+                                                                                                {refsFree =
+                                                                                                   fromList
+                                                                                                     []}})
+                                                                                        (Exp
+                                                                                           {unExp =
+                                                                                              RefBound
+                                                                                                (Index
+                                                                                                   {level =
+                                                                                                      1,
+                                                                                                    offset =
+                                                                                                      0}),
+                                                                                            expInfo =
+                                                                                              Info
+                                                                                                {refsFree =
+                                                                                                   fromList
+                                                                                                     []}}),
+                                                                                    expInfo =
+                                                                                      Info
+                                                                                        {refsFree =
+                                                                                           fromList
+                                                                                             []}})
+                                                                                (Exp
+                                                                                   {unExp =
+                                                                                      Abs
+                                                                                        (AbsBinding
+                                                                                           (ArgNamed
+                                                                                              (Name
+                                                                                                 "a'"))
+                                                                                           (Exp
+                                                                                              {unExp =
+                                                                                                 App
+                                                                                                   (Exp
+                                                                                                      {unExp =
+                                                                                                         RefBound
+                                                                                                           (Index
+                                                                                                              {level =
+                                                                                                                 4,
+                                                                                                               offset =
+                                                                                                                 1}),
+                                                                                                       expInfo =
+                                                                                                         Info
+                                                                                                           {refsFree =
+                                                                                                              fromList
+                                                                                                                []}})
+                                                                                                   (Exp
+                                                                                                      {unExp =
+                                                                                                         App
+                                                                                                           (Exp
+                                                                                                              {unExp =
+                                                                                                                 RefBound
+                                                                                                                   (Index
+                                                                                                                      {level =
+                                                                                                                         1,
+                                                                                                                       offset =
+                                                                                                                         0}),
+                                                                                                               expInfo =
+                                                                                                                 Info
+                                                                                                                   {refsFree =
+                                                                                                                      fromList
+                                                                                                                        []}})
+                                                                                                           (Exp
+                                                                                                              {unExp =
+                                                                                                                 RefBound
+                                                                                                                   (Index
+                                                                                                                      {level =
+                                                                                                                         0,
+                                                                                                                       offset =
+                                                                                                                         0}),
+                                                                                                               expInfo =
+                                                                                                                 Info
+                                                                                                                   {refsFree =
+                                                                                                                      fromList
+                                                                                                                        []}}),
+                                                                                                       expInfo =
+                                                                                                         Info
+                                                                                                           {refsFree =
+                                                                                                              fromList
+                                                                                                                []}}),
+                                                                                               expInfo =
+                                                                                                 Info
+                                                                                                   {refsFree =
+                                                                                                      fromList
+                                                                                                        []}})),
+                                                                                    expInfo =
+                                                                                      Info
+                                                                                        {refsFree =
+                                                                                           fromList
+                                                                                             []}}),
+                                                                            expInfo =
+                                                                              Info
+                                                                                {refsFree =
+                                                                                   fromList
+                                                                                     []}})),
+                                                                 expInfo =
+                                                                   Info
+                                                                     {refsFree =
+                                                                        fromList
+                                                                          []}}),
+                                                         expInfo =
+                                                           Info
+                                                             {refsFree =
+                                                                fromList []}})),
+                                              expInfo =
+                                                Info
+                                                  {refsFree = fromList []}})),
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo =
+                          Info
+                            {refsFree =
+                               fromList
+                                 [Imported
+                                    (ModuleName "Control.Applicative")
+                                    (Name "pure"),
+                                  Imported
+                                    (ModuleName "Control.Bind") (Name "bind"),
+                                  Imported
+                                    (ModuleName "Prim") (Name "undefined")]}})),
+             expInfo =
+               Info
+                 {refsFree =
+                    fromList
+                      [Imported
+                         (ModuleName "Control.Applicative") (Name "pure"),
+                       Imported (ModuleName "Control.Bind") (Name "bind"),
+                       Imported (ModuleName "Prim") (Name "undefined")]}})],
+    moduleImports =
+      [ModuleName "Control.Applicative",
+       ModuleName "Control.Bind",
+       ModuleName "Prim"],
+    moduleExports = [Name "ap"],
+    moduleReExports =
+      fromList
+        [(ModuleName "Control.Applicative", []),
+         (ModuleName "Control.Apply", []),
+         (ModuleName "Control.Bind", []),
+         (ModuleName "Data.Functor", [])],
+    moduleForeigns = [],
+    modulePath =
+      ".spago/lua-prelude/v6.0.2/src/Control/Monad.purs",
+    dataTypes = fromList []},
+ Module
+   {moduleName = ModuleName "Data.Unit",
+    moduleBindings = [],
+    moduleImports = [],
+    moduleExports = [Name "unit"],
+    moduleReExports = fromList [],
+    moduleForeigns = [Name "unit"],
+    modulePath =
+      ".spago/lua-prelude/v6.0.2/src/Data/Unit.purs",
+    dataTypes = fromList []},
+ Module
+   {moduleName = ModuleName "Effect",
+    moduleBindings =
+      [RecursiveGroup
+         ((Name "monadEffect",
+           Exp
+             {unExp =
+                Lit
+                  (Object
+                     [(PropName "Applicative0",
+                       Exp
+                         {unExp =
+                            Abs
+                              (AbsBinding
+                                 ArgUnused
+                                 (Exp
+                                    {unExp =
+                                       RefFree
+                                         (Local (Name "applicativeEffect")),
+                                     expInfo =
+                                       Info
+                                         {refsFree =
+                                            fromList
+                                              [Local
+                                                 (Name
+                                                    "applicativeEffect")]}})),
+                          expInfo =
+                            Info
+                              {refsFree =
+                                 fromList [Local (Name "applicativeEffect")]}}),
+                      (PropName "Bind1",
+                       Exp
+                         {unExp =
+                            Abs
+                              (AbsBinding
+                                 ArgUnused
+                                 (Exp
+                                    {unExp =
+                                       RefFree (Local (Name "bindEffect")),
+                                     expInfo =
+                                       Info
+                                         {refsFree =
+                                            fromList
+                                              [Local (Name "bindEffect")]}})),
+                          expInfo =
+                            Info
+                              {refsFree =
+                                 fromList [Local (Name "bindEffect")]}})]),
+              expInfo =
+                Info
+                  {refsFree =
+                     fromList
+                       [Local (Name "applicativeEffect"),
+                        Local (Name "bindEffect")]}})
+            :|
+            [(Name "bindEffect",
+              Exp
+                {unExp =
+                   Lit
+                     (Object
+                        [(PropName "bind",
+                          Exp
+                            {unExp = RefFree (Local (Name "bindE")),
+                             expInfo =
+                               Info
+                                 {refsFree = fromList [Local (Name "bindE")]}}),
+                         (PropName "Apply0",
+                          Exp
+                            {unExp =
+                               Abs
+                                 (AbsBinding
+                                    ArgUnused
+                                    (Exp
+                                       {unExp =
+                                          App
+                                            (Exp
+                                               {unExp =
+                                                  RefFree
+                                                    (Local
+                                                       (Name
+                                                          "$__lazy_applyEffect")),
+                                                expInfo =
+                                                  Info
+                                                    {refsFree =
+                                                       fromList
+                                                         [Local
+                                                            (Name
+                                                               "$__lazy_applyEffect")]}})
+                                            (Exp
+                                               {unExp = Lit (Integer 0),
+                                                expInfo =
+                                                  Info
+                                                    {refsFree = fromList []}}),
+                                        expInfo =
+                                          Info
+                                            {refsFree =
+                                               fromList
+                                                 [Local
+                                                    (Name
+                                                       "$__lazy_applyEffect")]}})),
+                             expInfo =
+                               Info
+                                 {refsFree =
+                                    fromList
+                                      [Local (Name "$__lazy_applyEffect")]}})]),
+                 expInfo =
+                   Info
+                     {refsFree =
+                        fromList
+                          [Local (Name "$__lazy_applyEffect"),
+                           Local (Name "bindE")]}}),
+             (Name "applicativeEffect",
+              Exp
+                {unExp =
+                   Lit
+                     (Object
+                        [(PropName "pure",
+                          Exp
+                            {unExp = RefFree (Local (Name "pureE")),
+                             expInfo =
+                               Info
+                                 {refsFree = fromList [Local (Name "pureE")]}}),
+                         (PropName "Apply0",
+                          Exp
+                            {unExp =
+                               Abs
+                                 (AbsBinding
+                                    ArgUnused
+                                    (Exp
+                                       {unExp =
+                                          App
+                                            (Exp
+                                               {unExp =
+                                                  RefFree
+                                                    (Local
+                                                       (Name
+                                                          "$__lazy_applyEffect")),
+                                                expInfo =
+                                                  Info
+                                                    {refsFree =
+                                                       fromList
+                                                         [Local
+                                                            (Name
+                                                               "$__lazy_applyEffect")]}})
+                                            (Exp
+                                               {unExp = Lit (Integer 0),
+                                                expInfo =
+                                                  Info
+                                                    {refsFree = fromList []}}),
+                                        expInfo =
+                                          Info
+                                            {refsFree =
+                                               fromList
+                                                 [Local
+                                                    (Name
+                                                       "$__lazy_applyEffect")]}})),
+                             expInfo =
+                               Info
+                                 {refsFree =
+                                    fromList
+                                      [Local (Name "$__lazy_applyEffect")]}})]),
+                 expInfo =
+                   Info
+                     {refsFree =
+                        fromList
+                          [Local (Name "$__lazy_applyEffect"),
+                           Local (Name "pureE")]}}),
+             (Name "$__lazy_functorEffect",
+              Exp
+                {unExp =
+                   App
+                     (Exp
+                        {unExp =
+                           App
+                             (Exp
+                                {unExp =
+                                   RefFree (Local (Name "$__runtime_lazy")),
+                                 expInfo =
+                                   Info
+                                     {refsFree =
+                                        fromList
+                                          [Local (Name "$__runtime_lazy")]}})
+                             (Exp
+                                {unExp = Lit (String "functorEffect"),
+                                 expInfo = Info {refsFree = fromList []}}),
+                         expInfo =
+                           Info
+                             {refsFree =
+                                fromList [Local (Name "$__runtime_lazy")]}})
+                     (Exp
+                        {unExp =
+                           Abs
+                             (AbsBinding
+                                ArgUnused
+                                (Exp
+                                   {unExp =
+                                      Lit
+                                        (Object
+                                           [(PropName "map",
+                                             Exp
+                                               {unExp =
+                                                  App
+                                                    (Exp
+                                                       {unExp =
+                                                          RefFree
+                                                            (Imported
+                                                               (ModuleName
+                                                                  "Control.Applicative")
+                                                               (Name "liftA1")),
+                                                        expInfo =
+                                                          Info
+                                                            {refsFree =
+                                                               fromList
+                                                                 [Imported
+                                                                    (ModuleName
+                                                                       "Control.Applicative")
+                                                                    (Name
+                                                                       "liftA1")]}})
+                                                    (Exp
+                                                       {unExp =
+                                                          RefFree
+                                                            (Local
+                                                               (Name
+                                                                  "applicativeEffect")),
+                                                        expInfo =
+                                                          Info
+                                                            {refsFree =
+                                                               fromList
+                                                                 [Local
+                                                                    (Name
+                                                                       "applicativeEffect")]}}),
+                                                expInfo =
+                                                  Info
+                                                    {refsFree =
+                                                       fromList
+                                                         [Local
+                                                            (Name
+                                                               "applicativeEffect"),
+                                                          Imported
+                                                            (ModuleName
+                                                               "Control.Applicative")
+                                                            (Name
+                                                               "liftA1")]}})]),
+                                    expInfo =
+                                      Info
+                                        {refsFree =
+                                           fromList
+                                             [Local (Name "applicativeEffect"),
+                                              Imported
+                                                (ModuleName
+                                                   "Control.Applicative")
+                                                (Name "liftA1")]}})),
+                         expInfo =
+                           Info
+                             {refsFree =
+                                fromList
+                                  [Local (Name "applicativeEffect"),
+                                   Imported
+                                     (ModuleName "Control.Applicative")
+                                     (Name "liftA1")]}}),
+                 expInfo =
+                   Info
+                     {refsFree =
+                        fromList
+                          [Local (Name "$__runtime_lazy"),
+                           Local (Name "applicativeEffect"),
+                           Imported
+                             (ModuleName "Control.Applicative")
+                             (Name "liftA1")]}}),
+             (Name "$__lazy_applyEffect",
+              Exp
+                {unExp =
+                   App
+                     (Exp
+                        {unExp =
+                           App
+                             (Exp
+                                {unExp =
+                                   RefFree (Local (Name "$__runtime_lazy")),
+                                 expInfo =
+                                   Info
+                                     {refsFree =
+                                        fromList
+                                          [Local (Name "$__runtime_lazy")]}})
+                             (Exp
+                                {unExp = Lit (String "applyEffect"),
+                                 expInfo = Info {refsFree = fromList []}}),
+                         expInfo =
+                           Info
+                             {refsFree =
+                                fromList [Local (Name "$__runtime_lazy")]}})
+                     (Exp
+                        {unExp =
+                           Abs
+                             (AbsBinding
+                                ArgUnused
+                                (Exp
+                                   {unExp =
+                                      Lit
+                                        (Object
+                                           [(PropName "apply",
+                                             Exp
+                                               {unExp =
+                                                  App
+                                                    (Exp
+                                                       {unExp =
+                                                          RefFree
+                                                            (Imported
+                                                               (ModuleName
+                                                                  "Control.Monad")
+                                                               (Name "ap")),
+                                                        expInfo =
+                                                          Info
+                                                            {refsFree =
+                                                               fromList
+                                                                 [Imported
+                                                                    (ModuleName
+                                                                       "Control.Monad")
+                                                                    (Name
+                                                                       "ap")]}})
+                                                    (Exp
+                                                       {unExp =
+                                                          RefFree
+                                                            (Local
+                                                               (Name
+                                                                  "monadEffect")),
+                                                        expInfo =
+                                                          Info
+                                                            {refsFree =
+                                                               fromList
+                                                                 [Local
+                                                                    (Name
+                                                                       "monadEffect")]}}),
+                                                expInfo =
+                                                  Info
+                                                    {refsFree =
+                                                       fromList
+                                                         [Local
+                                                            (Name
+                                                               "monadEffect"),
+                                                          Imported
+                                                            (ModuleName
+                                                               "Control.Monad")
+                                                            (Name "ap")]}}),
+                                            (PropName "Functor0",
+                                             Exp
+                                               {unExp =
+                                                  Abs
+                                                    (AbsBinding
+                                                       ArgUnused
+                                                       (Exp
+                                                          {unExp =
+                                                             App
+                                                               (Exp
+                                                                  {unExp =
+                                                                     RefFree
+                                                                       (Local
+                                                                          (Name
+                                                                             "$__lazy_functorEffect")),
+                                                                   expInfo =
+                                                                     Info
+                                                                       {refsFree =
+                                                                          fromList
+                                                                            [Local
+                                                                               (Name
+                                                                                  "$__lazy_functorEffect")]}})
+                                                               (Exp
+                                                                  {unExp =
+                                                                     Lit
+                                                                       (Integer
+                                                                          0),
+                                                                   expInfo =
+                                                                     Info
+                                                                       {refsFree =
+                                                                          fromList
+                                                                            []}}),
+                                                           expInfo =
+                                                             Info
+                                                               {refsFree =
+                                                                  fromList
+                                                                    [Local
+                                                                       (Name
+                                                                          "$__lazy_functorEffect")]}})),
+                                                expInfo =
+                                                  Info
+                                                    {refsFree =
+                                                       fromList
+                                                         [Local
+                                                            (Name
+                                                               "$__lazy_functorEffect")]}})]),
+                                    expInfo =
+                                      Info
+                                        {refsFree =
+                                           fromList
+                                             [Local
+                                                (Name "$__lazy_functorEffect"),
+                                              Local (Name "monadEffect"),
+                                              Imported
+                                                (ModuleName "Control.Monad")
+                                                (Name "ap")]}})),
+                         expInfo =
+                           Info
+                             {refsFree =
+                                fromList
+                                  [Local (Name "$__lazy_functorEffect"),
+                                   Local (Name "monadEffect"),
+                                   Imported
+                                     (ModuleName "Control.Monad")
+                                     (Name "ap")]}}),
+                 expInfo =
+                   Info
+                     {refsFree =
+                        fromList
+                          [Local (Name "$__lazy_functorEffect"),
+                           Local (Name "$__runtime_lazy"),
+                           Local (Name "monadEffect"),
+                           Imported
+                             (ModuleName "Control.Monad") (Name "ap")]}}),
+             (Name "functorEffect",
+              Exp
+                {unExp =
+                   App
+                     (Exp
+                        {unExp =
+                           RefFree (Local (Name "$__lazy_functorEffect")),
+                         expInfo =
+                           Info
+                             {refsFree =
+                                fromList
+                                  [Local (Name "$__lazy_functorEffect")]}})
+                     (Exp
+                        {unExp = Lit (Integer 0),
+                         expInfo = Info {refsFree = fromList []}}),
+                 expInfo =
+                   Info
+                     {refsFree =
+                        fromList [Local (Name "$__lazy_functorEffect")]}}),
+             (Name "applyEffect",
+              Exp
+                {unExp =
+                   App
+                     (Exp
+                        {unExp =
+                           RefFree (Local (Name "$__lazy_applyEffect")),
+                         expInfo =
+                           Info
+                             {refsFree =
+                                fromList [Local (Name "$__lazy_applyEffect")]}})
+                     (Exp
+                        {unExp = Lit (Integer 0),
+                         expInfo = Info {refsFree = fromList []}}),
+                 expInfo =
+                   Info
+                     {refsFree =
+                        fromList [Local (Name "$__lazy_applyEffect")]}})])],
+    moduleImports =
+      [ModuleName "Control.Applicative",
+       ModuleName "Control.Monad"],
+    moduleExports =
+      [Name "functorEffect",
+       Name "applyEffect",
+       Name "applicativeEffect",
+       Name "bindEffect",
+       Name "monadEffect"],
+    moduleReExports = fromList [],
+    moduleForeigns = [Name "pureE", Name "bindE"],
+    modulePath =
+      ".spago/lua-effect/v4.0.0/src/Effect.purs",
+    dataTypes = fromList []},
+ Module
+   {moduleName = ModuleName "Golden.TestHelloPrelude",
+    moduleBindings =
+      [Standalone
+         (Name "main",
+          Exp
+            {unExp =
+               App
+                 (Exp
+                    {unExp =
+                       RefFree
+                         (Imported (ModuleName "Prelude") (Name "pass")),
+                     expInfo =
+                       Info
+                         {refsFree =
+                            fromList
+                              [Imported (ModuleName "Prelude") (Name "pass")]}})
+                 (Exp
+                    {unExp =
+                       RefFree
+                         (Imported
+                            (ModuleName "Effect") (Name "applicativeEffect")),
+                     expInfo =
+                       Info
+                         {refsFree =
+                            fromList
+                              [Imported
+                                 (ModuleName "Effect")
+                                 (Name "applicativeEffect")]}}),
+             expInfo =
+               Info
+                 {refsFree =
+                    fromList
+                      [Imported
+                         (ModuleName "Effect") (Name "applicativeEffect"),
+                       Imported (ModuleName "Prelude") (Name "pass")]}})],
+    moduleImports =
+      [ModuleName "Effect", ModuleName "Prelude"],
+    moduleExports = [Name "main"],
+    moduleReExports = fromList [],
+    moduleForeigns = [],
+    modulePath = "golden/Golden/TestHelloPrelude.purs",
+    dataTypes = fromList []},
+ Module
+   {moduleName = ModuleName "Prelude",
+    moduleBindings =
+      [Standalone
+         (Name "pass",
+          Exp
+            {unExp =
+               Abs
+                 (AbsBinding
+                    (ArgNamed (Name "dictApplicative"))
+                    (Exp
+                       {unExp =
+                          App
+                            (Exp
+                               {unExp =
+                                  App
+                                    (Exp
+                                       {unExp =
+                                          RefFree
+                                            (Imported
+                                               (ModuleName
+                                                  "Control.Applicative")
+                                               (Name "pure")),
+                                        expInfo =
+                                          Info
+                                            {refsFree =
+                                               fromList
+                                                 [Imported
+                                                    (ModuleName
+                                                       "Control.Applicative")
+                                                    (Name "pure")]}})
+                                    (Exp
+                                       {unExp =
+                                          RefBound
+                                            (Index {level = 0, offset = 0}),
+                                        expInfo =
+                                          Info {refsFree = fromList []}}),
+                                expInfo =
+                                  Info
+                                    {refsFree =
+                                       fromList
+                                         [Imported
+                                            (ModuleName "Control.Applicative")
+                                            (Name "pure")]}})
+                            (Exp
+                               {unExp =
+                                  RefFree
+                                    (Imported
+                                       (ModuleName "Data.Unit") (Name "unit")),
+                                expInfo =
+                                  Info
+                                    {refsFree =
+                                       fromList
+                                         [Imported
+                                            (ModuleName "Data.Unit")
+                                            (Name "unit")]}}),
+                        expInfo =
+                          Info
+                            {refsFree =
+                               fromList
+                                 [Imported
+                                    (ModuleName "Control.Applicative")
+                                    (Name "pure"),
+                                  Imported
+                                    (ModuleName "Data.Unit") (Name "unit")]}})),
+             expInfo =
+               Info
+                 {refsFree =
+                    fromList
+                      [Imported
+                         (ModuleName "Control.Applicative") (Name "pure"),
+                       Imported (ModuleName "Data.Unit") (Name "unit")]}})],
+    moduleImports =
+      [ModuleName "Control.Applicative",
+       ModuleName "Data.Unit"],
+    moduleExports = [Name "pass"],
+    moduleReExports =
+      fromList
+        [(ModuleName "Control.Applicative", []),
+         (ModuleName "Control.Apply", []),
+         (ModuleName "Control.Bind", []),
+         (ModuleName "Control.Category", []),
+         (ModuleName "Control.Monad", []),
+         (ModuleName "Control.Semigroupoid", []),
+         (ModuleName "Data.Boolean", []),
+         (ModuleName "Data.BooleanAlgebra", []),
+         (ModuleName "Data.Bounded", []),
+         (ModuleName "Data.CommutativeRing", []),
+         (ModuleName "Data.DivisionRing", []),
+         (ModuleName "Data.Eq", []),
+         (ModuleName "Data.EuclideanRing", []),
+         (ModuleName "Data.Field", []),
+         (ModuleName "Data.Function", []),
+         (ModuleName "Data.Functor", []),
+         (ModuleName "Data.HeytingAlgebra", []),
+         (ModuleName "Data.Monoid", []),
+         (ModuleName "Data.NaturalTransformation", []),
+         (ModuleName "Data.Ord", []),
+         (ModuleName "Data.Ordering", []),
+         (ModuleName "Data.Ring", []),
+         (ModuleName "Data.Semigroup", []),
+         (ModuleName "Data.Semiring", []),
+         (ModuleName "Data.Show", []),
+         (ModuleName "Data.Unit", []),
+         (ModuleName "Data.Void", [])],
+    moduleForeigns = [],
+    modulePath =
+      ".spago/lua-prelude/v6.0.2/src/Prelude.purs",
+    dataTypes = fromList []}]

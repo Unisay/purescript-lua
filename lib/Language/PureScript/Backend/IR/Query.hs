@@ -1,5 +1,6 @@
 module Language.PureScript.Backend.IR.Query where
 
+import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.Types
   ( Exp (..)
   , Info (..)
@@ -16,7 +17,7 @@ usesRuntimeLazy Module {moduleBindings = bs} =
   getAny $ foldMap (foldMap (Any . findRuntimeLazyInExpr) . bindingExprs) bs
  where
   findRuntimeLazyInExpr Exp {expInfo = Info {refsFree}} =
-    Local (Name "$__runtime_lazy") `elem` refsFree
+    Local (Name "$__runtime_lazy") `Set.member` refsFree
 
 usesPrimModule :: Module -> Bool
 usesPrimModule Module {moduleBindings = bs} =

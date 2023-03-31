@@ -7,7 +7,7 @@
           Exp
             {unExp =
                Ctor ProductType (TyName "Unit") (CtorName "U") [],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "CtorSameName",
           Exp
@@ -17,13 +17,13 @@
                  (TyName "TySameName")
                  (CtorName "CtorSameName")
                  [],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "S0",
           Exp
             {unExp =
                Ctor SumType (TyName "TSum") (CtorName "S0") [],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "S1",
           Exp
@@ -33,7 +33,7 @@
                  (TyName "TSum")
                  (CtorName "S1")
                  [FieldName "value0"],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "S2",
           Exp
@@ -43,7 +43,7 @@
                  (TyName "TSum")
                  (CtorName "S2")
                  [FieldName "value0", FieldName "value1"],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "PF",
           Exp
@@ -53,7 +53,7 @@
                  (TyName "TProductWithFields")
                  (CtorName "PF")
                  [FieldName "value0"],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "P3",
           Exp
@@ -65,13 +65,13 @@
                  [FieldName "value0",
                   FieldName "value1",
                   FieldName "value2"],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "Nop",
           Exp
             {unExp =
                Ctor SumType (TyName "Rec") (CtorName "Nop") [],
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "More",
           Exp
@@ -81,7 +81,7 @@
                  (TyName "Rec")
                  (CtorName "More")
                  [FieldName "value0"],
-             expInfo = Info {refsFree = []}})],
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports =
       [Name "U",

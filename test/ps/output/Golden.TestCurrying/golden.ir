@@ -28,11 +28,14 @@
                                                            Lit (String "ok"),
                                                          expInfo =
                                                            Info
-                                                             {refsFree = []}})),
-                                              expInfo = Info {refsFree = []}})),
-                                   expInfo = Info {refsFree = []}})),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}}),
+                                                             {refsFree =
+                                                                fromList []}})),
+                                              expInfo =
+                                                Info
+                                                  {refsFree = fromList []}})),
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "apply",
           Exp
@@ -52,15 +55,17 @@
                                           {unExp =
                                              RefBound
                                                (Index {level = 1, offset = 0}),
-                                           expInfo = Info {refsFree = []}})
+                                           expInfo =
+                                             Info {refsFree = fromList []}})
                                        (Exp
                                           {unExp =
                                              RefBound
                                                (Index {level = 0, offset = 0}),
-                                           expInfo = Info {refsFree = []}}),
-                                   expInfo = Info {refsFree = []}})),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}})],
+                                           expInfo =
+                                             Info {refsFree = fromList []}}),
+                                   expInfo = Info {refsFree = fromList []}})),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports = [Name "apply", Name "f"],
     moduleReExports = fromList [],

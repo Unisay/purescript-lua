@@ -5,7 +5,7 @@
          (Name "i",
           Exp
             {unExp = Lit (Integer 1),
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "f",
           Exp
@@ -15,18 +15,18 @@
                     ArgUnused
                     (Exp
                        {unExp = Lit (Boolean True),
-                        expInfo = Info {refsFree = []}})),
-             expInfo = Info {refsFree = []}}),
+                        expInfo = Info {refsFree = fromList []}})),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "c",
           Exp
             {unExp = Lit (Char 'c'),
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "b",
           Exp
             {unExp = Lit (Boolean True),
-             expInfo = Info {refsFree = []}}),
+             expInfo = Info {refsFree = fromList []}}),
        Standalone
          (Name "o",
           Exp
@@ -36,21 +36,25 @@
                     [(PropName "i",
                       Exp
                         {unExp = RefFree (Local (Name "i")),
-                         expInfo = Info {refsFree = [Local (Name "i")]}}),
+                         expInfo =
+                           Info {refsFree = fromList [Local (Name "i")]}}),
                      (PropName "b",
                       Exp
                         {unExp = RefFree (Local (Name "b")),
-                         expInfo = Info {refsFree = [Local (Name "b")]}}),
+                         expInfo =
+                           Info {refsFree = fromList [Local (Name "b")]}}),
                      (PropName "c",
                       Exp
                         {unExp = RefFree (Local (Name "c")),
-                         expInfo = Info {refsFree = [Local (Name "c")]}})]),
+                         expInfo =
+                           Info {refsFree = fromList [Local (Name "c")]}})]),
              expInfo =
                Info
                  {refsFree =
-                    [Local (Name "i"),
-                     Local (Name "b"),
-                     Local (Name "c")]}}),
+                    fromList
+                      [Local (Name "b"),
+                       Local (Name "c"),
+                       Local (Name "i")]}}),
        Standalone
          (Name "a",
           Exp
@@ -59,14 +63,14 @@
                  (Array
                     [Exp
                        {unExp = Lit (Integer 1),
-                        expInfo = Info {refsFree = []}},
+                        expInfo = Info {refsFree = fromList []}},
                      Exp
                        {unExp = Lit (Integer 2),
-                        expInfo = Info {refsFree = []}},
+                        expInfo = Info {refsFree = fromList []}},
                      Exp
                        {unExp = Lit (Integer 3),
-                        expInfo = Info {refsFree = []}}]),
-             expInfo = Info {refsFree = []}})],
+                        expInfo = Info {refsFree = fromList []}}]),
+             expInfo = Info {refsFree = fromList []}})],
     moduleImports = [],
     moduleExports =
       [Name "i",

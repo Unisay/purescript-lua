@@ -71,10 +71,9 @@ compileModules outputDir foreignDir appOrModule = do
                 IR.mkModuleName modul
             AsApplication (AppEntryPoint modul ident) ->
               Lua.functionCall
-                ( Lua.varQName $
-                    Lua.ImportedName
-                      (Lua.fromModuleName $ IR.mkModuleName modul)
-                      (Lua.fromName (IR.identToName ident))
+                ( Linker.linkedVar
+                    (Lua.fromModuleName $ IR.mkModuleName modul)
+                    (Lua.fromName (IR.identToName ident))
                 )
                 []
          ]

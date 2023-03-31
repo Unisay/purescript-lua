@@ -1,9 +1,10 @@
-local Golden_TestValues = (function()
-  local i = 1
-  local f = function() return true end
-  local c = "c"
-  local b = true
-  local o = { i = i, b = b, c = c }
-  local a = { 1, 2, 3 }
-  return { i = i, b = b, c = c, a = a, o = o, f = f }
-end)()
+local Golden_TestValues_I_i = 1
+local Golden_TestValues_I_f = function() return true end
+local Golden_TestValues_I_c = "c"
+local Golden_TestValues_I_b = true
+local Golden_TestValues_I_o = {
+  i = Golden_TestValues_I_i,
+  b = Golden_TestValues_I_b,
+  c = Golden_TestValues_I_c
+}
+local Golden_TestValues_I_a = { 1, 2, 3 }
