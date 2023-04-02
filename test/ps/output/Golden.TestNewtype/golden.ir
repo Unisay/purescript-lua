@@ -3,54 +3,35 @@
     moduleBindings =
       [Standalone
          (Name "NT",
-          Exp
-            {unExp =
-               Abs
-                 (AbsBinding
-                    (ArgNamed (Name "x"))
-                    (Exp
-                       {unExp = RefBound (Index {level = 0, offset = 0}),
-                        expInfo = Info {refsFree = fromList []}})),
-             expInfo = Info {refsFree = fromList []}}),
-       Standalone
-         (Name "g",
-          Exp
-            {unExp = RefFree (Local (Name "NT")),
-             expInfo =
-               Info {refsFree = fromList [Local (Name "NT")]}}),
+          Abs
+            (AbsBinding
+               (ArgNamed (Name "x"))
+               (LocallyNameless
+                  {unLocallyNameless =
+                     RefBound (Index {level = 0, offset = 0})}))),
+       Standalone (Name "g", RefFree (Local (Name "NT"))),
        Standalone
          (Name "f",
-          Exp
-            {unExp =
-               Abs
-                 (AbsBinding
-                    (ArgNamed (Name "v"))
-                    (Exp
-                       {unExp =
-                          Let
-                            (LetBinding
-                               (Standalone
-                                  (Name "n",
-                                   Exp
-                                     {unExp =
-                                        RefBound
-                                          (Index {level = 1, offset = 0}),
-                                      expInfo = Info {refsFree = fromList []}})
-                                  :|
-                                  [])
-                               (Exp
-                                  {unExp =
-                                     ObjectProp
-                                       (Exp
-                                          {unExp =
-                                             RefBound
-                                               (Index {level = 0, offset = 0}),
-                                           expInfo =
-                                             Info {refsFree = fromList []}})
-                                       (PropName "foo"),
-                                   expInfo = Info {refsFree = fromList []}})),
-                        expInfo = Info {refsFree = fromList []}})),
-             expInfo = Info {refsFree = fromList []}})],
+          Abs
+            (AbsBinding
+               (ArgNamed (Name "v"))
+               (LocallyNameless
+                  {unLocallyNameless =
+                     Let
+                       (LetBinding
+                          (Standalone
+                             (Name "n",
+                              LocallyNameless
+                                {unLocallyNameless =
+                                   RefBound (Index {level = 1, offset = 0})})
+                             :|
+                             [])
+                          (LocallyNameless
+                             {unLocallyNameless =
+                                ObjectProp
+                                  RefBound
+                                  (Index {level = 0, offset = 0})
+                                  (PropName "foo")}))})))],
     moduleImports = [],
     moduleExports = [Name "NT", Name "f", Name "g"],
     moduleReExports = fromList [],

@@ -10,6 +10,9 @@ import Data.Text qualified as Text
 import Data.Traversable (for)
 import GHC.Generics.Generically (Generically (..))
 import Quiet (Quiet (..))
+import Text.Show (show)
+import Prelude hiding (show)
+import Prelude qualified as Show
 
 data Module = Module
   { moduleName :: ModuleName
@@ -90,8 +93,8 @@ data LetBinding a
   deriving stock (Show, Eq, Ord, Functor)
 
 newtype LocallyNameless a = LocallyNameless {unLocallyNameless :: a}
-  deriving newtype (Show, Eq, Ord)
-  deriving stock (Functor, Foldable, Traversable)
+  deriving newtype (Eq, Ord)
+  deriving stock (Show, Functor, Foldable, Traversable)
 
 data Literal a
   = Integer Integer
@@ -178,7 +181,11 @@ $( let ts =
  )
 
 deriving stock instance Show Info
-deriving stock instance Show Exp
+
+instance Show Exp where
+  show :: Exp -> String
+  show Exp {..} = show unExp
+
 deriving stock instance Show a => Show (ExpF a)
 deriving stock instance Show Module
 deriving stock instance Eq Info
@@ -216,19 +223,19 @@ instance Monad m => FreshNames (StateT [Tagged "fresh" Name] m) where
       ns ->
         error $
           "Can't refresh a name "
-            <> show n
+            <> Show.show n
             <> ", have these names: "
-            <> show ns
+            <> Show.show ns
 
 instance Monad m => FreshNames (StateT Natural m) where
   fresh = do
     i <- get
     put (i + 1)
-    pure (Name ("n" <> "_" <> show i))
+    pure (Name ("n" <> "_" <> Show.show i))
   refresh (Name n) = do
     i <- get
     put (i + 1)
-    pure (Name (n <> show i))
+    pure (Name (n <> Show.show i))
 
 class BindingPattern p where
   atOffset :: p -> Offset -> Maybe Name

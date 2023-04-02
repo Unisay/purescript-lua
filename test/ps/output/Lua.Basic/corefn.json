@@ -1,1 +1,0 @@
-{"builtWith":"0.15.7","comments":[],"decls":[],"exports":[],"foreign":[],"imports":[{"annotation":{"meta":null,"sourceSpan":{"end":[1,23],"start":[1,1]}},"moduleName":["Prim"]}],"moduleName":["Lua","Basic"],"modulePath":"src/Lua/Basic.purs","reExports":{},"sourceSpan":{"end":[1,23],"start":[1,1]}}

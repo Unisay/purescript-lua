@@ -44,7 +44,7 @@ local Control_Monad_I_ap = function(dictMonad0)
     end
   end
 end
-local Data_Unit_I_foreign = (function() return { unit = nil }  end)()
+local Data_Unit_I_foreign = (function() return { unit = nil } end)()
 local Data_Unit_I_unit = Data_Unit_I_foreign.unit
 local Effect_I_foreign = (function()
   return {
@@ -102,7 +102,6 @@ local Effect_I_foreign = (function()
     end
 
   }
-
 end)()
 local Effect_I_pureE = Effect_I_foreign.pureE
 local Effect_I_bindE = Effect_I_foreign.bindE

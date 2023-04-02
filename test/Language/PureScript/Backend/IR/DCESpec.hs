@@ -1,17 +1,10 @@
 module Language.PureScript.Backend.IR.DCESpec where
 
 import Data.List.NonEmpty qualified as NE
-import Hedgehog (annotate, forAll, (===))
-import Hedgehog.Gen qualified as Gen
-import Hedgehog.Range qualified as Range
+import Hedgehog (forAll, (===))
 import Language.PureScript.Backend.IR
-import Language.PureScript.Backend.IR.DCE
-  ( Strategy (..)
-  , dceExpr
-  , eliminateDeadCode
-  )
+import Language.PureScript.Backend.IR.DCE (Strategy (..), eliminateDeadCode)
 import Language.PureScript.Backend.IR.Gen qualified as Gen
-import Shower (shower)
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
 
@@ -70,10 +63,20 @@ spec = describe "IR Dead Code Elimination" do
     [entryModule]
       === eliminateDeadCode strategy [entryModule, otherModule]
 
+{-
   test "detects named argument unused by an abs-bindings" do
-    body <- forAll Gen.literalNonRecursiveExp
+    body <- forAll Gen.exp
     name <- forAll Gen.name
     dceExpr (abstraction (ArgNamed name) body) === abstraction ArgUnused body
+
+  modifyMaxShrinks (const 0) $
+    it "doesn't eliminate named argument used by an abs-bindings" $ hedgehog do
+      body@(Exp {expInfo = Info {refsFree}}) <-
+        forAll $ flip Gen.filter Gen.exp \Exp {expInfo = Info {refsFree}} ->
+          or [True | Local _ <- toList refsFree]
+      name <- forAll $ Gen.element [name | Local name <- toList refsFree]
+      let f = abstraction (ArgNamed name) body
+      dceExpr f === f
 
   test "detects anonymous argument unused by an abs-bindings" do
     body <- forAll Gen.literalNonRecursiveExp
@@ -134,6 +137,7 @@ spec = describe "IR Dead Code Elimination" do
     annotate $ shower expr
     expected === dceExpr expr
 
+-}
 --------------------------------------------------------------------------------
 -- Fixture ---------------------------------------------------------------------
 

@@ -88,6 +88,10 @@ spec = describe "LocallyNameless encoding" do
           , Index {level = 0, offset = 0} -- e
           ]
 
+  it "UpdateRefs identity" $ hedgehog do
+    expr <- forAll Gen.exp
+    expr === updateRefs (const refFreeLocal) (const refBound) expr
+
 collectBoundRefs :: Exp -> [Index]
 collectBoundRefs e = execAccum (everywhereTopDownExpM visit e) []
  where

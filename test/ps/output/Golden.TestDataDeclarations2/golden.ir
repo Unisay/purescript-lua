@@ -4,132 +4,49 @@
     moduleBindings =
       [Standalone
          (Name "CtorSameName",
-          Exp
-            {unExp =
-               Ctor
-                 ProductType
-                 (TyName "TySameName")
-                 (CtorName "CtorSameName")
-                 [],
-             expInfo = Info {refsFree = fromList []}}),
+          Ctor
+            ProductType
+            (TyName "TySameName")
+            (CtorName "CtorSameName")
+            []),
        Standalone
          (Name "test",
-          Exp
-            {unExp =
-               Abs
-                 (AbsBinding
-                    (ArgNamed (Name "v"))
-                    (Exp
-                       {unExp =
-                          Abs
-                            (AbsBinding
-                               (ArgNamed (Name "v1"))
-                               (Exp
-                                  {unExp =
-                                     IfThenElse
-                                       (Exp
-                                          {unExp =
-                                             Prim
-                                               (Eq
-                                                  (Exp
-                                                     {unExp =
-                                                        Lit
-                                                          (String
-                                                             "Golden.TestDataDeclarations1.CtorSameName"),
-                                                      expInfo =
-                                                        Info
-                                                          {refsFree =
-                                                             fromList []}})
-                                                  (Exp
-                                                     {unExp =
-                                                        Prim
-                                                          (ReflectCtor
-                                                             (Exp
-                                                                {unExp =
-                                                                   RefBound
-                                                                     (Index
-                                                                        {level =
-                                                                           1,
-                                                                         offset =
-                                                                           0}),
-                                                                 expInfo =
-                                                                   Info
-                                                                     {refsFree =
-                                                                        fromList
-                                                                          []}})),
-                                                      expInfo =
-                                                        Info
-                                                          {refsFree =
-                                                             fromList []}})),
-                                           expInfo =
-                                             Info {refsFree = fromList []}})
-                                       (Exp
-                                          {unExp =
-                                             IfThenElse
-                                               (Exp
-                                                  {unExp =
-                                                     Prim
-                                                       (Eq
-                                                          (Exp
-                                                             {unExp =
-                                                                Lit
-                                                                  (String
-                                                                     "Golden.TestDataDeclarations2.CtorSameName"),
-                                                              expInfo =
-                                                                Info
-                                                                  {refsFree =
-                                                                     fromList
-                                                                       []}})
-                                                          (Exp
-                                                             {unExp =
-                                                                Prim
-                                                                  (ReflectCtor
-                                                                     (Exp
-                                                                        {unExp =
-                                                                           RefBound
-                                                                             (Index
-                                                                                {level =
-                                                                                   0,
-                                                                                 offset =
-                                                                                   0}),
-                                                                         expInfo =
-                                                                           Info
-                                                                             {refsFree =
-                                                                                fromList
-                                                                                  []}})),
-                                                              expInfo =
-                                                                Info
-                                                                  {refsFree =
-                                                                     fromList
-                                                                       []}})),
-                                                   expInfo =
-                                                     Info
-                                                       {refsFree =
-                                                          fromList []}})
-                                               (Exp
-                                                  {unExp = Lit (Boolean True),
-                                                   expInfo =
-                                                     Info
-                                                       {refsFree =
-                                                          fromList []}})
-                                               (Exp
-                                                  {unExp =
-                                                     Exception
-                                                       "No patterns matched",
-                                                   expInfo =
-                                                     Info
-                                                       {refsFree =
-                                                          fromList []}}),
-                                           expInfo =
-                                             Info {refsFree = fromList []}})
-                                       (Exp
-                                          {unExp =
-                                             Exception "No patterns matched",
-                                           expInfo =
-                                             Info {refsFree = fromList []}}),
-                                   expInfo = Info {refsFree = fromList []}})),
-                        expInfo = Info {refsFree = fromList []}})),
-             expInfo = Info {refsFree = fromList []}})],
+          Abs
+            (AbsBinding
+               (ArgNamed (Name "v"))
+               (LocallyNameless
+                  {unLocallyNameless =
+                     Abs
+                       (AbsBinding
+                          (ArgNamed (Name "v1"))
+                          (LocallyNameless
+                             {unLocallyNameless =
+                                IfThenElse
+                                  Prim
+                                  (Eq
+                                     Lit
+                                     (String
+                                        "Golden.TestDataDeclarations1.CtorSameName")
+                                     Prim
+                                     (ReflectCtor
+                                        RefBound
+                                        (Index {level = 1, offset = 0})))
+                                  IfThenElse
+                                  Prim
+                                  (Eq
+                                     Lit
+                                     (String
+                                        "Golden.TestDataDeclarations2.CtorSameName")
+                                     Prim
+                                     (ReflectCtor
+                                        RefBound
+                                        (Index {level = 0, offset = 0})))
+                                  Lit
+                                  (Boolean True)
+                                  Exception
+                                  "No patterns matched"
+                                  Exception
+                                  "No patterns matched"}))})))],
     moduleImports = [],
     moduleExports = [Name "CtorSameName", Name "test"],
     moduleReExports = fromList [],

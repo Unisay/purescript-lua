@@ -3,92 +3,34 @@
     moduleBindings =
       [Standalone
          (Name "f",
-          Exp
-            {unExp =
-               Abs
-                 (AbsBinding
-                    ArgUnused
-                    (Exp
-                       {unExp =
-                          Abs
-                            (AbsBinding
-                               ArgUnused
-                               (Exp
-                                  {unExp = Lit (Integer 3),
-                                   expInfo = Info {refsFree = fromList []}})),
-                        expInfo = Info {refsFree = fromList []}})),
-             expInfo = Info {refsFree = fromList []}}),
-       Standalone
-         (Name "b",
-          Exp
-            {unExp = Lit (Integer 2),
-             expInfo = Info {refsFree = fromList []}}),
-       Standalone
-         (Name "a",
-          Exp
-            {unExp = Lit (Integer 1),
-             expInfo = Info {refsFree = fromList []}}),
+          Abs
+            (AbsBinding
+               (ArgNamed (Name "v"))
+               (LocallyNameless
+                  {unLocallyNameless =
+                     Abs
+                       (AbsBinding
+                          (ArgNamed (Name "v1"))
+                          (LocallyNameless
+                             {unLocallyNameless = Lit (Integer 3)}))}))),
+       Standalone (Name "b", Lit (Integer 2)),
+       Standalone (Name "a", Lit (Integer 1)),
        Standalone
          (Name "c",
-          Exp
-            {unExp =
-               App
-                 (Exp
-                    {unExp =
-                       App
-                         (Exp
-                            {unExp = RefFree (Local (Name "f")),
-                             expInfo =
-                               Info {refsFree = fromList [Local (Name "f")]}})
-                         (Exp
-                            {unExp = RefFree (Local (Name "a")),
-                             expInfo =
-                               Info {refsFree = fromList [Local (Name "a")]}}),
-                     expInfo =
-                       Info
-                         {refsFree =
-                            fromList [Local (Name "a"), Local (Name "f")]}})
-                 (Exp
-                    {unExp =
-                       App
-                         (Exp
-                            {unExp =
-                               App
-                                 (Exp
-                                    {unExp = RefFree (Local (Name "f")),
-                                     expInfo =
-                                       Info
-                                         {refsFree =
-                                            fromList [Local (Name "f")]}})
-                                 (Exp
-                                    {unExp = RefFree (Local (Name "b")),
-                                     expInfo =
-                                       Info
-                                         {refsFree =
-                                            fromList [Local (Name "b")]}}),
-                             expInfo =
-                               Info
-                                 {refsFree =
-                                    fromList
-                                      [Local (Name "b"), Local (Name "f")]}})
-                         (Exp
-                            {unExp = RefFree (Local (Name "a")),
-                             expInfo =
-                               Info {refsFree = fromList [Local (Name "a")]}}),
-                     expInfo =
-                       Info
-                         {refsFree =
-                            fromList
-                              [Local (Name "a"),
-                               Local (Name "b"),
-                               Local (Name "f")]}}),
-             expInfo =
-               Info
-                 {refsFree =
-                    fromList
-                      [Local (Name "a"),
-                       Local (Name "b"),
-                       Local (Name "f")]}})],
+          App
+            App
+            RefFree
+            (Local (Name "f"))
+            RefFree
+            (Local (Name "a"))
+            App
+            App
+            RefFree
+            (Local (Name "f"))
+            RefFree
+            (Local (Name "b"))
+            RefFree
+            (Local (Name "a")))],
     moduleImports = [],
     moduleExports =
       [Name "a", Name "b", Name "f", Name "c"],

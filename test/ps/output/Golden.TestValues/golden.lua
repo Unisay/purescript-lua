@@ -1,5 +1,5 @@
 local Golden_TestValues_I_i = 1
-local Golden_TestValues_I_f = function() return true end
+local Golden_TestValues_I_f = function(v0) return true end
 local Golden_TestValues_I_c = "c"
 local Golden_TestValues_I_b = true
 local Golden_TestValues_I_o = {

@@ -33,41 +33,41 @@ local Golden_TestRecursiveBindings_I_letRecMixed = (function()
   local z4 = 1
   local b5
   local a6
-  b5 = function() return a6(z4) end
-  a6 = function() return b5(z4) end
-  local f7 = function() return function(k10) return a6(k10) end end
+  b5 = function(v10) return a6(z4) end
+  a6 = function(v11) return b5(z4) end
+  local f7 = function(v12) return function(k13) return a6(k13) end end
   local y8 = f7(z4)(z4)
   local x9 = f7(y8)(y8)
   return f7(x9)(f7(y8)(0))
 end)()
 local Golden_TestRecursiveBindings_I_letRec = (function()
-  local yes11
-  local no12
-  yes11 = function(v13)
-    if true == v13 then
-      return no12(false)
+  local yes14
+  local no15
+  yes14 = function(v16)
+    if true == v16 then
+      return no15(false)
     else
       return (function()
-        if false == v13 then
-          return no12(true)
+        if false == v16 then
+          return no15(true)
         else
           return error("No patterns matched")
         end
       end)()
     end
   end
-  no12 = function(v14)
-    if true == v14 then
-      return yes11(false)
+  no15 = function(v17)
+    if true == v17 then
+      return yes14(false)
     else
       return (function()
-        if false == v14 then
-          return yes11(true)
+        if false == v17 then
+          return yes14(true)
         else
           return error("No patterns matched")
         end
       end)()
     end
   end
-  return no12(false)
+  return no15(false)
 end)()

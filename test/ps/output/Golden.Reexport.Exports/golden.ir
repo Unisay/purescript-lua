@@ -1,11 +1,7 @@
 [Module
    {moduleName = ModuleName "Golden.Reexport.Exports",
     moduleBindings =
-      [Standalone
-         (Name "binding1",
-          Exp
-            {unExp = Lit (Integer 1),
-             expInfo = Info {refsFree = fromList []}})],
+      [Standalone (Name "binding1", Lit (Integer 1))],
     moduleImports = [],
     moduleExports = [Name "binding1"],
     moduleReExports = fromList [],

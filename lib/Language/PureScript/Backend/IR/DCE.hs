@@ -2,35 +2,18 @@ module Language.PureScript.Backend.IR.DCE where
 
 import Data.Graph (Graph, Vertex, graphFromEdges, reachable)
 import Data.List (groupBy)
-import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.Types
-  ( AbsBinding (..)
-  , Argument (..)
-  , Binding
-  , BindingPattern (findOffset)
+  ( Binding
   , Exp (..)
-  , ExpF (..)
   , Grouping (..)
-  , Index (..)
   , Info (..)
-  , LetBinding (..)
-  , Level (..)
-  , Literal (..)
-  , LocallyNameless (..)
   , Module (..)
   , ModuleName
   , Name
-  , Offset (..)
-  , PrimOp (..)
   , Qualified (Imported, Local)
   , bindingNames
-  , everywhereTopDownExp
-  , listGrouping
-  , unLocallyNameless
-  , updateRefs
-  , wrapExpF
   )
 import Relude.Unsafe qualified as Unsafe
 
@@ -90,7 +73,7 @@ eliminateDeadCode strategy modules = uncurry dceModule <$> reachableByModule
     preserveBindings :: [Binding]
     preserveBindings =
       filter (any (`Set.member` reachableNames) . bindingNames) moduleBindings
-        <&> dceBinding
+    -- <&> dceBinding
 
     preservedForeigns :: [Name] =
       filter (`Set.member` reachableNames) moduleForeigns
@@ -183,86 +166,54 @@ adjacencyListFromReExports reexporter modules reExports = do
 -- Eliminate local subexpressions which are not reachable from the top level ---
 --------------------------------------------------------------------------------
 
-dceBinding :: Binding -> Binding
+{- dceBinding :: Binding -> Binding
 dceBinding = \case
   Standalone (name, expr) -> Standalone (name, dceExpr expr)
   RecursiveGroup bs -> RecursiveGroup (dceExpr <<$>> bs)
 
 dceExpr :: Exp -> Exp
-dceExpr = everywhereTopDownExp \case
-  e@(Exp {unExp = Abs (AbsBinding argument body)}) ->
-    case argument of
-      ArgUnused -> e
-      ArgAnonymous -> unusedArg
-      ArgNamed _name -> unusedArg
-   where
-    unusedArg
-      | body `refersTo` Index (Level 0) (Offset 0) = e
-      | otherwise = wrapExpF $ Abs $ AbsBinding ArgUnused body
-  Exp {unExp = Let (LetBinding bindings body)} -> dceLetBinding bindings body
-  e -> e
-
-dceLetBinding
-  :: NonEmpty (Grouping (Name, LocallyNameless Exp))
-  -- ^ Bindings
-  -> LocallyNameless Exp
-  -- ^ Body
-  -> Exp
-dceLetBinding (toList -> bindings) body =
-  case NE.nonEmpty bindingsToPreserve of
-    Nothing -> unLocallyNameless rectifiedBody
-    Just someBindings -> wrapExpF (Let (LetBinding someBindings rectifiedBody))
+dceExpr =
+  flip evalState 0 <$> everywhereExpM \case
+    e@(Exp {unExp = Abs absBinding}) -> do
+      (mbName, body) <- unbindAbs absBinding
+      pure case mbName of
+        Nothing -> e
+        Just name ->
+          if body `refersTo` name then e else abstraction ArgUnused body
+    Exp {unExp = Let letBinding} -> dceLetBinding letBinding
+    e -> pure e
  where
-  rectifiedBody = foldr eliminateIndex body indexesToEliminate
-
-  eliminateIndex :: Index -> LocallyNameless Exp -> LocallyNameless Exp
-  eliminateIndex eliminatedIndex (LocallyNameless expr) =
-    LocallyNameless $
-      updateRefs
-        (\_level name -> wrapExpF (RefFree (Local name)))
-        ( \_level visitedIndex ->
-            wrapExpF $
-              RefBound
-                if offset visitedIndex > offset eliminatedIndex
-                  then visitedIndex {offset = offset visitedIndex - 1}
-                  else visitedIndex
-        )
-        expr
-
-  (indexesToEliminate, bindingsToPreserve) =
-    partitionEithers $
+  dceLetBinding :: LetBinding Exp -> State Natural Exp
+  dceLetBinding letBinding = do
+    (bindings, body) <- unbindLet letBinding
+    pure case NE.nonEmpty (bindingsToPreserve (toList bindings) body) of
+      Nothing -> body
+      Just someBindings -> lets someBindings body
+   where
+    bindingsToPreserve bindings body =
       bindings >>= \case
         s@(Standalone (name, _expr)) ->
-          if any (`refersTo` ix) exprs || body `refersTo` ix
-            then [Right s]
-            else [Left ix]
+          [s | any (`refersTo` name) exprs || body `refersTo` name]
          where
-          ix = lookupNameIx name
           exprs = fmap snd . listGrouping =<< bindings
         recursiveGroup ->
-          if indxs & any \ix ->
-            body `refersTo` ix || any (`refersTo` ix) otherBindingsExprs
-            then [Right recursiveGroup]
-            else Left <$> indxs
+          [ recursiveGroup
+          | names & any \name ->
+              body `refersTo` name || any (`refersTo` name) otherBindingsExprs
+          ]
          where
-          indxs = lookupNameIx <$> bindingNames recursiveGroup
+          names = bindingNames recursiveGroup
           otherBindingsExprs =
             bindings >>= listGrouping & mapMaybe \(n, e) ->
               if n `elem` bindingNames recursiveGroup
                 then Nothing
                 else Just e
-   where
-    lookupNameIx :: Name -> Index
-    lookupNameIx name =
-      case Index (Level 0) <$> findOffset (bindingNames =<< bindings) name of
-        Nothing -> error $ "BUG: " <> show name <> " not found in binding"
-        Just index -> index
 
-refersTo :: LocallyNameless Exp -> Index -> Bool
-refersTo expr indx = getAny (findIndex indx (unLocallyNameless expr))
+refersTo :: Exp -> Name -> Bool
+refersTo expr name' = getAny (findName name' expr)
  where
-  findIndex :: Index -> Exp -> Any
-  findIndex index e = case unExp e of
+  findName :: Name -> Exp -> Any
+  findName name e = case unExp e of
     -- Recursive cases
     Lit (Array as) -> foldMap' lookDeeper as
     Lit (Object props) -> foldMap' (lookDeeper . snd) props
@@ -277,7 +228,7 @@ refersTo expr indx = getAny (findIndex indx (unLocallyNameless expr))
     ObjectUpdate a patches ->
       lookDeeper a <> foldMap' (lookDeeper . snd) patches
     App a b -> lookDeeper a <> lookDeeper b
-    Abs (AbsBinding _arg (LocallyNameless body)) -> lookUnderBinder body
+    Abs (AbsBinding _arg body) -> _ body
     Let (LetBinding binds (LocallyNameless body)) ->
       foldMap'
         (lookUnderBinder . unLocallyNameless . snd)
@@ -285,8 +236,9 @@ refersTo expr indx = getAny (findIndex indx (unLocallyNameless expr))
         <> lookUnderBinder body
     IfThenElse p th el -> lookDeeper p <> lookDeeper th <> lookDeeper el
     -- Bottom cases
-    RefBound i -> Any (i == index)
+    RefFree qname ->
+      qualified (Any . (== name)) (const (const (Any False))) qname
     _ -> Any False
    where
-    lookDeeper = findIndex index
-    lookUnderBinder = findIndex (index {level = level index + 1})
+    lookDeeper = findName name
+ -}

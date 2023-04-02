@@ -3,69 +3,46 @@
     moduleBindings =
       [Standalone
          (Name "f",
-          Exp
-            {unExp =
-               Abs
-                 (AbsBinding
-                    ArgUnused
-                    (Exp
-                       {unExp =
-                          Abs
-                            (AbsBinding
-                               ArgUnused
-                               (Exp
-                                  {unExp =
-                                     Abs
-                                       (AbsBinding
-                                          ArgUnused
-                                          (Exp
-                                             {unExp =
-                                                Abs
-                                                  (AbsBinding
-                                                     ArgUnused
-                                                     (Exp
-                                                        {unExp =
-                                                           Lit (String "ok"),
-                                                         expInfo =
-                                                           Info
-                                                             {refsFree =
-                                                                fromList []}})),
-                                              expInfo =
-                                                Info
-                                                  {refsFree = fromList []}})),
-                                   expInfo = Info {refsFree = fromList []}})),
-                        expInfo = Info {refsFree = fromList []}})),
-             expInfo = Info {refsFree = fromList []}}),
+          Abs
+            (AbsBinding
+               (ArgNamed (Name "i"))
+               (LocallyNameless
+                  {unLocallyNameless =
+                     Abs
+                       (AbsBinding
+                          (ArgNamed (Name "b"))
+                          (LocallyNameless
+                             {unLocallyNameless =
+                                Abs
+                                  (AbsBinding
+                                     (ArgNamed (Name "c"))
+                                     (LocallyNameless
+                                        {unLocallyNameless =
+                                           Abs
+                                             (AbsBinding
+                                                (ArgNamed (Name "d"))
+                                                (LocallyNameless
+                                                   {unLocallyNameless =
+                                                      Lit
+                                                        (String
+                                                           "ok")}))}))}))}))),
        Standalone
          (Name "apply",
-          Exp
-            {unExp =
-               Abs
-                 (AbsBinding
-                    (ArgNamed (Name "f1"))
-                    (Exp
-                       {unExp =
-                          Abs
-                            (AbsBinding
-                               (ArgNamed (Name "x"))
-                               (Exp
-                                  {unExp =
-                                     App
-                                       (Exp
-                                          {unExp =
-                                             RefBound
-                                               (Index {level = 1, offset = 0}),
-                                           expInfo =
-                                             Info {refsFree = fromList []}})
-                                       (Exp
-                                          {unExp =
-                                             RefBound
-                                               (Index {level = 0, offset = 0}),
-                                           expInfo =
-                                             Info {refsFree = fromList []}}),
-                                   expInfo = Info {refsFree = fromList []}})),
-                        expInfo = Info {refsFree = fromList []}})),
-             expInfo = Info {refsFree = fromList []}})],
+          Abs
+            (AbsBinding
+               (ArgNamed (Name "f1"))
+               (LocallyNameless
+                  {unLocallyNameless =
+                     Abs
+                       (AbsBinding
+                          (ArgNamed (Name "x"))
+                          (LocallyNameless
+                             {unLocallyNameless =
+                                App
+                                  RefBound
+                                  (Index {level = 1, offset = 0})
+                                  RefBound
+                                  (Index {level = 0, offset = 0})}))})))],
     moduleImports = [],
     moduleExports = [Name "apply", Name "f"],
     moduleReExports = fromList [],

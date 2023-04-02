@@ -73,13 +73,13 @@ recursiveFrequency nonrecur recur =
   Gen.sized $ \n ->
     if n <= 1
       then Gen.frequency nonrecur
-      else Gen.frequency $ nonrecur ++ fmap (fmap Gen.small) recur
+      else Gen.frequency $ nonrecur <> fmap (fmap Gen.small) recur
 
 nonRecursiveExp :: MonadGen m => m Exp
 nonRecursiveExp =
   wrapExpF
     <$> Gen.frequency
-      [ (6, Lit <$> literalNonRecursive)
+      [ (5, Lit <$> literalNonRecursive)
       , (1, Exception <$> Gen.text (Range.linear 0 10) Gen.unicode)
       ,
         ( 1
@@ -89,7 +89,7 @@ nonRecursiveExp =
             <*> ctorName
             <*> Gen.list (Range.linear 0 10) fieldName
         )
-      , (7, RefFree <$> qualified name)
+      , (3, RefFree <$> qualified name)
       ]
 
 literalNonRecursiveExp :: MonadGen m => m Exp
@@ -118,8 +118,8 @@ argument =
 qualified :: MonadGen m => m a -> m (Qualified a)
 qualified q =
   Gen.frequency
-    [ (7, Local <$> q)
-    , (3, Imported <$> moduleName <*> q)
+    [ (8, Local <$> q)
+    , (2, Imported <$> moduleName <*> q)
     ]
 
 moduleName :: MonadGen m => m ModuleName
