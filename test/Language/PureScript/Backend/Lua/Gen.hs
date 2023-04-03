@@ -8,12 +8,16 @@ import Language.PureScript.Backend.Lua.Name (Name, unsafeName)
 import Language.PureScript.Backend.Lua.Printer (printStatement)
 import Language.PureScript.Backend.Lua.Types
   ( Chunk
-  , Exp (..)
+  , Exp
+  , ExpF (..)
   , ModuleName (..)
   , QualifiedName (..)
-  , Statement (..)
-  , TableRow (..)
-  , Var (..)
+  , Statement
+  , StatementF (..)
+  , TableRow
+  , TableRowF (..)
+  , Var
+  , VarF (..)
   )
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
@@ -75,7 +79,6 @@ tableRow =
   Gen.frequency
     [ (1, TableRowKV <$> expression <*> expression)
     , (2, TableRowNV <$> name <*> expression)
-    , (3, TableRowV <$> expression)
     ]
 
 name :: Gen Name

@@ -99,8 +99,6 @@ printRow = \case
     brackets (printedExp kexp) <+> "=" <+> printedExp vexp
   Lua.TableRowNV name vexp ->
     printName name <+> "=" <+> printedExp vexp
-  Lua.TableRowV vexp ->
-    printedExp vexp
 
 printVar :: Lua.Var -> ADoc
 printVar = \case

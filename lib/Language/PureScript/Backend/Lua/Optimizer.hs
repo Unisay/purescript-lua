@@ -7,8 +7,10 @@ import Language.PureScript.Backend.Lua.Traversal
   )
 import Language.PureScript.Backend.Lua.Types
   ( Chunk
-  , Exp (..)
-  , Statement (..)
+  , Exp
+  , ExpF (..)
+  , Statement
+  , StatementF (..)
   )
 
 optimizeChunk :: Chunk -> Chunk

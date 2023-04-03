@@ -79,6 +79,7 @@ common shared
     , containers           ^>=0.6.5.1
     , deriving-compat      ^>=0.6.2
     , filepath             ^>=1.4.2
+    , free                 ^>=5.2
     , generically          ^>=0.1.1
     , monoidal-containers  ^>=0.6.3.0
     , mtl                  ^>=2.2.2

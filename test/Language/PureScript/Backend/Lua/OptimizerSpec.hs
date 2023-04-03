@@ -16,29 +16,8 @@ import Test.Hspec.Expectations.Pretty (assertEqual)
 spec :: Spec
 spec = describe "Lua AST Optimizer" do
   describe "optimizes expressions" do
-    {-     it "collapses nested functions" do
-          let original =
-                Function
-                  [[name|a|], [name|b|]]
-                  [ Return
-                      ( Function
-                          [[name|c|], [name|d|]]
-                          [Return (varName [name|d|])]
-                      )
-                  ]
-              expected =
-                Function
-                  [[name|a|], [name|b|], [name|c|], [name|d|]]
-                  [Return (varName [name|d|])]
-          assertEqual (shower original) expected $
-            optimizeExpression original
-          assertEqual
-            (shower original)
-            (optimizeExpression original)
-            (rewriteExpWithRule collapseNestedFunctions original) -}
-
     it "removes scope when inside an empty Function" do
-      let original =
+      let original :: Exp =
             Function
               [[name|a|]]
               [ Return
@@ -47,7 +26,7 @@ spec = describe "Lua AST Optimizer" do
                       [Return (scope [Return (varName [name|c|])])]
                   )
               ]
-          expected =
+          expected :: Exp =
             Function
               [[name|a|]]
               [ Return
@@ -60,7 +39,7 @@ spec = describe "Lua AST Optimizer" do
         rewriteExpWithRule removeScopeWhenInsideEmptyFunction original
 
     it "pushes declarations down into an inner scope" do
-      let original =
+      let original :: Exp =
             Function
               [[name|a|], [name|b|]]
               [ local1 [name|i|] (Integer 42)
@@ -71,7 +50,7 @@ spec = describe "Lua AST Optimizer" do
                       [Return (varName [name|c|])]
                   )
               ]
-          expected =
+          expected :: Exp =
             Function
               [[name|a|], [name|b|]]
               [ Return
@@ -83,5 +62,5 @@ spec = describe "Lua AST Optimizer" do
                       ]
                   )
               ]
-      assertEqual (shower original) expected $
+      assertEqual (shower @Exp original) expected $
         rewriteExpWithRule pushDeclarationsDownTheInnerScope original

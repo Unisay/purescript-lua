@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# OPTIONS_GHC -Wno-missing-local-signatures #-}
 
 module Language.PureScript.Backend.Lua.Fixture where
 

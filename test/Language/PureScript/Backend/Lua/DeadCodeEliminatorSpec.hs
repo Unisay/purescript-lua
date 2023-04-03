@@ -7,7 +7,7 @@ import Language.PureScript.Backend.Lua.DeadCodeEliminator
   , eliminateDeadCode
   )
 import Language.PureScript.Backend.Lua.Gen qualified as Gen
-import Language.PureScript.Backend.Lua.Types (Statement (..))
+import Language.PureScript.Backend.Lua.Types (StatementF (..))
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
 

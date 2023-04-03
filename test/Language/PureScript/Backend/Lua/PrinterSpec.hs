@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# OPTIONS_GHC -Wno-missing-local-signatures #-}
 
 module Language.PureScript.Backend.Lua.PrinterSpec where
 
@@ -107,16 +108,14 @@ spec = do
             Lua.table
               [ Lua.TableRowKV (Lua.Integer 42) (Lua.Boolean True)
               , Lua.TableRowNV [Lua.name|foo|] (Lua.String "ok")
-              , Lua.TableRowV (Lua.Float 42.0)
               ]
-      renderedExpression e `shouldBe` "{ [42] = true, foo = \"ok\", 42.0 }"
+      renderedExpression e `shouldBe` "{ [42] = true, foo = \"ok\" }"
 
     it "large table constructor on muliple lines" do
       let e =
             Lua.table
               [ Lua.TableRowKV (Lua.Integer 42) (Lua.Boolean True)
               , Lua.TableRowNV [Lua.name|foo|] (Lua.String "bar")
-              , Lua.TableRowV (Lua.Float 4242424242.0)
               , Lua.TableRowNV [Lua.name|loooooooooooong1|] (Lua.String "value")
               , Lua.TableRowNV [Lua.name|loooooooooooong2|] (Lua.String "value")
               ]
@@ -125,7 +124,6 @@ spec = do
           [ "{"
           , "  [42] = true,"
           , "  foo = \"bar\","
-          , "  4.242424242e9,"
           , "  loooooooooooong1 = \"value\","
           , "  loooooooooooong2 = \"value\""
           , "}"

@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Language.PureScript.Backend.Lua.Types where
 
@@ -6,7 +7,16 @@ import Language.PureScript.Backend.Lua.Name (Name)
 import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Language.PureScript.Backend.Lua.Name qualified as Name
 import Prettyprinter (Pretty)
-import Prelude hiding (and, concat, error, local, mod, negate, or, return)
+import Prelude hiding
+  ( and
+  , concat
+  , error
+  , local
+  , mod
+  , negate
+  , or
+  , return
+  )
 
 type Chunk = [Statement]
 
@@ -30,21 +40,31 @@ newtype ChunkName = ChunkName Text
   deriving stock (Show)
   deriving newtype (Pretty)
 
-data Var
-  = VarName QualifiedName
-  | VarIndex Exp Exp
-  | VarField Exp Name
-  deriving stock (Eq, Show)
+-- | HKD in disguise
+type family Annotated (ann :: Type -> Type) (f :: (Type -> Type) -> Type) where
+  Annotated Identity f = f Identity
+  Annotated ann f = ann (f ann)
 
-data TableRow
-  = TableRowKV Exp Exp
-  | TableRowNV Name Exp
-  | TableRowV Exp
-  deriving stock (Eq, Show)
+data VarF f
+  = VarName QualifiedName
+  | VarIndex (Annotated f ExpF) (Annotated f ExpF)
+  | VarField (Annotated f ExpF) Name
+
+type Var = VarF Identity
+deriving stock instance Eq (Annotated f ExpF) => Eq (VarF f)
+deriving stock instance Show (Annotated f ExpF) => Show (VarF f)
+
+data TableRowF f
+  = TableRowKV (Annotated f ExpF) (Annotated f ExpF)
+  | TableRowNV Name (Annotated f ExpF)
+
+type TableRow = TableRowF Identity
+deriving stock instance Eq (Annotated f ExpF) => Eq (TableRowF f)
+deriving stock instance Show (Annotated f ExpF) => Show (TableRowF f)
 
 data Precedence
   = PrecFunction
-  | PrecOperation Nat
+  | PrecOperation Natural
   | PrecPrefix
   | PrecAtom
   deriving stock (Show, Eq, Ord)
@@ -163,31 +183,65 @@ instance HasSymbol BinaryOp where
     Mod -> "%"
     Exp -> "^"
 
-data Exp
+data ExpF (f :: Type -> Type)
   = Nil
   | Boolean Bool
   | Integer Integer
   | Float Double
   | String Text
-  | Function [Name] [Statement]
-  | TableCtor [TableRow]
-  | UnOp UnaryOp Exp
-  | BinOp BinaryOp Exp Exp
-  | Var Var
-  | FunctionCall Exp [Exp]
-  deriving stock (Eq, Show)
+  | Function [Name] [Annotated f StatementF]
+  | TableCtor [Annotated f TableRowF]
+  | UnOp UnaryOp (Annotated f ExpF)
+  | BinOp BinaryOp (Annotated f ExpF) (Annotated f ExpF)
+  | Var (Annotated f VarF)
+  | FunctionCall (Annotated f ExpF) [Annotated f ExpF]
 
-data Statement
-  = Assign (NonEmpty Var) (NonEmpty Exp)
-  | Local (NonEmpty Name) [Exp]
+type Exp = ExpF Identity
+deriving stock instance
+  ( Eq (Annotated f VarF)
+  , Eq (Annotated f TableRowF)
+  , Eq (Annotated f ExpF)
+  , Eq (Annotated f StatementF)
+  )
+  => Eq (ExpF f)
+deriving stock instance
+  ( Show (Annotated f VarF)
+  , Show (Annotated f TableRowF)
+  , Show (Annotated f ExpF)
+  , Show (Annotated f StatementF)
+  )
+  => Show (ExpF f)
+
+data StatementF f
+  = Assign
+      (NonEmpty (Annotated f VarF))
+      (NonEmpty (Annotated f ExpF))
+  | Local (NonEmpty Name) [Annotated f ExpF]
   | IfThenElse
-      Exp -- predicate
-      (NonEmpty Statement) -- then block
-      [(Exp, NonEmpty Statement)] -- elseif (predicate, then block)
-      (Maybe (NonEmpty Statement)) -- else block
-  | Return Exp
+      (Annotated f ExpF)
+      -- ^ predicate
+      (NonEmpty (Annotated f StatementF))
+      -- ^ then block
+      [(Annotated f ExpF, NonEmpty (Annotated f StatementF))]
+      -- ^ elseif (predicate, then block)
+      (Maybe (NonEmpty (Annotated f StatementF)))
+      -- ^ else block
+  | Return (Annotated f ExpF)
   | ForeignSourceCode Text
-  deriving stock (Eq, Show)
+
+type Statement = StatementF Identity
+deriving stock instance
+  ( Eq (Annotated f ExpF)
+  , Eq (Annotated f VarF)
+  , Eq (Annotated f StatementF)
+  )
+  => Eq (StatementF f)
+deriving stock instance
+  ( Show (Annotated f ExpF)
+  , Show (Annotated f VarF)
+  , Show (Annotated f StatementF)
+  )
+  => Show (StatementF f)
 
 --------------------------------------------------------------------------------
 -- Lifted constructors ---------------------------------------------------------

@@ -77,7 +77,8 @@ fromExp modname origExp = go origExp
           IR.Boolean b ->
             pure $ Boolean b
           IR.Array exprs ->
-            table <$> traverse (fmap TableRowV . go) exprs
+            table <$> forM (liftA2 (,) [1 ..] exprs) \(i, e) ->
+              TableRowKV (Integer i) <$> go e
           IR.Object kvs ->
             table <$> for kvs \(prop, exp) ->
               TableRowNV (fromPropName prop) <$> go exp
