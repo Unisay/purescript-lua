@@ -91,10 +91,12 @@ common shared
     , quiet                ^>=0.2
     , relude               ^>=1.1
     , scientific           ^>=0.3.7.0
+    , semialign            ^>=1.2.0.1
     , shower               ^>=0.2.0.3
     , tagged               ^>=0.8.6.1
     , template-haskell     ^>=2.18
     , text                 ^>=1.2.5.0
+    , these                ^>=1.1.1.1
     , transformers         ^>=0.5.6.2
     , vector               ^>=0.12.3.1
 
@@ -122,6 +124,7 @@ library
     Language.PureScript.Backend.IR.Query
     Language.PureScript.Backend.IR.Types
     Language.PureScript.Backend.Lua
+    Language.PureScript.Backend.Lua.DeadCodeEliminator
     Language.PureScript.Backend.Lua.Fixture
     Language.PureScript.Backend.Lua.Linker
     Language.PureScript.Backend.Lua.Linker.Foreign
@@ -146,11 +149,14 @@ test-suite spec
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
+    Hedgehog.Gen.Extended
     Language.PureScript.Backend.IR.DCESpec
     Language.PureScript.Backend.IR.Gen
     Language.PureScript.Backend.IR.LocallyNamelessSpec
     Language.PureScript.Backend.IR.OptimizerSpec
     Language.PureScript.Backend.IRSpec
+    Language.PureScript.Backend.Lua.DeadCodeEliminatorSpec
+    Language.PureScript.Backend.Lua.Gen
     Language.PureScript.Backend.Lua.GoldenSpec
     Language.PureScript.Backend.Lua.OptimizerSpec
     Language.PureScript.Backend.Lua.PrinterSpec

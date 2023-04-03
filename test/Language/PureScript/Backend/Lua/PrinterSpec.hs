@@ -59,31 +59,6 @@ spec = do
       renderedStatement s
         `shouldBe` "local foo, bar, baz = 42, true"
 
-  describe "Block" do
-    it "small block in one line" do
-      let s = Lua.Block $ pure (Lua.Return $ Lua.Boolean True)
-      renderedStatement s `shouldBe` "do return true end"
-
-    it "large block on multiple lines" do
-      let
-        r = Lua.Return . Lua.Integer
-        s = Lua.Block $ r 0 :| [r 1, r 2, r 3, r 4, r 5, r 6, r 7, r 8, r 9]
-      renderedStatement s
-        `shouldBe` multiline
-          [ "do"
-          , "  return 0"
-          , "  return 1"
-          , "  return 2"
-          , "  return 3"
-          , "  return 4"
-          , "  return 5"
-          , "  return 6"
-          , "  return 7"
-          , "  return 8"
-          , "  return 9"
-          , "end"
-          ]
-
   describe "If Then Else" do
     it "if / then" do
       let p = Lua.Boolean True

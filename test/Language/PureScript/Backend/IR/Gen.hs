@@ -3,14 +3,14 @@ module Language.PureScript.Backend.IR.Gen where
 import Data.Text qualified as Text
 import Hedgehog (MonadGen)
 import Hedgehog.Corpus qualified as Corpus
-import Hedgehog.Gen qualified as Gen
+import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
 import Language.PureScript.Backend.IR.Types hiding (moduleName, qualified)
 import Prelude hiding (exp)
 
 exp :: forall m. MonadGen m => m Exp
 exp =
-  recursiveFrequency
+  Gen.recursiveFrequency
     [(1, nonRecursiveExp)]
     [
       ( 7
@@ -67,13 +67,6 @@ recursiveBinding = RecursiveGroup <$> Gen.nonEmpty (Range.linear 1 5) namedExp
 
 standaloneBinding :: MonadGen m => m Binding
 standaloneBinding = Standalone <$> namedExp
-
-recursiveFrequency :: MonadGen m => [(Int, m a)] -> [(Int, m a)] -> m a
-recursiveFrequency nonrecur recur =
-  Gen.sized $ \n ->
-    if n <= 1
-      then Gen.frequency nonrecur
-      else Gen.frequency $ nonrecur <> fmap (fmap Gen.small) recur
 
 nonRecursiveExp :: MonadGen m => m Exp
 nonRecursiveExp =

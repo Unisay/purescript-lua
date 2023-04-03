@@ -59,7 +59,7 @@ instance HasPrecedence Precedence where
   prec = id
 
 data UnaryOp = HashOp | Negate | LogicalNot | BitwiseNot
-  deriving stock (Show, Eq)
+  deriving stock (Show, Eq, Enum, Bounded)
 
 instance HasPrecedence UnaryOp where
   prec =
@@ -98,7 +98,7 @@ data BinaryOp
   | FloorDiv
   | Mod
   | Exp
-  deriving stock (Show, Eq)
+  deriving stock (Show, Eq, Enum, Bounded)
 
 {- 1   or
    2   and
@@ -180,7 +180,6 @@ data Exp
 data Statement
   = Assign (NonEmpty Var) (NonEmpty Exp)
   | Local (NonEmpty Name) [Exp]
-  | Block (NonEmpty Statement)
   | IfThenElse
       Exp -- predicate
       (NonEmpty Statement) -- then block

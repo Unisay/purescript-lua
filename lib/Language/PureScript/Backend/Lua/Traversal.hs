@@ -49,7 +49,6 @@ everywhereStatM f g = go
   go = \case
     Assign vars vals -> f . Assign vars =<< traverse goe vals
     Local names vals -> f . Local names =<< traverse goe vals
-    Block stats -> f . Block =<< traverse go stats
     IfThenElse p tb ef eb -> do
       predicate <- goe p
       thenBranch <- traverse go tb

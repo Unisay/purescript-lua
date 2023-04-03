@@ -41,8 +41,8 @@ printStatement = \case
     printLocal names (printedExp <$> values)
   Lua.IfThenElse predicate thenBlock elsifs elseBlock ->
     printIfThenElse predicate thenBlock elsifs elseBlock
-  Lua.Block statements ->
-    printBlock statements
+  -- Lua.Block statements ->
+  --   printBlock statements
   Lua.Return expr ->
     "return" <+> printedExp expr
   Lua.ForeignSourceCode code ->
