@@ -7,4 +7,4 @@ local Golden_TestValues_I_o = {
   b = Golden_TestValues_I_b,
   c = Golden_TestValues_I_c
 }
-local Golden_TestValues_I_a = { 1, 2, 3 }
+local Golden_TestValues_I_a = { [1] = 1, [2] = 2, [3] = 3 }

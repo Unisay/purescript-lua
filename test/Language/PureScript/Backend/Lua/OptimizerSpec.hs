@@ -8,7 +8,7 @@ import Language.PureScript.Backend.Lua.Optimizer
   , removeScopeWhenInsideEmptyFunction
   , rewriteExpWithRule
   )
-import Language.PureScript.Backend.Lua.Types
+import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Shower (shower)
 import Test.Hspec (Spec, describe, it)
 import Test.Hspec.Expectations.Pretty (assertEqual)
@@ -16,51 +16,51 @@ import Test.Hspec.Expectations.Pretty (assertEqual)
 spec :: Spec
 spec = describe "Lua AST Optimizer" do
   describe "optimizes expressions" do
-    it "removes scope when inside an empty Function" do
-      let original :: Exp =
-            Function
+    it "removes scope when inside an empty function" do
+      let original :: Lua.Exp =
+            Lua.functionDef
               [[name|a|]]
-              [ Return
-                  ( Function
+              [ Lua.return
+                  ( Lua.functionDef
                       [[name|b|]]
-                      [Return (scope [Return (varName [name|c|])])]
+                      [Lua.return (Lua.scope [Lua.return (Lua.varName [name|c|])])]
                   )
               ]
-          expected :: Exp =
-            Function
+          expected :: Lua.Exp =
+            Lua.functionDef
               [[name|a|]]
-              [ Return
-                  ( Function
+              [ Lua.return
+                  ( Lua.functionDef
                       [[name|b|]]
-                      [Return (varName [name|c|])]
+                      [Lua.return (Lua.varName [name|c|])]
                   )
               ]
       assertEqual (shower original) expected $
         rewriteExpWithRule removeScopeWhenInsideEmptyFunction original
 
     it "pushes declarations down into an inner scope" do
-      let original :: Exp =
-            Function
+      let original :: Lua.Exp =
+            Lua.functionDef
               [[name|a|], [name|b|]]
-              [ local1 [name|i|] (Integer 42)
-              , local1 [name|j|] (Integer 43)
-              , Return
-                  ( Function
+              [ Lua.local1 [name|i|] (Lua.Integer 42)
+              , Lua.local1 [name|j|] (Lua.Integer 43)
+              , Lua.return
+                  ( Lua.functionDef
                       [[name|d|]]
-                      [Return (varName [name|c|])]
+                      [Lua.return (Lua.varName [name|c|])]
                   )
               ]
-          expected :: Exp =
-            Function
+          expected :: Lua.Exp =
+            Lua.functionDef
               [[name|a|], [name|b|]]
-              [ Return
-                  ( Function
+              [ Lua.return
+                  ( Lua.functionDef
                       [[name|d|]]
-                      [ local1 [name|i|] (Integer 42)
-                      , local1 [name|j|] (Integer 43)
-                      , Return (varName [name|c|])
+                      [ Lua.local1 [name|i|] (Lua.Integer 42)
+                      , Lua.local1 [name|j|] (Lua.Integer 43)
+                      , Lua.return (Lua.varName [name|c|])
                       ]
                   )
               ]
-      assertEqual (shower @Exp original) expected $
+      assertEqual (shower @Lua.Exp original) expected $
         rewriteExpWithRule pushDeclarationsDownTheInnerScope original

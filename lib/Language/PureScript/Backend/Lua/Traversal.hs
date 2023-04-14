@@ -3,6 +3,7 @@
 module Language.PureScript.Backend.Lua.Traversal where
 
 import Language.PureScript.Backend.Lua.Types
+import Prelude hiding (local)
 
 everywhereExp
   :: (Exp -> Exp) -> (Statement -> Statement) -> Exp -> Exp
@@ -12,159 +13,227 @@ everywhereStat
   :: (Statement -> Statement) -> (Exp -> Exp) -> Statement -> Statement
 everywhereStat f g = runIdentity . everywhereStatM (pure . f) (pure . g)
 
-everywhereExpM
+everywhereInChunkM
   :: Monad m
   => (Exp -> m Exp)
   -> (Statement -> m Statement)
-  -> Exp
-  -> m Exp
+  -> (Chunk -> m Chunk)
+everywhereInChunkM f g = traverse (everywhereStatM g f)
+
+everywhereExpM
+  :: forall m
+   . Monad m
+  => (Exp -> m Exp)
+  -> (Statement -> m Statement)
+  -> (Exp -> m Exp)
 everywhereExpM f g = goe
  where
   goe = \case
-    Var v -> case v of
-      VarIndex e1 e2 -> f =<< (Var .) . VarIndex <$> goe e1 <*> goe e2
-      VarField e1 n -> f . Var . (`VarField` n) =<< goe e1
-      VarName n -> f (Var (VarName n))
-    Function names statements -> do
-      args <- traverse (everywhereStatM g f) statements
-      f $ Function names args
-    TableCtor rows -> do
+    Var (Ann v) -> case v of
+      VarIndex (Ann e1) (Ann e2) -> f =<< varIndex <$> goe e1 <*> goe e2
+      VarField (Ann e) n -> f . (`varField` n) =<< goe e
+      VarName n -> f (varName n)
+    Function names statements ->
+      f . functionDef names =<< forM statements (everywhereStatM g f . unAnn)
+    TableCtor (fmap unAnn -> rows) -> do
       tableRows <- forM rows \case
-        TableRowKV k v -> TableRowKV <$> goe k <*> goe v
-        TableRowNV n e -> TableRowNV n <$> goe e
-      f $ TableCtor tableRows
-    UnOp op e -> f . UnOp op =<< goe e
-    BinOp op e1 e2 -> f =<< BinOp op <$> goe e1 <*> goe e2
-    FunctionCall fn args -> f =<< FunctionCall <$> goe fn <*> traverse goe args
+        TableRowKV (Ann k) (Ann v) -> tableRowKV <$> goe k <*> goe v
+        TableRowNV n (Ann e) -> tableRowNV n <$> goe e
+      f $ tableCtor tableRows
+    UnOp op (Ann e) ->
+      f . unOp op =<< goe e
+    BinOp op (Ann e1) (Ann e2) ->
+      f =<< binOp op <$> goe e1 <*> goe e2
+    FunctionCall (Ann fn) (fmap unAnn -> args) ->
+      f =<< functionCall <$> goe fn <*> forM args goe
     other -> f other
 
 everywhereStatM
-  :: Monad m
+  :: forall m
+   . Monad m
   => (Statement -> m Statement)
   -> (Exp -> m Exp)
-  -> Statement
-  -> m Statement
+  -> (Statement -> m Statement)
 everywhereStatM f g = go
  where
   goe = everywhereExpM g f
   go = \case
-    Assign vars vals -> f . Assign vars =<< traverse goe vals
-    Local names vals -> f . Local names =<< traverse goe vals
-    IfThenElse p tb ef eb -> do
+    Assign (Ann variable) (Ann value) -> f . assign variable =<< goe value
+    Local name val -> f . local name =<< forM val (goe . unAnn)
+    IfThenElse (Ann p) tb eb -> do
       predicate <- goe p
-      thenBranch <- traverse go tb
-      elseIf <- traverse (bitraverse goe (traverse go)) ef
-      elseBranch <- traverse (traverse go) eb
-      f $ IfThenElse predicate thenBranch elseIf elseBranch
-    Return e -> f . Return =<< goe e
+      thenBranch <- forM tb (go . unAnn)
+      elseBranch <- forM eb (go . unAnn)
+      f $ ifThenElse predicate thenBranch elseBranch
+    Return (Ann e) -> f . Return . ann =<< goe e
     ForeignSourceCode src -> f $ ForeignSourceCode src
-
---------------------------------------------------------------------------------
--- Indexing --------------------------------------------------------------------
-
-data WithIndex a = WithIndex Natural a
-  deriving stock (Eq, Show)
-
-type IndexedStatement = Annotated WithIndex StatementF
-
-indexStatement :: Statement -> State Natural IndexedStatement
-indexStatement =
-  annotateStatementM @(State Natural) @Identity @WithIndex identity \a ->
-    state \i -> (WithIndex i a, i + 1)
-
-unIndexStatement :: IndexedStatement -> Statement
-unIndexStatement = unAnnotateStatement @WithIndex \(WithIndex _ a) -> a
 
 --------------------------------------------------------------------------------
 -- Annotating ------------------------------------------------------------------
 
+data Annotator m f f' = Annotator
+  { unAnnotate :: forall g. Annotated f g -> g f
+  -- ^ How to remove an annotation
+  , annotateStat :: StatementF f' -> m (Annotated f' StatementF)
+  -- ^ How to annotate a statement
+  , annotateExp :: ExpF f' -> m (Annotated f' ExpF)
+  -- ^ How to annotate an expression
+  , annotateVar :: VarF f' -> m (Annotated f' VarF)
+  -- ^ How to annotate a variable
+  , annotateRow :: TableRowF f' -> m (Annotated f' TableRowF)
+  -- ^ How to annotate a table row
+  }
+
 unAnnotateStatement
-  :: forall f
-   . (forall g. Annotated f g -> g f)
-  -> Annotated f StatementF
-  -> Statement
-unAnnotateStatement alg =
-  runIdentity . annotateStatementM @Identity @f @Identity alg pure
+  :: (forall g. Annotated f g -> g f) -> Annotated f StatementF -> Statement
+unAnnotateStatement unAnnotate =
+  unAnn
+    . runIdentity
+    . annotateStatementInsideOutM
+      Annotator
+        { unAnnotate
+        , annotateStat = pure . ann
+        , annotateExp = pure . ann
+        , annotateVar = pure . ann
+        , annotateRow = pure . ann
+        }
 
-annotateStatementM
+--------------------------------------------------------------------------------
+-- Inside-out ------------------------------------------------------------------
+
+annotateStatementInsideOutM
   :: forall m f f'
    . Monad m
-  => (forall g. Annotated f g -> g f)
-  -> (forall x. x f' -> m (Annotated f' x))
-  -> Annotated f StatementF
-  -> m (Annotated f' StatementF)
-annotateStatementM unAnnotate visit stat =
+  => Annotator m f f'
+  -> (Annotated f StatementF -> m (Annotated f' StatementF))
+annotateStatementInsideOutM annotator@Annotator {..} stat =
   case unAnnotate stat of
-    Assign vars vals -> do
-      indexedVars <- forM vars annotateV
-      indexedVals <- forM vals annotateE
-      visit $ Assign indexedVars indexedVals
-    Local names vals -> visit . Local names =<< forM vals annotateE
-    IfThenElse p tb ef eb -> do
-      iPred <- annotateE p
-      iThen <- traverse annotateS tb
-      iElif <- traverse (bitraverse annotateE (traverse annotateS)) ef
-      iElse <- traverse (traverse annotateS) eb
-      visit $ IfThenElse iPred iThen iElif iElse
-    Return e -> visit . Return =<< annotateE e
-    ForeignSourceCode src -> visit $ ForeignSourceCode src
+    Assign variable value -> do
+      indexedVars <- goV variable
+      indexedVals <- goE value
+      annotateStat $ Assign indexedVars indexedVals
+    Local names vals -> annotateStat . Local names =<< forM vals goE
+    IfThenElse p tb eb -> do
+      iPred <- goE p
+      iThen <- traverse goS tb
+      iElse <- traverse goS eb
+      annotateStat $ IfThenElse iPred iThen iElse
+    Return e -> annotateStat . Return =<< goE e
+    ForeignSourceCode src -> annotateStat $ ForeignSourceCode src
  where
-  annotateS = annotateStatementM unAnnotate visit
-  annotateE = annotateExpM unAnnotate visit
-  annotateV = annotateVarM unAnnotate visit
+  goS = annotateStatementInsideOutM annotator
+  goE = annotateExpInsideOutM annotator
+  goV = annotateVarInsideOutM annotator
 
-annotateExpM
+annotateExpInsideOutM
   :: forall m f f'
    . Monad m
-  => (forall g. Annotated f g -> g f)
-  -> (forall x. x f' -> m (Annotated f' x))
-  -> Annotated f ExpF
-  -> m (Annotated f' ExpF)
-annotateExpM unAnnotate visit expf =
+  => Annotator m f f'
+  -> (Annotated f ExpF -> m (Annotated f' ExpF))
+annotateExpInsideOutM annotator@Annotator {..} expf =
   case unAnnotate expf of
-    Var v -> visit . Var =<< annotateV v
-    Function names stats -> visit . Function names =<< forM stats annotateS
-    TableCtor rows -> visit . TableCtor =<< forM rows annotateR
-    UnOp op e -> visit . UnOp op =<< annotateE e
-    BinOp op e1 e2 -> visit =<< BinOp op <$> annotateE e1 <*> annotateE e2
+    Var v -> annotateExp . Var =<< goV v
+    Function names stats -> annotateExp . Function names =<< forM stats goS
+    TableCtor rows ->
+      annotateExp . TableCtor =<< forM rows \row ->
+        case unAnnotate row of
+          TableRowKV k v -> annotateRow =<< TableRowKV <$> goE k <*> goE v
+          TableRowNV n e -> annotateRow . TableRowNV n =<< goE e
+    UnOp op e -> annotateExp . UnOp op =<< goE e
+    BinOp op e1 e2 -> annotateExp =<< BinOp op <$> goE e1 <*> goE e2
     FunctionCall fn args ->
-      visit =<< FunctionCall <$> annotateE fn <*> forM args annotateE
-    Nil -> visit Nil
-    Boolean b -> visit $ Boolean b
-    Integer i -> visit $ Integer i
-    Float f -> visit $ Float f
-    String s -> visit $ String s
+      annotateExp =<< FunctionCall <$> goE fn <*> forM args goE
+    Nil -> annotateExp Nil
+    Boolean b -> annotateExp $ Boolean b
+    Integer i -> annotateExp $ Integer i
+    Float f -> annotateExp $ Float f
+    String s -> annotateExp $ String s
  where
-  annotateS = annotateStatementM unAnnotate visit
-  annotateE = annotateExpM unAnnotate visit
-  annotateV = annotateVarM unAnnotate visit
-  annotateR = annotateTableRowM unAnnotate visit
+  goS = annotateStatementInsideOutM annotator
+  goE = annotateExpInsideOutM annotator
+  goV = annotateVarInsideOutM annotator
 
-annotateVarM
+annotateVarInsideOutM
   :: forall m f f'
    . Monad m
-  => (forall g. Annotated f g -> g f)
-  -> (forall x. x f' -> m (Annotated f' x))
-  -> Annotated f VarF
-  -> m (Annotated f' VarF)
-annotateVarM unAnnotate visit var =
-  case unAnnotate var of
-    VarName qualifiedName -> visit $ VarName qualifiedName
-    VarIndex e1 e2 -> visit =<< VarIndex <$> annotateE e1 <*> annotateE e2
-    VarField e name -> visit . (`VarField` name) =<< annotateE e
+  => Annotator m f f'
+  -> (Annotated f VarF -> m (Annotated f' VarF))
+annotateVarInsideOutM annotator@Annotator {..} =
+  unAnnotate >>> \case
+    VarName qualifiedName -> annotateVar $ VarName qualifiedName
+    VarIndex e1 e2 -> annotateVar =<< VarIndex <$> goE e1 <*> goE e2
+    VarField e name -> annotateVar . (`VarField` name) =<< goE e
  where
-  annotateE = annotateExpM unAnnotate visit
+  goE = annotateExpInsideOutM annotator
 
-annotateTableRowM
-  :: forall m f f'
+--------------------------------------------------------------------------------
+-- Outside-in ------------------------------------------------------------------
+
+data Visitor m a = Visitor
+  { visitStat :: Annotated a StatementF -> m (Annotated a StatementF)
+  , visitExp :: Annotated a ExpF -> m (Annotated a ExpF)
+  , visitVar :: Annotated a VarF -> m (Annotated a VarF)
+  , visitRow :: Annotated a TableRowF -> m (Annotated a TableRowF)
+  }
+
+noopVisitor :: Applicative m => Visitor m a
+noopVisitor =
+  Visitor {visitStat = pure, visitExp = pure, visitVar = pure, visitRow = pure}
+
+visitStatementOutsideInM
+  :: forall m a
    . Monad m
-  => (forall g. Annotated f g -> g f)
-  -> (forall x. x f' -> m (Annotated f' x))
-  -> Annotated f TableRowF
-  -> m (Annotated f' TableRowF)
-annotateTableRowM unAnnotate visit row =
-  case unAnnotate row of
-    TableRowKV k v -> visit =<< TableRowKV <$> annotateE k <*> annotateE v
-    TableRowNV n e -> visit . TableRowNV n =<< annotateE e
- where
-  annotateE = annotateExpM unAnnotate visit
+  => Visitor m a
+  -> Annotated a StatementF
+  -> m (Annotated a StatementF)
+visitStatementOutsideInM visitor@Visitor {..} stat = do
+  let goS = visitStatementOutsideInM visitor
+      goE = visitExpOutsideInM visitor
+      goV = visitVarOutsideInM visitor
+  visitStat stat >>= traverse \case
+    Assign variable value -> do
+      indexedVars <- goV variable
+      indexedVals <- goE value
+      pure $ Assign indexedVars indexedVals
+    Local names vals -> Local names <$> forM vals goE
+    IfThenElse p tb eb -> do
+      iPred <- goE p
+      iThen <- traverse goS tb
+      iElse <- traverse goS eb
+      pure $ IfThenElse iPred iThen iElse
+    Return e -> Return <$> goE e
+    other -> pure other
+
+visitExpOutsideInM
+  :: forall m a
+   . Monad m
+  => Visitor m a
+  -> (Annotated a ExpF -> m (Annotated a ExpF))
+visitExpOutsideInM visitor@Visitor {..} expf = do
+  let goS = visitStatementOutsideInM visitor
+      goE = visitExpOutsideInM visitor
+      goV = visitVarOutsideInM visitor
+  visitExp expf >>= \expr -> forM expr \case
+    Var v -> Var <$> goV v
+    Function names stats -> Function names <$> forM stats goS
+    TableCtor rows ->
+      TableCtor <$> forM rows do
+        visitRow >=> traverse \case
+          TableRowKV k v -> TableRowKV <$> goE k <*> goE v
+          TableRowNV n e -> TableRowNV n <$> goE e
+    UnOp op e -> UnOp op <$> goE e
+    BinOp op e1 e2 -> BinOp op <$> goE e1 <*> goE e2
+    FunctionCall fn args -> FunctionCall <$> goE fn <*> forM args goE
+    _ -> unAnn <$> visitExp expr
+
+visitVarOutsideInM
+  :: forall m a
+   . Monad m
+  => Visitor m a
+  -> (Annotated a VarF -> m (Annotated a VarF))
+visitVarOutsideInM visitor@Visitor {..} variable = do
+  let goE = visitExpOutsideInM visitor
+  visitVar variable >>= traverse \case
+    VarName qualifiedName -> pure $ VarName qualifiedName
+    VarIndex e1 e2 -> VarIndex <$> goE e1 <*> goE e2
+    VarField e name -> (`VarField` name) <$> goE e

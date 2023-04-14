@@ -5,22 +5,24 @@ local _S___runtime_lazy = function(name)
     return function(lineNumber)
       if state == 2 then
         return val
-      elseif state == 1 then
-        return error(name .. " was needed before it finished initializing")
       else
-        state = 1
-        val = init()
-        state = 2
-        return val
+        if state == 1 then
+          return error(name .. " was needed before it finished initializing")
+        else
+          state = 1
+          val = init()
+          state = 2
+          return val
+        end
       end
     end
   end
 end
+local Prim_I_undefined = nil
 local Control_Apply_I_apply = function(dict0)
   local v1 = dict0
   return v1.apply
 end
-local Prim_I_undefined = nil
 local Control_Applicative_I_pure = function(dict0)
   local v1 = dict0
   return v1.pure
@@ -105,7 +107,13 @@ local Effect_I_foreign = (function()
 end)()
 local Effect_I_pureE = Effect_I_foreign.pureE
 local Effect_I_bindE = Effect_I_foreign.bindE
-local Effect_I_monadEffect, Effect_I_bindEffect, Effect_I_applicativeEffect, Effect_I__S___lazy_functorEffect, Effect_I__S___lazy_applyEffect, Effect_I_functorEffect, Effect_I_applyEffect
+local Effect_I_monadEffect
+local Effect_I_bindEffect
+local Effect_I_applicativeEffect
+local Effect_I__S___lazy_functorEffect
+local Effect_I__S___lazy_applyEffect
+local Effect_I_functorEffect
+local Effect_I_applyEffect
 Effect_I_monadEffect = {
   Applicative0 = function() return Effect_I_applicativeEffect end,
   Bind1 = function() return Effect_I_bindEffect end

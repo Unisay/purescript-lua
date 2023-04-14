@@ -10,14 +10,12 @@ import Data.List.NonEmpty qualified as NE
 import Data.String qualified as String
 import Data.Tagged (Tagged (..))
 import Data.Text qualified as Text
-import Data.Traversable (for)
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Optimizer (optimizeAll)
 import Language.PureScript.Backend.IR.Query qualified as Query
 import Language.PureScript.Backend.Lua qualified as Lua
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
-import Language.PureScript.Backend.Lua.Linker qualified as Linker
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Language.PureScript.Names qualified as PS
@@ -173,24 +171,23 @@ compileCorefn outputDir moduleName = do
 
 compileIr :: (MonadIO m, MonadMask m) => [IR.Module] -> m Text
 compileIr irModules = withCurrentDir [reldir|test/ps|] do
-  let addPrimModule =
+  let addPrim =
         if any Query.usesPrimModule irModules
-          then (Fixture.primModule :)
+          then (Fixture.prim :)
           else identity
   let addRuntimeLazy =
         if any Query.usesRuntimeLazy irModules
           then (Fixture.runtimeLazy :)
           else identity
-  luaModules <- for irModules \irModule -> do
-    Lua.fromIrModule irModule
-      & either (die . show) pure
+
   foreignPath <- Tagged <$> makeAbsolute [reldir|foreign|]
   luaChunk <-
-    Linker.linkModules foreignPath (addPrimModule luaModules)
-      & handleLinkerError
+    Lua.fromIrModules foreignPath irModules
+      & handleLuaError
       & Oops.runOops
       & liftIO
-  let doc = Printer.printLuaChunk (addRuntimeLazy luaChunk)
+
+  let doc = luaChunk & addPrim & addRuntimeLazy & Printer.printLuaChunk
   let addTrailingLf = (<> "\n")
   pure $ addTrailingLf $ renderStrict $ layoutPretty defaultLayoutOptions doc
 
@@ -212,12 +209,6 @@ handleModuleDecodingError
 handleModuleDecodingError = Oops.catch \(CoreFn.ModuleDecodingErr p e) ->
   die . toString . unlines $
     ["Can't parse CoreFn module file: " <> toText (toFilePath p), toText e]
-
-handleLinkerError
-  :: ExceptT (Oops.Variant (Linker.Error ': e)) IO a
-  -> ExceptT (Oops.Variant e) IO a
-handleLinkerError = Oops.catch \(e :: Linker.Error) ->
-  die $ "Linker error: " <> show e
 
 handleLuaError
   :: ExceptT (Oops.Variant (Lua.Error ': e)) IO a

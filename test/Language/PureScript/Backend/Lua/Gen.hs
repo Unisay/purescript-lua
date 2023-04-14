@@ -6,79 +6,55 @@ import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
 import Language.PureScript.Backend.Lua.Name (Name, unsafeName)
 import Language.PureScript.Backend.Lua.Printer (printStatement)
-import Language.PureScript.Backend.Lua.Types
-  ( Chunk
-  , Exp
-  , ExpF (..)
-  , ModuleName (..)
-  , QualifiedName (..)
-  , Statement
-  , StatementF (..)
-  , TableRow
-  , TableRowF (..)
-  , Var
-  , VarF (..)
-  )
+import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
-import Prelude hiding (local)
+import Prelude hiding (local, return)
 
-chunk :: Gen Chunk
+chunk :: Gen Lua.Chunk
 chunk = Gen.list (Range.linear 1 16) statement
 
-statement :: Gen Statement
+statement :: Gen Lua.Statement
 statement = Gen.recursiveFrequency nonRecursiveStatements recursiveStatements
 
-nonRecursiveStatements :: [(Int, Gen Statement)]
+nonRecursiveStatements :: [(Int, Gen Lua.Statement)]
 nonRecursiveStatements =
-  [ (2, Return <$> expression)
+  [ (2, Lua.return <$> expression)
   , (2, assign)
   , (3, local)
   , (1, foreignSourceCode)
   ]
 
-assign :: Gen Statement
-assign = do
-  len <- Gen.int (Range.linear 1 5)
-  vars <- Gen.nonEmpty (Range.singleton len) nonRecursiveVar
-  vals <- Gen.nonEmpty (Range.singleton len) expression
-  pure $ Assign vars vals
+assign :: Gen Lua.Statement
+assign = Lua.assign <$> nonRecursiveVar <*> expression
 
-local :: Gen Statement
-local = do
-  len <- Gen.int (Range.linear 1 5)
-  vars <- Gen.nonEmpty (Range.singleton len) name
-  vals <- Gen.list (Range.constant 0 len) expression
-  pure $ Local vars vals
+local :: Gen Lua.Statement
+local = Lua.local <$> name <*> Gen.maybe expression
 
-ifThenElse :: Gen Statement
+ifThenElse :: Gen Lua.Statement
 ifThenElse = do
   cond <- expression
-  then' <- Gen.nonEmpty (Range.linear 1 5) statement
-  elsif <-
-    Gen.list
-      (Range.linear 0 3)
-      ((,) <$> expression <*> Gen.nonEmpty (Range.linear 1 5) statement)
-  else' <- Gen.maybe (Gen.nonEmpty (Range.linear 1 5) statement)
-  pure $ IfThenElse cond then' elsif else'
+  then' <- Gen.list (Range.linear 1 5) statement
+  else' <- Gen.list (Range.linear 1 5) statement
+  pure $ Lua.ifThenElse cond then' else'
 
-recursiveStatements :: [(Int, Gen Statement)]
+recursiveStatements :: [(Int, Gen Lua.Statement)]
 recursiveStatements = [(2, ifThenElse)]
 
-foreignSourceCode :: Gen Statement
+foreignSourceCode :: Gen Lua.Statement
 foreignSourceCode =
-  ForeignSourceCode
+  Lua.ForeignSourceCode
     . renderStrict
     . layoutPretty defaultLayoutOptions
     . printStatement
-    . Return
+    . Lua.return
     <$> table
 
-tableRow :: Gen TableRow
+tableRow :: Gen Lua.TableRow
 tableRow =
   Gen.frequency
-    [ (1, TableRowKV <$> expression <*> expression)
-    , (2, TableRowNV <$> name <*> expression)
+    [ (1, Lua.tableRowKV <$> expression <*> expression)
+    , (2, Lua.tableRowNV <$> name <*> expression)
     ]
 
 name :: Gen Name
@@ -88,57 +64,43 @@ name = do
   followingChars <- Gen.list (Range.linearFrom 3 1 16) nextChar
   pure . unsafeName $ Text.cons firstChar (Text.pack followingChars)
 
-moduleName :: Gen ModuleName
-moduleName = do
-  firstChar <- Gen.upper
-  let nextChar = Gen.frequency [(8, Gen.alphaNum), (2, Gen.constant '_')]
-  followingChars <- Gen.list (Range.linearFrom 3 1 16) nextChar
-  let text = Text.cons firstChar (Text.pack followingChars)
-  pure . ModuleName $ unsafeName text
-
-qualifiedName :: Gen QualifiedName
-qualifiedName =
-  Gen.frequency
-    [ (1, ImportedName <$> moduleName <*> name)
-    , (3, LocalName <$> name)
-    ]
-
-expression :: Gen Exp
+expression :: Gen Lua.Exp
 expression = Gen.recursiveFrequency nonRecursiveExpressions recursiveExpressions
 
-nonRecursiveExpressions :: [(Int, Gen Exp)]
+nonRecursiveExpressions :: [(Int, Gen Lua.Exp)]
 nonRecursiveExpressions =
   [ (2, nil)
   , (1, boolean)
   , (2, integer)
   , (1, float)
   , (2, string)
-  , (3, Var <$> nonRecursiveVar)
+  , (3, Lua.var <$> nonRecursiveVar)
   ]
 
-nil :: Gen Exp
-nil = Gen.constant Nil
+nil :: Gen Lua.Exp
+nil = Gen.constant Lua.Nil
 
-boolean :: Gen Exp
-boolean = Boolean <$> Gen.bool
+boolean :: Gen Lua.Exp
+boolean = Lua.Boolean <$> Gen.bool
 
-integer :: Gen Exp
-integer = Integer <$> Gen.integral integerRange
+integer :: Gen Lua.Exp
+integer = Lua.Integer <$> Gen.integral integerRange
  where
   integerRange :: Range Integer
   integerRange = fromIntegral <$> (Range.exponentialBounded :: Range Int64)
 
-float :: Gen Exp
+float :: Gen Lua.Exp
 float =
-  Float <$> Gen.double (Range.exponentialFloatFrom 0 (-1234567890.0) 1234567890)
+  Lua.Float
+    <$> Gen.double (Range.exponentialFloatFrom 0 (-1234567890.0) 1234567890)
 
-string :: Gen Exp
-string = String <$> Gen.text (Range.linear 1 16) Gen.unicode
+string :: Gen Lua.Exp
+string = Lua.String <$> Gen.text (Range.linear 1 16) Gen.unicode
 
-nonRecursiveVar :: Gen Var
-nonRecursiveVar = Gen.frequency [(1, VarName <$> qualifiedName)]
+nonRecursiveVar :: Gen Lua.Var
+nonRecursiveVar = Gen.frequency [(1, Lua.VarName <$> name)]
 
-recursiveExpressions :: [(Int, Gen Exp)]
+recursiveExpressions :: [(Int, Gen Lua.Exp)]
 recursiveExpressions =
   [ (3, function)
   , (1, unOp)
@@ -148,25 +110,25 @@ recursiveExpressions =
   , (3, functionCall)
   ]
 
-function :: Gen Exp
-function = Function <$> Gen.list (Range.linear 0 5) name <*> chunk
+function :: Gen Lua.Exp
+function = Lua.functionDef <$> Gen.list (Range.linear 0 5) name <*> chunk
 
-unOp :: Gen Exp
-unOp = UnOp <$> Gen.enumBounded <*> expression
+unOp :: Gen Lua.Exp
+unOp = Lua.unOp <$> Gen.enumBounded <*> expression
 
-binOp :: Gen Exp
-binOp = BinOp <$> Gen.enumBounded <*> expression <*> expression
+binOp :: Gen Lua.Exp
+binOp = Lua.binOp <$> Gen.enumBounded <*> expression <*> expression
 
-table :: Gen Exp
-table = TableCtor <$> Gen.list (Range.linear 0 5) tableRow
+table :: Gen Lua.Exp
+table = Lua.tableCtor <$> Gen.list (Range.linear 0 5) tableRow
 
-recursiveVar :: Gen Exp
-recursiveVar = fmap Var do
+recursiveVar :: Gen Lua.Exp
+recursiveVar = do
   Gen.choice
-    [ VarIndex <$> expression <*> expression
-    , VarField <$> expression <*> name
+    [ Lua.varIndex <$> expression <*> expression
+    , Lua.varField <$> expression <*> name
     ]
 
-functionCall :: Gen Exp
+functionCall :: Gen Lua.Exp
 functionCall =
-  FunctionCall <$> expression <*> Gen.list (Range.linear 0 5) expression
+  Lua.functionCall <$> expression <*> Gen.list (Range.linear 0 5) expression

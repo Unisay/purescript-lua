@@ -1,11 +1,9 @@
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE UndecidableInstances #-}
 
 module Language.PureScript.Backend.Lua.Types where
 
 import Language.PureScript.Backend.Lua.Name (Name)
 import Language.PureScript.Backend.Lua.Name qualified as Lua
-import Language.PureScript.Backend.Lua.Name qualified as Name
 import Prettyprinter (Pretty)
 import Prelude hiding
   ( and
@@ -20,47 +18,36 @@ import Prelude hiding
 
 type Chunk = [Statement]
 
-data Module = Module
-  { moduleChunk :: Chunk
-  , moduleName :: ModuleName
-  , moduleImports :: [ModuleName]
-  , moduleExports :: [Name]
-  , moduleForeigns :: [Name]
-  , modulePath :: FilePath
-  }
-
-newtype ModuleName = ModuleName {unModuleName :: Name}
-  deriving stock (Eq, Ord, Show)
-  deriving newtype (Pretty)
-
-data QualifiedName = ImportedName ModuleName Name | LocalName Name
-  deriving stock (Eq, Ord, Show)
-
 newtype ChunkName = ChunkName Text
   deriving stock (Show)
   deriving newtype (Pretty)
 
--- | HKD in disguise
-type family Annotated (ann :: Type -> Type) (f :: (Type -> Type) -> Type) where
-  Annotated Identity f = f Identity
-  Annotated ann f = ann (f ann)
+type Annotated (a :: Type) (f :: Type -> Type) = (a, f a)
 
-data VarF f
-  = VarName QualifiedName
-  | VarIndex (Annotated f ExpF) (Annotated f ExpF)
-  | VarField (Annotated f ExpF) Name
+pattern Ann :: b -> (a, b)
+pattern Ann fa <- (_ann, fa)
+{-# COMPLETE Ann #-}
 
-type Var = VarF Identity
-deriving stock instance Eq (Annotated f ExpF) => Eq (VarF f)
-deriving stock instance Show (Annotated f ExpF) => Show (VarF f)
+data VarF a
+  = VarName Name
+  | VarIndex (Annotated a ExpF) (Annotated a ExpF)
+  | VarField (Annotated a ExpF) Name
 
-data TableRowF f
-  = TableRowKV (Annotated f ExpF) (Annotated f ExpF)
-  | TableRowNV Name (Annotated f ExpF)
+type Var = VarF ()
 
-type TableRow = TableRowF Identity
-deriving stock instance Eq (Annotated f ExpF) => Eq (TableRowF f)
-deriving stock instance Show (Annotated f ExpF) => Show (TableRowF f)
+deriving stock instance Eq a => Eq (VarF a)
+deriving stock instance Ord a => Ord (VarF a)
+deriving stock instance Show a => Show (VarF a)
+
+data TableRowF ann
+  = TableRowKV (Annotated ann ExpF) (Annotated ann ExpF)
+  | TableRowNV Name (Annotated ann ExpF)
+
+type TableRow = TableRowF ()
+
+deriving stock instance Eq a => Eq (TableRowF a)
+deriving stock instance Ord a => Ord (TableRowF a)
+deriving stock instance Show a => Show (TableRowF a)
 
 data Precedence
   = PrecFunction
@@ -79,7 +66,7 @@ instance HasPrecedence Precedence where
   prec = id
 
 data UnaryOp = HashOp | Negate | LogicalNot | BitwiseNot
-  deriving stock (Show, Eq, Enum, Bounded)
+  deriving stock (Show, Eq, Ord, Enum, Bounded)
 
 instance HasPrecedence UnaryOp where
   prec =
@@ -118,7 +105,7 @@ data BinaryOp
   | FloorDiv
   | Mod
   | Exp
-  deriving stock (Show, Eq, Enum, Bounded)
+  deriving stock (Show, Eq, Ord, Enum, Bounded)
 
 {- 1   or
    2   and
@@ -183,189 +170,201 @@ instance HasSymbol BinaryOp where
     Mod -> "%"
     Exp -> "^"
 
-data ExpF (f :: Type -> Type)
+data ExpF ann
   = Nil
   | Boolean Bool
   | Integer Integer
   | Float Double
   | String Text
-  | Function [Name] [Annotated f StatementF]
-  | TableCtor [Annotated f TableRowF]
-  | UnOp UnaryOp (Annotated f ExpF)
-  | BinOp BinaryOp (Annotated f ExpF) (Annotated f ExpF)
-  | Var (Annotated f VarF)
-  | FunctionCall (Annotated f ExpF) [Annotated f ExpF]
+  | Function [Name] [Annotated ann StatementF]
+  | TableCtor [Annotated ann TableRowF]
+  | UnOp UnaryOp (Annotated ann ExpF)
+  | BinOp BinaryOp (Annotated ann ExpF) (Annotated ann ExpF)
+  | Var (Annotated ann VarF)
+  | FunctionCall (Annotated ann ExpF) [Annotated ann ExpF]
 
-type Exp = ExpF Identity
-deriving stock instance
-  ( Eq (Annotated f VarF)
-  , Eq (Annotated f TableRowF)
-  , Eq (Annotated f ExpF)
-  , Eq (Annotated f StatementF)
-  )
-  => Eq (ExpF f)
-deriving stock instance
-  ( Show (Annotated f VarF)
-  , Show (Annotated f TableRowF)
-  , Show (Annotated f ExpF)
-  , Show (Annotated f StatementF)
-  )
-  => Show (ExpF f)
+type Exp = ExpF ()
 
-data StatementF f
-  = Assign
-      (NonEmpty (Annotated f VarF))
-      (NonEmpty (Annotated f ExpF))
-  | Local (NonEmpty Name) [Annotated f ExpF]
+deriving stock instance Eq a => Eq (ExpF a)
+deriving stock instance Ord a => Ord (ExpF a)
+deriving stock instance Show a => Show (ExpF a)
+
+data StatementF ann
+  = Assign (Annotated ann VarF) (Annotated ann ExpF)
+  | Local Name (Maybe (Annotated ann ExpF))
   | IfThenElse
-      (Annotated f ExpF)
+      (Annotated ann ExpF)
       -- ^ predicate
-      (NonEmpty (Annotated f StatementF))
+      [Annotated ann StatementF]
       -- ^ then block
-      [(Annotated f ExpF, NonEmpty (Annotated f StatementF))]
-      -- ^ elseif (predicate, then block)
-      (Maybe (NonEmpty (Annotated f StatementF)))
+      [Annotated ann StatementF]
       -- ^ else block
-  | Return (Annotated f ExpF)
+  | Return (Annotated ann ExpF)
   | ForeignSourceCode Text
 
-type Statement = StatementF Identity
-deriving stock instance
-  ( Eq (Annotated f ExpF)
-  , Eq (Annotated f VarF)
-  , Eq (Annotated f StatementF)
-  )
-  => Eq (StatementF f)
-deriving stock instance
-  ( Show (Annotated f ExpF)
-  , Show (Annotated f VarF)
-  , Show (Annotated f StatementF)
-  )
-  => Show (StatementF f)
+type Statement = StatementF ()
+
+deriving stock instance Eq a => Eq (StatementF a)
+deriving stock instance Ord a => Ord (StatementF a)
+deriving stock instance Show a => Show (StatementF a)
 
 --------------------------------------------------------------------------------
--- Lifted constructors ---------------------------------------------------------
+-- Smarter constructors --------------------------------------------------------
 
-assign1 :: Var -> Exp -> Statement
-assign1 v e = Assign (pure v) (pure e)
+ann :: f () -> Annotated () f
+ann f = ((), f)
+
+unAnn :: Annotated a f -> f a
+unAnn = snd
+
+var :: Var -> Exp
+var = Var . ann
+
+assign :: Var -> Exp -> Statement
+assign v e = Assign (ann v) (ann e)
+
+local :: Name -> Maybe Exp -> Statement
+local name expr = Local name (ann <$> expr)
 
 local1 :: Name -> Exp -> Statement
-local1 name expr = Local (pure name) [expr]
+local1 name expr = Local name (Just (ann expr))
+
+local0 :: Name -> Statement
+local0 name = Local name Nothing
+
+ifThenElse :: Exp -> [Statement] -> [Statement] -> Statement
+ifThenElse i t e = IfThenElse (ann i) (ann <$> t) (ann <$> e)
+
+return :: Exp -> Statement
+return = Return . ann
 
 thunks :: [Statement] -> Exp
-thunks ss = functionCall (Function [] ss) []
+thunks ss = functionCall (Function [] (ann <$> ss)) []
 
 -- Expressions -----------------------------------------------------------------
 
 table :: [TableRow] -> Exp
-table = TableCtor
-
-varQName :: QualifiedName -> Exp
-varQName = Var . VarName
+table = TableCtor . fmap ann
 
 varName :: Name -> Exp
-varName = Var . VarName . LocalName
+varName = Var . ann . VarName
 
 varIndex :: Exp -> Exp -> Exp
-varIndex = (Var .) . VarIndex
+varIndex e1 e2 = Var (ann (VarIndex (ann e1) (ann e2)))
 
 varField :: Exp -> Name -> Exp
-varField = (Var .) . VarField
+varField e n = Var (ann (VarField (ann e) n))
+
+functionDef :: [Name] -> [Statement] -> Exp
+functionDef args body = Function args (ann <$> body)
 
 functionCall :: Exp -> [Exp] -> Exp
-functionCall = FunctionCall
+functionCall f args = FunctionCall (ann f) (ann <$> args)
 
-require :: ModuleName -> Exp
-require (ModuleName modname) =
-  functionCall (varName [Lua.name|require|]) [String (Name.toText modname)]
+tableCtor :: [TableRow] -> Exp
+tableCtor = TableCtor . fmap ann
+
+unOp :: UnaryOp -> Exp -> Exp
+unOp op e = UnOp op (ann e)
+
+binOp :: BinaryOp -> Exp -> Exp -> Exp
+binOp op e1 e2 = BinOp op (ann e1) (ann e2)
 
 error :: Text -> Exp
 error msg = functionCall (varName [Lua.name|error|]) [String msg]
 
 pun :: Name -> TableRow
-pun n = TableRowNV n (varName n)
+pun n = TableRowNV n (ann (varName n))
 
 thunk :: Exp -> Exp
-thunk e = scope [Return e]
+thunk e = scope [Return (ann e)]
 
 scope :: [Statement] -> Exp
-scope body = functionCall (Function [] body) []
+scope body = functionCall (Function [] (ann <$> body)) []
 
 -- Unary operators -------------------------------------------------------------
 
 hash :: Exp -> Exp
-hash = UnOp HashOp
+hash = UnOp HashOp . ann
 
 negate :: Exp -> Exp
-negate = UnOp Negate
+negate = UnOp Negate . ann
 
 logicalNot :: Exp -> Exp
-logicalNot = UnOp LogicalNot
+logicalNot = UnOp LogicalNot . ann
 
 bitwiseNot :: Exp -> Exp
-bitwiseNot = UnOp BitwiseNot
+bitwiseNot = UnOp BitwiseNot . ann
 
 -- Binary operators ------------------------------------------------------------
 
 or :: Exp -> Exp -> Exp
-or = BinOp Or
+or e1 e2 = BinOp Or (ann e1) (ann e2)
 
 and :: Exp -> Exp -> Exp
-and = BinOp And
+and e1 e2 = BinOp And (ann e1) (ann e2)
 
 lessThan :: Exp -> Exp -> Exp
-lessThan = BinOp LessThan
+lessThan e1 e2 = BinOp LessThan (ann e1) (ann e2)
 
 greaterThan :: Exp -> Exp -> Exp
-greaterThan = BinOp GreaterThan
+greaterThan e1 e2 = BinOp GreaterThan (ann e1) (ann e2)
 
 lessThanOrEqualTo :: Exp -> Exp -> Exp
-lessThanOrEqualTo = BinOp LessThanOrEqualTo
+lessThanOrEqualTo e1 e2 = BinOp LessThanOrEqualTo (ann e1) (ann e2)
 
 greaterThanOrEqualTo :: Exp -> Exp -> Exp
-greaterThanOrEqualTo = BinOp GreaterThanOrEqualTo
+greaterThanOrEqualTo e1 e2 = BinOp GreaterThanOrEqualTo (ann e1) (ann e2)
 
 notEqualTo :: Exp -> Exp -> Exp
-notEqualTo = BinOp NotEqualTo
+notEqualTo e1 e2 = BinOp NotEqualTo (ann e1) (ann e2)
 
 equalTo :: Exp -> Exp -> Exp
-equalTo = BinOp EqualTo
+equalTo e1 e2 = BinOp EqualTo (ann e1) (ann e2)
 
 bitOr :: Exp -> Exp -> Exp
-bitOr = BinOp BitOr
+bitOr e1 e2 = BinOp BitOr (ann e1) (ann e2)
 
 bitXor :: Exp -> Exp -> Exp
-bitXor = BinOp BitXor
+bitXor e1 e2 = BinOp BitXor (ann e1) (ann e2)
 
 bitAnd :: Exp -> Exp -> Exp
-bitAnd = BinOp BitAnd
+bitAnd e1 e2 = BinOp BitAnd (ann e1) (ann e2)
 
 bitShiftRight :: Exp -> Exp -> Exp
-bitShiftRight = BinOp BitShiftRight
+bitShiftRight e1 e2 = BinOp BitShiftRight (ann e1) (ann e2)
 
 bitShiftLeft :: Exp -> Exp -> Exp
-bitShiftLeft = BinOp BitShiftLeft
+bitShiftLeft e1 e2 = BinOp BitShiftLeft (ann e1) (ann e2)
 
 concat :: Exp -> Exp -> Exp
-concat = BinOp Concat
+concat e1 e2 = BinOp Concat (ann e1) (ann e2)
 
 add :: Exp -> Exp -> Exp
-add = BinOp Add
+add e1 e2 = BinOp Add (ann e1) (ann e2)
 
 sub :: Exp -> Exp -> Exp
-sub = BinOp Sub
+sub e1 e2 = BinOp Sub (ann e1) (ann e2)
 
 mul :: Exp -> Exp -> Exp
-mul = BinOp Mul
+mul e1 e2 = BinOp Mul (ann e1) (ann e2)
 
 floatDiv :: Exp -> Exp -> Exp
-floatDiv = BinOp FloatDiv
+floatDiv e1 e2 = BinOp FloatDiv (ann e1) (ann e2)
 
 floorDiv :: Exp -> Exp -> Exp
-floorDiv = BinOp FloorDiv
+floorDiv e1 e2 = BinOp FloorDiv (ann e1) (ann e2)
 
 mod :: Exp -> Exp -> Exp
-mod = BinOp Mod
+mod e1 e2 = BinOp Mod (ann e1) (ann e2)
 
 exponent :: Exp -> Exp -> Exp
-exponent = BinOp Exp
+exponent e1 e2 = BinOp Exp (ann e1) (ann e2)
+
+-- Table Rows ------------------------------------------------------------------
+
+tableRowKV :: Exp -> Exp -> TableRow
+tableRowKV k v = TableRowKV (ann k) (ann v)
+
+tableRowNV :: Name -> Exp -> TableRow
+tableRowNV n v = TableRowNV n (ann v)

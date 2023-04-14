@@ -7,7 +7,6 @@ import Data.Tagged (Tagged (..))
 import Language.PureScript.Backend qualified as Backend
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.Lua qualified as Lua
-import Language.PureScript.Backend.Lua.Linker qualified as Linker
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Main.Utf8 qualified as Utf8
@@ -46,7 +45,6 @@ main = Utf8.withUtf8 do
       & handleModuleDecodingError
       & handleCoreFnError
       & handleLuaError
-      & handleLinkerError
       & Oops.runOops
 
   let outputFile = toFilePath luaOutput
@@ -91,16 +89,16 @@ handleLuaError
   :: ExceptT (Oops.Variant (Lua.Error ': e)) IO a
   -> ExceptT (Oops.Variant e) IO a
 handleLuaError =
-  Oops.catch \(Lua.UnexpectedRefBound expr index) ->
-    die . toString . unwords $
-      [ "Unexpected reference bound at index:"
-      , show index
-      , "in expression:"
-      , toText (shower expr)
-      ]
-
-handleLinkerError
-  :: ExceptT (Oops.Variant (Linker.Error ': e)) IO a
-  -> ExceptT (Oops.Variant e) IO a
-handleLinkerError = Oops.catch \(e :: Linker.Error) ->
-  die $ "Linker error: " <> show e
+  Oops.catch \case
+    Lua.UnexpectedRefBound expr index ->
+      die . toString . unwords $
+        [ "Unexpected reference bound at index:"
+        , show index
+        , "in expression:"
+        , toText (shower expr)
+        ]
+    Lua.LinkerErrorForeign e ->
+      die . toString . unlines $
+        [ "Linker error:"
+        , toText (shower e)
+        ]

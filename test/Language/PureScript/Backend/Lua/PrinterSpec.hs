@@ -14,89 +14,38 @@ import Test.Hspec (Spec, describe, it, shouldBe)
 spec :: Spec
 spec = do
   describe "Var" do
-    let printQname = rendered . Printer.printQualifiedName
     it "local" do
-      printQname (Lua.LocalName [Lua.name|foo|]) `shouldBe` "foo"
+      (rendered . Printer.printName) [Lua.name|foo|] `shouldBe` "foo"
 
-    it "imported" do
-      let modname = Lua.ModuleName [Lua.name|Acme|]
-      printQname (Lua.ImportedName modname [Lua.name|foo|])
-        `shouldBe` "Acme.foo"
-
-  describe "Assignment" do
-    it "singular" do
-      let s =
-            Lua.assign1
-              (Lua.VarName (Lua.LocalName [Lua.name|foo|]))
-              (Lua.Boolean True)
-      renderedStatement s `shouldBe` "foo = true"
-
-    it "plural" do
-      let k =
-            Lua.VarName (Lua.LocalName [Lua.name|foo|])
-              :| [ Lua.VarField
-                    (Lua.varName [Lua.name|a|])
-                    [Lua.name|b|]
-                 , Lua.VarIndex
-                    (Lua.varName [Lua.name|c|])
-                    (Lua.varName [Lua.name|d|])
-                 ]
-          v = Lua.Boolean True :| [Lua.Integer 1]
-          s = Lua.Assign k v
-      renderedStatement s `shouldBe` "foo, a.b, c[d] = true, 1"
+  it "Assignment" do
+    let s = Lua.assign (Lua.VarName [Lua.name|foo|]) (Lua.Boolean True)
+    renderedStatement s `shouldBe` "foo = true"
 
   describe "Local declaration" do
     it "without a value" do
-      let s = Lua.Local namelist explist
-          namelist :: NonEmpty Lua.Name = [Lua.name|foo|] :| [[Lua.name|bar|]]
-          explist :: [Lua.Exp] = []
-      renderedStatement s `shouldBe` "local foo, bar"
+      let s = Lua.Local [Lua.name|foo|] Nothing
+      renderedStatement s `shouldBe` "local foo"
 
     it "with value" do
-      let s = Lua.Local namelist explist
-          namelist :: NonEmpty Lua.Name =
-            [Lua.name|foo|] :| [[Lua.name|bar|], [Lua.name|baz|]]
-          explist :: [Lua.Exp] = [Lua.Integer 42, Lua.Boolean True]
-      renderedStatement s
-        `shouldBe` "local foo, bar, baz = 42, true"
+      let s = Lua.local [Lua.name|foo|] (Just (Lua.Boolean True))
+      renderedStatement s `shouldBe` "local foo = true"
 
   describe "If Then Else" do
     it "if / then" do
       let p = Lua.Boolean True
-      let t = pure $ Lua.Return $ Lua.Integer 1
-      let s = Lua.IfThenElse p t [] Nothing
+      let t = pure $ Lua.return $ Lua.Integer 1
+      let s = Lua.ifThenElse p t []
       renderedStatement s `shouldBe` "if true then return 1 end"
     it "if / then / else" do
       let p = Lua.Boolean True
-      let t = pure $ Lua.Return $ Lua.Integer 1
-      let e = pure $ Lua.Return $ Lua.Integer 0
-      let s = Lua.IfThenElse p t [] (Just e)
+      let t = pure $ Lua.return $ Lua.Integer 1
+      let e = pure $ Lua.return $ Lua.Integer 0
+      let s = Lua.ifThenElse p t e
       renderedStatement s `shouldBe` "if true then return 1 else return 0 end"
-    it "if / then / elseif / else" do
-      let p = Lua.Boolean True
-      let t = pure $ Lua.Return $ Lua.varName [Lua.name|tttttt|]
-      let i =
-            [
-              ( Lua.Boolean False
-              , pure $ Lua.Return $ Lua.varName [Lua.name|iiiiii|]
-              )
-            ]
-      let e = pure $ Lua.Return $ Lua.varName [Lua.name|eeeeee|]
-      let s = Lua.IfThenElse p t i (Just e)
-      renderedStatement s
-        `shouldBe` multiline
-          [ "if true then"
-          , "  return tttttt"
-          , "elseif false then"
-          , "  return iiiiii"
-          , "else"
-          , "  return eeeeee"
-          , "end"
-          ]
 
   describe "Return" do
     it "statement" do
-      let s = Lua.Return $ Lua.Boolean True
+      let s = Lua.return $ Lua.Boolean True
       renderedStatement s `shouldBe` "return true"
 
   describe "Table" do
@@ -106,18 +55,18 @@ spec = do
     it "small table constructor in one line" do
       let e =
             Lua.table
-              [ Lua.TableRowKV (Lua.Integer 42) (Lua.Boolean True)
-              , Lua.TableRowNV [Lua.name|foo|] (Lua.String "ok")
+              [ Lua.tableRowKV (Lua.Integer 42) (Lua.Boolean True)
+              , Lua.tableRowNV [Lua.name|foo|] (Lua.String "ok")
               ]
       renderedExpression e `shouldBe` "{ [42] = true, foo = \"ok\" }"
 
     it "large table constructor on muliple lines" do
       let e =
             Lua.table
-              [ Lua.TableRowKV (Lua.Integer 42) (Lua.Boolean True)
-              , Lua.TableRowNV [Lua.name|foo|] (Lua.String "bar")
-              , Lua.TableRowNV [Lua.name|loooooooooooong1|] (Lua.String "value")
-              , Lua.TableRowNV [Lua.name|loooooooooooong2|] (Lua.String "value")
+              [ Lua.tableRowKV (Lua.Integer 42) (Lua.Boolean True)
+              , Lua.tableRowNV [Lua.name|foo|] (Lua.String "bar")
+              , Lua.tableRowNV [Lua.name|loooooooooooong1|] (Lua.String "value")
+              , Lua.tableRowNV [Lua.name|loooooooooooong2|] (Lua.String "value")
               ]
       renderedExpression e
         `shouldBe` multiline
@@ -133,10 +82,8 @@ spec = do
     it "one-liner" do
       let params = [[Lua.name|a|], [Lua.name|b|]]
       let result = Lua.Integer 1
-      let stats =
-            [ Lua.assign1 (Lua.VarName (Lua.LocalName [Lua.name|x|])) Lua.Nil
-            ]
-      let expr = Lua.Function params (stats <> [Lua.Return result])
+      let stats = [Lua.assign (Lua.VarName [Lua.name|x|]) Lua.Nil]
+      let expr = Lua.functionDef params (stats <> [Lua.return result])
       renderedExpression expr `shouldBe` "function(a, b) x = nil return 1 end"
 
     it "multi-liner" do
@@ -144,12 +91,8 @@ spec = do
       let result =
             Lua.varName
               [Lua.name|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa|]
-      let stats =
-            [ Lua.assign1
-                (Lua.VarName (Lua.LocalName [Lua.name|x|]))
-                Lua.Nil
-            ]
-      let expr = Lua.Function params (stats <> [Lua.Return result])
+      let stats = [Lua.assign (Lua.VarName [Lua.name|x|]) Lua.Nil]
+      let expr = Lua.functionDef params (stats <> [Lua.return result])
       renderedExpression expr
         `shouldBe` multiline
           [ "function(aaa, bbb)"

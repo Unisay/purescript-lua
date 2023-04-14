@@ -35,24 +35,19 @@ printLuaChunk = vsep . fmap printStatement
 
 printStatement :: Lua.Statement -> ADoc
 printStatement = \case
-  Lua.Assign varlist explist ->
-    printAssign varlist explist
-  Lua.Local names values ->
-    printLocal names (printedExp <$> values)
-  Lua.IfThenElse predicate thenBlock elsifs elseBlock ->
-    printIfThenElse predicate thenBlock elsifs elseBlock
-  -- Lua.Block statements ->
-  --   printBlock statements
-  Lua.Return expr ->
+  Lua.Assign (Ann variable) (Ann expr) ->
+    printAssign variable expr
+  Lua.Local name value ->
+    printLocal name (printedExp . unAnn <$> value)
+  Lua.IfThenElse (Ann predicate) thenBlock elseBlock ->
+    printIfThenElse predicate (unAnn <$> thenBlock) (unAnn <$> elseBlock)
+  Lua.Return (Ann expr) ->
     "return" <+> printedExp expr
   Lua.ForeignSourceCode code ->
     pretty code
 
-printAssign :: NonEmpty Lua.Var -> NonEmpty Lua.Exp -> ADoc
-printAssign vars exps = varlist <+> "=" <+> explist
- where
-  varlist = hsep $ punctuate comma $ NE.toList $ fmap printVar vars
-  explist = hsep $ punctuate comma $ NE.toList $ fmap printedExp exps
+printAssign :: Lua.Var -> Lua.Exp -> ADoc
+printAssign variable expr = printVar variable <+> "=" <+> printedExp expr
 
 -- | Printed expression without a precedence
 printedExp :: Lua.Exp -> ADoc
@@ -65,13 +60,18 @@ printExp = \case
   Lua.Float f -> (PrecAtom, pretty f)
   Lua.Integer i -> (PrecAtom, pretty i)
   Lua.String t -> (PrecAtom, dquotes (pretty t))
-  Lua.Function params body -> (PrecFunction, printFunction params body)
-  Lua.TableCtor rows -> (PrecAtom, printTableCtor rows)
-  Lua.UnOp op a -> printUnaryOp op (printExp a)
-  Lua.BinOp op l r -> printBinaryOp op (printExp l) (printExp r)
-  Lua.Var v -> (PrecAtom, printVar v)
-  Lua.FunctionCall prefix args ->
-    (PrecPrefix, printFunctionCall (printExp prefix) (printExp <$> args))
+  Lua.Function params body ->
+    (PrecFunction, printFunction params (unAnn <$> body))
+  Lua.TableCtor rows -> (PrecAtom, printTableCtor (unAnn <$> rows))
+  Lua.UnOp op (Ann a) -> printUnaryOp op (printExp a)
+  Lua.BinOp op (Ann l) (Ann r) -> printBinaryOp op (printExp l) (printExp r)
+  Lua.Var (Ann v) -> (PrecAtom, printVar v)
+  Lua.FunctionCall (Ann prefix) args ->
+    ( PrecPrefix
+    , printFunctionCall
+        (printExp prefix)
+        (printExp . unAnn <$> args)
+    )
 
 printUnaryOp :: Lua.UnaryOp -> PADoc -> PADoc
 printUnaryOp op (_, a) = (prec op, pretty (sym op) <> parens a)
@@ -95,28 +95,27 @@ printTableCtor tableRows = sep [lbrace, flex rows, rbrace]
 
 printRow :: Lua.TableRow -> ADoc
 printRow = \case
-  Lua.TableRowKV kexp vexp ->
+  Lua.TableRowKV (Ann kexp) (Ann vexp) ->
     brackets (printedExp kexp) <+> "=" <+> printedExp vexp
-  Lua.TableRowNV name vexp ->
+  Lua.TableRowNV name (Ann vexp) ->
     printName name <+> "=" <+> printedExp vexp
 
 printVar :: Lua.Var -> ADoc
 printVar = \case
-  Lua.VarName name -> printQualifiedName name
-  Lua.VarIndex e i -> printedExp e <> brackets (printedExp i)
-  Lua.VarField e n -> printedExp e <> "." <> printName n
+  Lua.VarName name -> printName name
+  Lua.VarIndex (Ann e) (Ann i) -> printedExp e <> brackets (printedExp i)
+  Lua.VarField (Ann e) n -> printedExp e <> "." <> printName n
 
 printFunctionCall :: PADoc -> [PADoc] -> ADoc
 printFunctionCall prefix args =
   wrapPrec PrecPrefix prefix
     <> parens (hsep (punctuate comma (snd <$> args)))
 
-printLocal :: NonEmpty Lua.Name -> [ADoc] -> ADoc
-printLocal names values =
-  hsep $ "local" : if null values then [namelist] else [namelist, "=", explist]
- where
-  namelist = hsep (punctuate comma (NE.toList (fmap printName names)))
-  explist = hsep (punctuate comma values)
+printLocal :: Lua.Name -> Maybe ADoc -> ADoc
+printLocal name value =
+  "local" <+> case value of
+    Nothing -> printName name
+    Just v -> printName name <+> "=" <+> v
 
 printRequire :: Lua.ChunkName -> ADoc
 printRequire name =
@@ -128,26 +127,19 @@ printBlock (NE.toList -> statements) =
 
 printIfThenElse
   :: Lua.Exp
-  -> NonEmpty Statement
-  -> [(Lua.Exp, NonEmpty Statement)]
-  -> Maybe (NonEmpty Statement)
+  -> [Statement]
+  -> [Statement]
   -> ADoc
-printIfThenElse predicate thenBlock elsifs elseBlock =
+printIfThenElse predicate thenBlock elseBlock =
   sep . join $
     [ [hsep ["if", printedExp predicate, "then"], thenDoc]
-    , elsifs >>= \(p, t) ->
-        [hsep ["elseif", printedExp p, "then"], flex (printStatement <$> t)]
-    , elseBlock & maybe [] \e -> ["else", flex (printStatement <$> e)]
+    , if not (null elseBlock)
+        then ["else", flex (printStatement <$> elseBlock)]
+        else []
     , ["end"]
     ]
  where
   thenDoc = flex (printStatement <$> thenBlock)
-
-printQualifiedName :: Lua.QualifiedName -> ADoc
-printQualifiedName = \case
-  Lua.ImportedName (Lua.ModuleName modname) name ->
-    printName modname <> "." <> printName name
-  Lua.LocalName name -> printName name
 
 printName :: Lua.Name -> ADoc
 printName = pretty

@@ -11,8 +11,9 @@ import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Optimizer (optimizeAll)
 import Language.PureScript.Backend.IR.Query (usesPrimModule, usesRuntimeLazy)
 import Language.PureScript.Backend.Lua qualified as Lua
+import Language.PureScript.Backend.Lua.DeadCodeEliminator (eliminateDeadCode)
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
-import Language.PureScript.Backend.Lua.Linker qualified as Linker
+import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Language.PureScript.Names qualified as PS
 import Path (Abs, Dir, Path, SomeBase)
@@ -39,7 +40,6 @@ compileModules
     `CouldBeAnyOf` '[ CoreFn.ModuleNotFound
                     , CoreFn.ModuleDecodingErr
                     , IR.CoreFnError
-                    , Linker.Error
                     , Lua.Error
                     ]
   => Tagged "output" (SomeBase Dir)
@@ -52,40 +52,39 @@ compileModules outputDir foreignDir appOrModule = do
   irResults <- forM (Map.toList cfnModules) \(_psModuleName, cfnModule) ->
     Oops.hoistEither $ IR.mkModule cfnModule
   let (needsRuntimeLazys, irModules) = unzip irResults
-      optimizedModules = optimizeAll dceStrategy irModules
-  luaModules <- forM optimizedModules $ Oops.hoistEither . Lua.fromIrModule
-  let addPrimModule =
+      optimizedModules = optimizeAll irDceStrategy irModules
+      addPrim =
         if any usesPrimModule optimizedModules
-          then (Fixture.primModule :)
+          then (Fixture.prim :)
           else identity
-  chunk <- Linker.linkModules foreignDir (addPrimModule luaModules)
-  let addRuntimeLazy =
+      addRuntimeLazy =
         if or (fmap untag needsRuntimeLazys)
           && any usesRuntimeLazy optimizedModules
           then (Fixture.runtimeLazy :)
           else identity
-  pure $
-    addRuntimeLazy chunk
-      <> [ Lua.Return case appOrModule of
+  chunk <- Lua.fromIrModules foreignDir optimizedModules
+  pure . eliminateDeadCode $
+    addRuntimeLazy (addPrim chunk)
+      <> [ Lua.Return $ Lua.ann case appOrModule of
             AsModule (ModuleEntryPoint modname) ->
-              let luaModName = Lua.fromModuleName (IR.mkModuleName modname)
-                  entryModule =
-                    List.find ((== luaModName) . Lua.moduleName) luaModules
-               in Lua.table $
-                    maybe [] Lua.moduleExports entryModule <&> \name ->
-                      Lua.TableRowNV
-                        name
-                        (Lua.varName (Linker.qualifyName luaModName name))
+              let entryModule =
+                    optimizedModules & List.find \IR.Module {moduleName} ->
+                      moduleName == IR.mkModuleName modname
+               in Lua.table case entryModule of
+                    Nothing -> []
+                    Just IR.Module {moduleExports, moduleName} ->
+                      moduleExports <&> \(Lua.fromName moduleName -> name) ->
+                        Lua.tableRowNV name $
+                          Lua.varName (Lua.qualifyName moduleName name)
             AsApplication (AppEntryPoint modul ident) ->
               Lua.functionCall
-                ( Linker.linkedVar
-                    (Lua.fromModuleName $ IR.mkModuleName modul)
-                    (Lua.fromName (IR.identToName ident))
+                ( Lua.varName $
+                    Lua.fromName (IR.mkModuleName modul) (IR.identToName ident)
                 )
                 []
          ]
  where
-  dceStrategy =
+  irDceStrategy =
     case appOrModule of
       AsApplication (AppEntryPoint modul entryIdent) ->
         DCE.EntryPoints $

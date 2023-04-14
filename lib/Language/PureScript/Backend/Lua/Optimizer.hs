@@ -10,8 +10,13 @@ import Language.PureScript.Backend.Lua.Types
   , Exp
   , ExpF (..)
   , Statement
-  , StatementF (..)
+  , StatementF (Local, Return)
+  , functionDef
+  , return
+  , unAnn
+  , pattern Ann
   )
+import Prelude hiding (return)
 
 optimizeChunk :: Chunk -> Chunk
 optimizeChunk = fmap optimizeStatement
@@ -42,17 +47,14 @@ pushDeclarationsDownTheInnerScope :: RewriteRule
 pushDeclarationsDownTheInnerScope = \case
   Function outerArgs outerBody
     | lastStatement <- List.last outerBody
-    , (Return ((Function innerArgs innerBody))) <- lastStatement
-    , bindingarations <- List.init outerBody
-    , not (null bindingarations)
-    , all isDeclaration bindingarations ->
-        Function
+    , Ann (Return (Ann (Function innerArgs innerBody))) <- lastStatement
+    , declarations <- unAnn <$> List.init outerBody
+    , not (null declarations)
+    , all isDeclaration declarations ->
+        functionDef
           outerArgs
-          [ Return
-              ( Function
-                  innerArgs
-                  (bindingarations <> innerBody)
-              )
+          [ return $
+              functionDef innerArgs (declarations <> fmap unAnn innerBody)
           ]
   e -> e
  where
@@ -71,5 +73,6 @@ removeScopeWhenInsideEmptyFunction :: RewriteRule
 removeScopeWhenInsideEmptyFunction = \case
   Function
     outerArgs
-    [Return (FunctionCall ((Function [] body)) [])] -> Function outerArgs body
+    [Ann (Return (Ann (FunctionCall (Ann (Function [] body)) [])))] ->
+      Function outerArgs body
   e -> e
