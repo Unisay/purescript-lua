@@ -80,10 +80,7 @@ handleCoreFnError
   -> ExceptT (Oops.Variant e) IO a
 handleCoreFnError =
   Oops.catch \(e :: IR.CoreFnError) ->
-    die . toString . unlines $
-      [ "CoreFn contains an unexpected value:"
-      , toText (shower e)
-      ]
+    die $ "CoreFn contains an unexpected value:" <> show e
 
 handleLuaError
   :: ExceptT (Oops.Variant (Lua.Error ': e)) IO a
@@ -91,14 +88,11 @@ handleLuaError
 handleLuaError =
   Oops.catch \case
     Lua.UnexpectedRefBound expr index ->
-      die . toString . unwords $
+      die . toString . unlines $
         [ "Unexpected reference bound at index:"
         , show index
         , "in expression:"
         , toText (shower expr)
         ]
     Lua.LinkerErrorForeign e ->
-      die . toString . unlines $
-        [ "Linker error:"
-        , toText (shower e)
-        ]
+      die $ "Linker error:\n" <> show e

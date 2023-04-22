@@ -74,8 +74,7 @@ compileModules outputDir foreignDir appOrModule = do
                     Nothing -> []
                     Just IR.Module {moduleExports, moduleName} ->
                       moduleExports <&> \(Lua.fromName moduleName -> name) ->
-                        Lua.tableRowNV name $
-                          Lua.varName (Lua.qualifyName moduleName name)
+                        Lua.tableRowNV name (Lua.varName name)
             AsApplication (AppEntryPoint modul ident) ->
               Lua.functionCall
                 ( Lua.varName $
