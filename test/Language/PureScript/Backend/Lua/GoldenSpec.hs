@@ -15,7 +15,9 @@ import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Optimizer (optimizeAll)
 import Language.PureScript.Backend.IR.Query qualified as Query
 import Language.PureScript.Backend.Lua qualified as Lua
+import Language.PureScript.Backend.Lua.DeadCodeEliminator (DceMode (PreserveTopLevel), eliminateDeadCode)
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
+import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Language.PureScript.Names qualified as PS
@@ -164,10 +166,12 @@ compileCorefn outputDir moduleName = do
       & liftIO
 
   let irModuleName = IR.mkModuleName moduleName
-  optimizeAll (DCE.EntryPointsSomeModules (NE.singleton irModuleName))
-    <$> traverse
-      (either (fail . show) (pure . snd) . IR.mkModule)
-      (toList cfnModules)
+  modules <-
+    forM (toList cfnModules) $
+      either (fail . show) (pure . snd) . IR.mkModule
+  pure do
+    let entry = DCE.EntryPointsSomeModules (NE.singleton irModuleName)
+    evalState (optimizeAll entry modules) (0 :: Natural)
 
 compileIr :: (MonadIO m, MonadMask m) => [IR.Module] -> m Text
 compileIr irModules = withCurrentDir [reldir|test/ps|] do
@@ -187,7 +191,13 @@ compileIr irModules = withCurrentDir [reldir|test/ps|] do
       & Oops.runOops
       & liftIO
 
-  let doc = luaChunk & addPrim & addRuntimeLazy & Printer.printLuaChunk
+  let doc =
+        luaChunk
+          & addPrim
+          & addRuntimeLazy
+          & optimizeChunk
+          & eliminateDeadCode PreserveTopLevel
+          & Printer.printLuaChunk
   let addTrailingLf = (<> "\n")
   pure $ addTrailingLf $ renderStrict $ layoutPretty defaultLayoutOptions doc
 

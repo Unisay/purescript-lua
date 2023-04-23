@@ -232,14 +232,10 @@
                                                                  (ModuleName
                                                                     "Golden.TestValues")
                                                                  (Name "f"))
-                                                              RefBound
-                                                              (Index
-                                                                 {level = 0,
-                                                                  offset = 1})
-                                                              RefBound
-                                                              (Index
-                                                                 {level = 0,
-                                                                  offset = 2})
+                                                              RefFree
+                                                              (Local (Name "a"))
+                                                              RefFree
+                                                              (Local (Name "a"))
                                                               RefBound
                                                               (Index
                                                                  {level = 0,
@@ -269,10 +265,10 @@
                                                    (ModuleName
                                                       "Golden.TestValues")
                                                    (Name "f"))
-                                                RefBound
-                                                (Index {level = 0, offset = 2})
-                                                RefBound
-                                                (Index {level = 0, offset = 1})
+                                                RefFree
+                                                (Local (Name "a"))
+                                                RefFree
+                                                (Local (Name "a"))
                                                 RefBound
                                                 (Index
                                                    {level = 0, offset = 0})}))
@@ -312,10 +308,10 @@
                                                    (ModuleName
                                                       "Golden.TestValues")
                                                    (Name "f"))
-                                                RefBound
-                                                (Index {level = 0, offset = 1})
-                                                RefBound
-                                                (Index {level = 0, offset = 2})
+                                                RefFree
+                                                (Local (Name "a"))
+                                                RefFree
+                                                (Local (Name "a"))
                                                 RefBound
                                                 (Index
                                                    {level = 0, offset = 0})}))
@@ -374,14 +370,10 @@
                                                                  (ModuleName
                                                                     "Golden.TestValues")
                                                                  (Name "f"))
-                                                              RefBound
-                                                              (Index
-                                                                 {level = 0,
-                                                                  offset = 1})
-                                                              RefBound
-                                                              (Index
-                                                                 {level = 0,
-                                                                  offset = 2})
+                                                              RefFree
+                                                              (Local (Name "a"))
+                                                              RefFree
+                                                              (Local (Name "a"))
                                                               RefBound
                                                               (Index
                                                                  {level = 0,
@@ -411,10 +403,10 @@
                                                    (ModuleName
                                                       "Golden.TestValues")
                                                    (Name "f"))
-                                                RefBound
-                                                (Index {level = 0, offset = 2})
-                                                RefBound
-                                                (Index {level = 0, offset = 1})
+                                                RefFree
+                                                (Local (Name "a"))
+                                                RefFree
+                                                (Local (Name "a"))
                                                 RefBound
                                                 (Index
                                                    {level = 0, offset = 0})}))
@@ -454,10 +446,10 @@
                                                    (ModuleName
                                                       "Golden.TestValues")
                                                    (Name "f"))
-                                                RefBound
-                                                (Index {level = 0, offset = 1})
-                                                RefBound
-                                                (Index {level = 0, offset = 2})
+                                                RefFree
+                                                (Local (Name "a"))
+                                                RefFree
+                                                (Local (Name "a"))
                                                 RefBound
                                                 (Index
                                                    {level = 0, offset = 0})}))

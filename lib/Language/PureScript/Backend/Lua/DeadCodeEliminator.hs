@@ -20,8 +20,10 @@ import Language.PureScript.Backend.Lua.Traversal
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prelude hiding (exp)
 
-eliminateDeadCode :: Lua.Chunk -> Lua.Chunk
-eliminateDeadCode chunk =
+data DceMode = PreserveTopLevel | PreserveReturned
+
+eliminateDeadCode :: DceMode -> Lua.Chunk -> Lua.Chunk
+eliminateDeadCode dceMode chunk =
   unNodesStatement <$> dceChunk statementWithNodes
  where
   statementWithNodes :: [Lua.Annotated Node Lua.StatementF]
@@ -111,10 +113,14 @@ eliminateDeadCode chunk =
 
   dceEntryVertices :: [Vertex]
   dceEntryVertices =
-    case viaNonEmpty last statementWithNodes of
-      Just (Node k0 _scope0, Lua.Return (Node k1 _scope1, _)) ->
-        mapMaybe keyToVertex [k0, k1]
-      _ -> []
+    case dceMode of
+      PreserveReturned ->
+        case viaNonEmpty last statementWithNodes of
+          Just (Node k0 _scope0, Lua.Return (Node k1 _scope1, _stat)) ->
+            mapMaybe keyToVertex [k0, k1]
+          _ -> []
+      PreserveTopLevel ->
+        mapMaybe (keyToVertex . keyOf . nodeOf) statementWithNodes
 
 adjacencyList :: [Lua.Annotated Node Lua.StatementF] -> [(Label, Key, [Key])]
 adjacencyList = DList.toList . (`go` mempty)
@@ -186,8 +192,7 @@ expressionAdjacencyList (Node key _scope, expr) =
     Lua.String _text -> pure ("String", key, [])
     Lua.Function _args body ->
       DList.fromList $
-        ("Function", key, keyOf . nodeOf <$> body)
-          : adjacencyList body
+        ("Function", key, DList.toList (findReturns body)) : adjacencyList body
     Lua.TableCtor rows ->
       DList.cons
         ("TableCtor", key, keyOf . nodeOf <$> rows)

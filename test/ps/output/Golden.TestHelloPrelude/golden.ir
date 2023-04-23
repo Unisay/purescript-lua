@@ -21,7 +21,7 @@
                              {unLocallyNameless =
                                 ObjectProp
                                   RefBound
-                                  (Index {level = 0, offset = 0})
+                                  (Index {level = 1, offset = 0})
                                   (PropName "pure")}))}))),
        Standalone
          (Name "liftA1",
@@ -126,7 +126,7 @@
                              {unLocallyNameless =
                                 ObjectProp
                                   RefBound
-                                  (Index {level = 0, offset = 0})
+                                  (Index {level = 1, offset = 0})
                                   (PropName "apply")}))})))],
     moduleImports = [],
     moduleExports = [Name "apply"],
@@ -159,7 +159,7 @@
                              {unLocallyNameless =
                                 ObjectProp
                                   RefBound
-                                  (Index {level = 0, offset = 0})
+                                  (Index {level = 1, offset = 0})
                                   (PropName "bind")}))})))],
     moduleImports = [],
     moduleExports = [Name "bind"],

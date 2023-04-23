@@ -30,7 +30,7 @@
                              {unLocallyNameless =
                                 ObjectProp
                                   RefBound
-                                  (Index {level = 0, offset = 0})
+                                  (Index {level = 1, offset = 0})
                                   (PropName "foo")}))})))],
     moduleImports = [],
     moduleExports = [Name "NT", Name "f", Name "g"],

@@ -11,7 +11,7 @@ import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Optimizer (optimizeAll)
 import Language.PureScript.Backend.IR.Query (usesPrimModule, usesRuntimeLazy)
 import Language.PureScript.Backend.Lua qualified as Lua
-import Language.PureScript.Backend.Lua.DeadCodeEliminator (eliminateDeadCode)
+import Language.PureScript.Backend.Lua.DeadCodeEliminator (DceMode (PreserveReturned), eliminateDeadCode)
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
@@ -52,18 +52,20 @@ compileModules outputDir foreignDir appOrModule = do
   irResults <- forM (Map.toList cfnModules) \(_psModuleName, cfnModule) ->
     Oops.hoistEither $ IR.mkModule cfnModule
   let (needsRuntimeLazys, irModules) = unzip irResults
-      optimizedModules = optimizeAll irDceStrategy irModules
-      addPrim =
-        if any usesPrimModule optimizedModules
-          then (Fixture.prim :)
-          else identity
-      addRuntimeLazy =
-        if or (fmap untag needsRuntimeLazys)
-          && any usesRuntimeLazy optimizedModules
-          then (Fixture.runtimeLazy :)
-          else identity
+  optimizedModules <-
+    evalStateT (optimizeAll irDceStrategy irModules) (0 :: Natural)
+  let
+    addPrim =
+      if any usesPrimModule optimizedModules
+        then (Fixture.prim :)
+        else identity
+    addRuntimeLazy =
+      if or (fmap untag needsRuntimeLazys)
+        && any usesRuntimeLazy optimizedModules
+        then (Fixture.runtimeLazy :)
+        else identity
   chunk <- Lua.fromIrModules foreignDir optimizedModules
-  pure . eliminateDeadCode $
+  pure . eliminateDeadCode PreserveReturned $
     addRuntimeLazy (addPrim chunk)
       <> [ Lua.Return $ Lua.ann case appOrModule of
             AsModule (ModuleEntryPoint modname) ->

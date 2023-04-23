@@ -1,8 +1,8 @@
 local _S___runtime_lazy = function(name)
   return function(init)
-    local state = 0
-    local val = nil
     return function(lineNumber)
+      local state = 0
+      local val = nil
       if state == 2 then
         return val
       else
@@ -19,27 +19,23 @@ local _S___runtime_lazy = function(name)
   end
 end
 local Prim_I_undefined = nil
-local Control_Apply_I_apply = function(dict0)
-  local v1 = dict0
-  return v1.apply
-end
-local Control_Applicative_I_pure = function(dict0)
-  local v1 = dict0
-  return v1.pure
-end
+local Control_Apply_I_apply = function(dict0) return dict0.apply end
+local Control_Applicative_I_pure = function(dict0) return dict0.pure end
 local Control_Applicative_I_liftA1 = function(dictApplicative2)
   return function(f5)
-    local apply3 = Control_Apply_I_apply(dictApplicative2.Apply0(Prim_I_undefined))
-    local pure14 = Control_Applicative_I_pure(dictApplicative2)
-    return function(a6) return apply3(pure14(f5))(a6) end
+    return function(a6)
+      local apply3 = Control_Apply_I_apply(dictApplicative2.Apply0(Prim_I_undefined))
+      local pure14 = Control_Applicative_I_pure(dictApplicative2)
+      return apply3(pure14(f5))(a6)
+    end
   end
 end
-local Control_Bind_I_bind = function(dict0) local v1 = dict0 return v1.bind end
+local Control_Bind_I_bind = function(dict0) return dict0.bind end
 local Control_Monad_I_ap = function(dictMonad0)
   return function(f3)
-    local bind1 = Control_Bind_I_bind(dictMonad0.Bind1(Prim_I_undefined))
-    local pure2 = Control_Applicative_I_pure(dictMonad0.Applicative0(Prim_I_undefined))
     return function(a4)
+      local bind1 = Control_Bind_I_bind(dictMonad0.Bind1(Prim_I_undefined))
+      local pure2 = Control_Applicative_I_pure(dictMonad0.Applicative0(Prim_I_undefined))
       return bind1(f3)(function(fPrime5)
         return bind1(a4)(function(aPrime6) return pure2(fPrime5(aPrime6)) end)
       end)

@@ -5,28 +5,33 @@ import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Types
   ( Exp (..)
   , ExpF (..)
+  , FreshNames
   , Grouping (..)
   , Info (..)
+  , LetBinding (..)
   , Literal (Boolean)
+  , LocallyNameless (..)
   , Module (moduleBindings, moduleImports)
   , ModuleName (..)
-  , everywhereTopDownExp
+  , Name
+  , bindingNames
+  , everywhereTopDownExpM
+  , findOffset
   , listGrouping
   , qualified
+  , subst
+  , wrapExpF
   )
 
-optimizeAll :: DCE.Strategy -> [Module] -> [Module]
-optimizeAll dceStrategy =
-  DCE.eliminateDeadCode dceStrategy . fmap optimizeModule
+optimizeAll :: FreshNames m => DCE.Strategy -> [Module] -> m [Module]
+optimizeAll dceStrategy modules =
+  DCE.eliminateDeadCode dceStrategy <$> traverse optimizeModule modules
 
-optimizeModule :: Module -> Module
-optimizeModule m =
-  m
-    { moduleImports = moduleImports'
-    , moduleBindings = moduleBindings'
-    }
+optimizeModule :: FreshNames m => Module -> m Module
+optimizeModule m = do
+  moduleBindings <- optimizeDecls (moduleBindings m)
+  pure m {moduleImports = moduleImports', moduleBindings}
  where
-  moduleBindings' = optimizeDecls (moduleBindings m)
   moduleImports' = moduleImports m
 
 optimizeImports :: [ModuleName] -> [Grouping (name, Exp)] -> [ModuleName]
@@ -42,118 +47,59 @@ collectImportedModules :: Exp -> Set ModuleName
 collectImportedModules Exp {expInfo = Info {refsFree}} =
   foldMap (qualified mempty \m _ -> Set.singleton m) refsFree
 
-optimizeDecls :: [Grouping (name, Exp)] -> [Grouping (name, Exp)]
-optimizeDecls = (fmap . fmap . fmap) optimizeExpression
+optimizeDecls
+  :: FreshNames m => [Grouping (name, Exp)] -> m [Grouping (name, Exp)]
+optimizeDecls = (traverse . traverse . traverse) optimizeExpression
 
-type RewriteRule = Exp -> Exp
+type RewriteRule m = Exp -> m Exp
 
-optimizeExpression :: Exp -> Exp
+optimizeExpression :: FreshNames m => Exp -> m Exp
 optimizeExpression =
-  everywhereTopDownExp $
-    removeUnreachableElseBranch . removeUnreachableThenBranch
+  everywhereTopDownExpM $
+    inlineBindings
+      <=< removeUnreachableElseBranch
+      <=< removeUnreachableThenBranch
 
-removeUnreachableThenBranch :: RewriteRule
-removeUnreachableThenBranch e = case unExp e of
+removeUnreachableThenBranch :: Applicative m => RewriteRule m
+removeUnreachableThenBranch e = pure case unExp e of
   IfThenElse (Exp (Lit (Boolean False)) _info) _unreachable elseBranch ->
     elseBranch
   _ -> e
 
-removeUnreachableElseBranch :: RewriteRule
-removeUnreachableElseBranch e = case unExp e of
+removeUnreachableElseBranch :: Applicative m => RewriteRule m
+removeUnreachableElseBranch e = pure case unExp e of
   IfThenElse (Exp (Lit (Boolean True)) _info) thenBranch _unreachable ->
     thenBranch
   _ -> e
 
-{-
-
-{- -- Inlining is a tricky business:
+-- Inlining is a tricky business:
 -- https://www.microsoft.com/en-us/research/wp-content/uploads/2002/07/inline.pdf
-inlineBindings :: RewriteRule
-inlineBindings e =
-  case e of
-    Let binds expr ->
-      case allNonRecBinds (toList binds) of
-        [] -> Fix e
-        (name, inlinee) : bs ->
-          if isRef inlinee
-            then lets binds (safeReplace (ref name) inlinee expr)
-            else
-              let expr' = markOccurrences name expr
-               in if countMarkedRefs expr' name == 1
-                    then safeReplaceMarked (ref name) inlinee expr'
-                    else Fix e
-    e -> Fix e
+
+inlineBindings :: FreshNames m => RewriteRule m
+inlineBindings e@Exp {unExp} =
+  case unExp of
+    Let (LetBinding groupings body) -> do
+      let names = toList groupings >>= bindingNames
+      pure . wrapExpF . Let . LetBinding groupings $
+        foldr (inlineBinding names) body groupings
+    _ -> pure e
+
+inlineBinding
+  :: [Name]
+  -> Grouping (Name, LocallyNameless Exp)
+  -> LocallyNameless Exp
+  -> LocallyNameless Exp
+inlineBinding names grouping body =
+  case grouping of
+    Standalone (name, replacement@(LocallyNameless expr)) | isRef expr ->
+      case names `findOffset` name of
+        Nothing -> body
+        Just offset -> subst body offset replacement
+    _ -> body
  where
-  allNonRecBinds :: [Bind Exp] -> [(Name, Exp)]
-  allNonRecBinds = (=<<) \case
-    BindNonRec n e -> [(n, e)]
-    BindRec _bs -> []
-
-  markOccurrences :: Name -> Exp -> (Bool, Exp)
-  markOccurrences name expr = undefined
-
-  countMarkedRefs :: (Bool, Exp) -> Name -> Natural
-  countMarkedRefs (marked, e) name =
-    e & foldFix \case
-      Ref (Local name') | name' == name && marked -> 1
-      Lit literal ->
-        case literal of
-          Array as -> sum as
-          Object ps -> sum (snd <$> ps)
-          _ -> 0
-      Prim op ->
-        case op of
-          ArrayLength a -> a
-          ReflectCtor a -> a
-          DataArgumentByIndex _idx a -> a
-          Eq a1 a2 -> a1 + a2
-      ArrayIndex a _idx -> a
-      ObjectProp a _propName -> a
-      ObjectUpdate a ps -> a + sum (snd <$> ps)
-      Abs _name _a -> 0
-      App a1 a2 -> a1 + a2
-      Let binds a -> a + sum (fmap snd . bindPairs =<< binds)
-      IfThenElse c t e -> c + t + e
-      _ -> 0
-
-  safeReplace :: Exp -> Exp -> Exp -> Exp
-  safeReplace target replacement expr = undefined
-
-  safeReplaceMarked :: Exp -> Exp -> (Bool, Exp) -> Exp
-  safeReplaceMarked _target _replacement (False, expr) = expr
-  safeReplaceMarked target replacement (True, expr) = undefined
-
-  isRef = \case
-    Fix (Ref _) -> True
-    _ -> False
- -}
-eliminateUnusedBindings :: ExpF Exp -> Exp
-eliminateUnusedBindings = \case
-  App (Fix (Abs name expr)) _ | not (expr `refersTo` name) -> expr
-  e -> Fix e
- where
-  refersTo :: Exp -> Name -> Bool
-  refersTo expr name =
-    expr & foldFix \case
-      Ref (Local name') | name' == name -> True
-      Lit literal ->
-        case literal of
-          Array as -> or as
-          Object ps -> or (snd <$> ps)
-          _ -> False
-      Prim op ->
-        case op of
-          ArrayLength a -> a
-          ReflectCtor a -> a
-          DataArgumentByIndex _idx a -> a
-          Eq a1 a2 -> a1 || a2
-      ArrayIndex a _idx -> a
-      ObjectProp a _propName -> a
-      ObjectUpdate a ps -> a || or (snd <$> ps)
-      Abs name' a -> name' /= name && a
-      App a1 a2 -> a1 || a2
-      Let binds a -> a || or (fmap snd . bindPairs =<< binds)
-      IfThenElse c t e -> c || t || e
+  isRef :: Exp -> Bool
+  isRef =
+    unExp >>> \case
+      RefFree {} -> True
+      RefBound {} -> True
       _ -> False
-
- -}

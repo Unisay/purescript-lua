@@ -289,23 +289,27 @@ close :: BindingPattern pat => pat -> Exp -> LocallyNameless Exp
 close pat =
   LocallyNameless <<< updateRefs
     ( \level name ->
-        wrapExpF case pat `findOffset` name of
-          Just offset -> RefBound (Index {level, offset})
-          Nothing -> RefFree (Local name)
+        pat `findOffset` name <&> \offset ->
+          wrapExpF $ RefBound (Index {level, offset})
     )
-    \_currentLevel index -> wrapExpF (RefBound index)
+    \_currentLevel _index -> Nothing
 
 open :: BindingPattern pat => pat -> LocallyNameless Exp -> Exp
 open pat =
   unLocallyNameless >>> updateRefs
-    (\_level name -> wrapExpF (RefFree (Local name)))
-    \currentLevel index ->
-      wrapExpF case pat `atOffset` offset index of
-        Just name
-          | currentLevel == level index -> RefFree (Local name)
-        _ -> RefBound index
+    (\_currentlevel _name -> Nothing)
+    \currentLevel index -> do
+      guard $ currentLevel == level index
+      wrapExpF . RefFree . Local <$> pat `atOffset` offset index
 
-updateRefs :: (Level -> Name -> Exp) -> (Level -> Index -> Exp) -> Exp -> Exp
+updateRefs
+  :: (Level -> Name -> Maybe Exp)
+  -- ^ How to update free references. Nothing = leave unchanged
+  -> (Level -> Index -> Maybe Exp)
+  -- ^ How to update bound references. Nothing = leave unchanged
+  -> Exp
+  -- ^ Expression to update
+  -> Exp
 updateRefs withFree withBound e =
   evalState (everywhereTopDownExpM rewrite e) (Level 0)
  where
@@ -314,11 +318,30 @@ updateRefs withFree withBound e =
     RefFree qname ->
       case qname of
         Imported _modname _name -> pure expr
-        Local name -> (`withFree` name) <$> get
-    RefBound index' -> (`withBound` index') <$> get
+        Local name -> do
+          level <- get
+          maybe (pure expr) pure (withFree level name)
+    RefBound index' -> do
+      level <- get
+      maybe (pure expr) pure (withBound level index')
     Abs _binding -> modify (+ 1) $> expr
     Let _binding -> modify (+ 1) $> expr
     _other -> pure expr
+
+subst
+  :: LocallyNameless Exp
+  -> Offset
+  -> LocallyNameless Exp
+  -> LocallyNameless Exp
+subst (LocallyNameless expr) replacedOffset (LocallyNameless replacement) =
+  LocallyNameless $
+    updateRefs
+      (\_currentLevel _name -> Nothing)
+      ( \currentLevel Index {level, offset} -> do
+          guard (currentLevel == level && offset == replacedOffset)
+          pure replacement
+      )
+      expr
 
 -- Constructors for expresssions -----------------------------------------------
 

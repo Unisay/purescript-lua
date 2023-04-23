@@ -51,11 +51,9 @@ local Golden_TestCaseStatements_I_c = (function()
                   if 4 == Golden_TestCaseStatements_I_a then
                     return (function()
                       local n213 = 0
-                      local y14 = Golden_TestCaseStatements_I_a
-                      local z15 = Golden_TestCaseStatements_I_a
                       return (function()
-                        if Golden_TestValues_I_f(y14) then
-                          return z15
+                        if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                          return Golden_TestCaseStatements_I_a
                         else
                           return n213
                         end
@@ -65,11 +63,9 @@ local Golden_TestCaseStatements_I_c = (function()
                     return 0
                   end
                 end)()
-                local y11 = Golden_TestCaseStatements_I_a
-                local z12 = Golden_TestCaseStatements_I_a
                 return (function()
-                  if Golden_TestValues_I_f(z12) then
-                    return y11
+                  if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                    return Golden_TestCaseStatements_I_a
                   else
                     return n110
                   end
@@ -80,11 +76,9 @@ local Golden_TestCaseStatements_I_c = (function()
                 if 4 == Golden_TestCaseStatements_I_a then
                   return (function()
                     local n316 = 0
-                    local y17 = Golden_TestCaseStatements_I_a
-                    local z18 = Golden_TestCaseStatements_I_a
                     return (function()
-                      if Golden_TestValues_I_f(y17) then
-                        return z18
+                      if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                        return Golden_TestCaseStatements_I_a
                       else
                         return n316
                       end
@@ -106,11 +100,9 @@ local Golden_TestCaseStatements_I_c = (function()
               if 4 == Golden_TestCaseStatements_I_a then
                 return (function()
                   local n522 = 0
-                  local y23 = Golden_TestCaseStatements_I_a
-                  local z24 = Golden_TestCaseStatements_I_a
                   return (function()
-                    if Golden_TestValues_I_f(y23) then
-                      return z24
+                    if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                      return Golden_TestCaseStatements_I_a
                     else
                       return n522
                     end
@@ -120,10 +112,12 @@ local Golden_TestCaseStatements_I_c = (function()
                 return 0
               end
             end)()
-            local y20 = Golden_TestCaseStatements_I_a
-            local z21 = Golden_TestCaseStatements_I_a
             return (function()
-              if Golden_TestValues_I_f(z21) then return y20 else return n419 end
+              if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                return Golden_TestCaseStatements_I_a
+              else
+                return n419
+              end
             end)()
           end)()
         else
@@ -131,11 +125,9 @@ local Golden_TestCaseStatements_I_c = (function()
             if 4 == Golden_TestCaseStatements_I_a then
               return (function()
                 local n625 = 0
-                local y26 = Golden_TestCaseStatements_I_a
-                local z27 = Golden_TestCaseStatements_I_a
                 return (function()
-                  if Golden_TestValues_I_f(y26) then
-                    return z27
+                  if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                    return Golden_TestCaseStatements_I_a
                   else
                     return n625
                   end
