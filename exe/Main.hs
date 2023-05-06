@@ -6,6 +6,7 @@ import Control.Monad.Oops qualified as Oops
 import Data.Tagged (Tagged (..))
 import Language.PureScript.Backend qualified as Backend
 import Language.PureScript.Backend.IR qualified as IR
+import Language.PureScript.Backend.IR.Types (ModuleName (renderModuleName))
 import Language.PureScript.Backend.Lua qualified as Lua
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
@@ -14,7 +15,6 @@ import Path (Abs, Dir, Path, SomeBase (..), toFilePath)
 import Path.IO qualified as Path
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderIO)
-import Shower (shower)
 
 main :: IO ()
 main = Utf8.withUtf8 do
@@ -87,12 +87,12 @@ handleLuaError
   -> ExceptT (Oops.Variant e) IO a
 handleLuaError =
   Oops.catch \case
-    Lua.UnexpectedRefBound expr index ->
-      die . toString . unlines $
-        [ "Unexpected reference bound at index:"
-        , show index
-        , "in expression:"
-        , toText (shower expr)
+    Lua.UnexpectedRefBound modname expr ->
+      die . toString . unwords $
+        [ "Unexpected bound reference:"
+        , show expr
+        , "in module"
+        , renderModuleName modname
         ]
     Lua.LinkerErrorForeign e ->
       die $ "Linker error:\n" <> show e

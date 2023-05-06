@@ -46,7 +46,6 @@ import Path.IO
 import Path.Posix (mkRelFile)
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
-import Shower (shower)
 import System.FilePath qualified as FilePath
 import System.Process.Typed
   ( ExitCode (..)
@@ -66,6 +65,7 @@ import Test.Hspec
   )
 import Test.Hspec.Extra (annotatingWith)
 import Test.Hspec.Golden (defaultGolden)
+import Text.Pretty.Simple (OutputOptions (..), defaultOutputOptionsNoColor, pShowOpt)
 
 spec :: Spec
 spec = do
@@ -97,7 +97,14 @@ spec = do
         it irTestName do
           defaultGolden irGolden (Just irActual) do
             irOutput <- compileCorefn (Tagged (Rel psOutputPath)) moduleName
-            pure $ toText $ shower irOutput
+            pure . toStrict $
+              pShowOpt
+                defaultOutputOptionsNoColor
+                  { outputOptionsIndentAmount = 2
+                  , outputOptionsPageWidth = 256
+                  , outputOptionsCompact = True
+                  }
+                irOutput
         -- lua golden
         let luaGolden = modulePath </> $(mkRelFile "golden.lua")
         let luaActual = modulePath </> $(mkRelFile "actual.lua")

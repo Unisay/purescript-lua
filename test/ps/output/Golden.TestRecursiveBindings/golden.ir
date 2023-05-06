@@ -1,278 +1,88 @@
-[Module
-   {moduleName =
-      ModuleName "Golden.TestRecursiveBindings",
-    moduleBindings =
-      [Standalone
-         (Name "whereRec",
-          Let
-            (LetBinding
-               (RecursiveGroup
-                  ((Name "yes",
-                    LocallyNameless
-                      {unLocallyNameless =
-                         Abs
-                           (AbsBinding
-                              (ArgNamed (Name "v"))
-                              (LocallyNameless
-                                 {unLocallyNameless =
-                                    IfThenElse
-                                      Prim
-                                      (Eq
-                                         Lit
-                                         (Boolean True)
-                                         RefBound
-                                         (Index {level = 0, offset = 0}))
-                                      App
-                                      RefBound
-                                      (Index {level = 1, offset = 1})
-                                      Lit
-                                      (Boolean False)
-                                      IfThenElse
-                                      Prim
-                                      (Eq
-                                         Lit
-                                         (Boolean False)
-                                         RefBound
-                                         (Index {level = 0, offset = 0}))
-                                      App
-                                      RefBound
-                                      (Index {level = 1, offset = 1})
-                                      Lit
-                                      (Boolean True)
-                                      Exception
-                                      "No patterns matched"}))})
-                     :|
-                     [(Name "no",
-                       LocallyNameless
-                         {unLocallyNameless =
-                            Abs
-                              (AbsBinding
-                                 (ArgNamed (Name "v"))
-                                 (LocallyNameless
-                                    {unLocallyNameless =
-                                       IfThenElse
-                                         Prim
-                                         (Eq
-                                            Lit
-                                            (Boolean True)
-                                            RefBound
-                                            (Index {level = 0, offset = 0}))
-                                         App
-                                         RefBound
-                                         (Index {level = 1, offset = 0})
-                                         Lit
-                                         (Boolean False)
-                                         IfThenElse
-                                         Prim
-                                         (Eq
-                                            Lit
-                                            (Boolean False)
-                                            RefBound
-                                            (Index {level = 0, offset = 0}))
-                                         App
-                                         RefBound
-                                         (Index {level = 1, offset = 0})
-                                         Lit
-                                         (Boolean True)
-                                         Exception
-                                         "No patterns matched"}))})])
-                  :|
-                  [])
-               (LocallyNameless
-                  {unLocallyNameless =
-                     App
-                       RefBound
-                       (Index {level = 0, offset = 1})
-                       Lit
-                       (Boolean False)}))),
-       Standalone
-         (Name "letRecMixed",
-          Let
-            (LetBinding
-               (Standalone
-                  (Name "z",
-                   LocallyNameless
-                     {unLocallyNameless = Lit (Integer 1)})
-                  :|
-                  [RecursiveGroup
-                     ((Name "b",
-                       LocallyNameless
-                         {unLocallyNameless =
-                            Abs
-                              (AbsBinding
-                                 (ArgNamed (Name "v"))
-                                 (LocallyNameless
-                                    {unLocallyNameless =
-                                       App
-                                         RefBound
-                                         (Index {level = 1, offset = 2})
-                                         RefBound
-                                         (Index {level = 1, offset = 0})}))})
-                        :|
-                        [(Name "a",
-                          LocallyNameless
-                            {unLocallyNameless =
-                               Abs
-                                 (AbsBinding
-                                    (ArgNamed (Name "v"))
-                                    (LocallyNameless
-                                       {unLocallyNameless =
-                                          App
-                                            RefBound
-                                            (Index {level = 1, offset = 1})
-                                            RefBound
-                                            (Index
-                                               {level = 1, offset = 0})}))})]),
-                   Standalone
-                     (Name "f",
-                      LocallyNameless
-                        {unLocallyNameless =
-                           Abs
-                             (AbsBinding
-                                (ArgNamed (Name "v"))
-                                (LocallyNameless
-                                   {unLocallyNameless =
-                                      Abs
-                                        (AbsBinding
-                                           (ArgNamed (Name "k"))
-                                           (LocallyNameless
-                                              {unLocallyNameless =
-                                                 App
-                                                   RefBound
-                                                   (Index
-                                                      {level = 2, offset = 2})
-                                                   RefBound
-                                                   (Index
-                                                      {level = 0,
-                                                       offset = 0})}))}))}),
-                   Standalone
-                     (Name "y",
-                      LocallyNameless
-                        {unLocallyNameless =
-                           App
-                             App
-                             RefBound
-                             (Index {level = 0, offset = 3})
-                             RefBound
-                             (Index {level = 0, offset = 0})
-                             RefBound
-                             (Index {level = 0, offset = 0})}),
-                   Standalone
-                     (Name "x",
-                      LocallyNameless
-                        {unLocallyNameless =
-                           App
-                             App
-                             RefBound
-                             (Index {level = 0, offset = 3})
-                             RefBound
-                             (Index {level = 0, offset = 4})
-                             RefBound
-                             (Index {level = 0, offset = 4})})])
-               (LocallyNameless
-                  {unLocallyNameless =
-                     App
-                       App
-                       RefBound
-                       (Index {level = 0, offset = 3})
-                       RefBound
-                       (Index {level = 0, offset = 5})
-                       App
-                       App
-                       RefBound
-                       (Index {level = 0, offset = 3})
-                       RefBound
-                       (Index {level = 0, offset = 4})
-                       Lit
-                       (Integer 0)}))),
-       Standalone
-         (Name "letRec",
-          Let
-            (LetBinding
-               (RecursiveGroup
-                  ((Name "yes",
-                    LocallyNameless
-                      {unLocallyNameless =
-                         Abs
-                           (AbsBinding
-                              (ArgNamed (Name "v"))
-                              (LocallyNameless
-                                 {unLocallyNameless =
-                                    IfThenElse
-                                      Prim
-                                      (Eq
-                                         Lit
-                                         (Boolean True)
-                                         RefBound
-                                         (Index {level = 0, offset = 0}))
-                                      App
-                                      RefBound
-                                      (Index {level = 1, offset = 1})
-                                      Lit
-                                      (Boolean False)
-                                      IfThenElse
-                                      Prim
-                                      (Eq
-                                         Lit
-                                         (Boolean False)
-                                         RefBound
-                                         (Index {level = 0, offset = 0}))
-                                      App
-                                      RefBound
-                                      (Index {level = 1, offset = 1})
-                                      Lit
-                                      (Boolean True)
-                                      Exception
-                                      "No patterns matched"}))})
-                     :|
-                     [(Name "no",
-                       LocallyNameless
-                         {unLocallyNameless =
-                            Abs
-                              (AbsBinding
-                                 (ArgNamed (Name "v"))
-                                 (LocallyNameless
-                                    {unLocallyNameless =
-                                       IfThenElse
-                                         Prim
-                                         (Eq
-                                            Lit
-                                            (Boolean True)
-                                            RefBound
-                                            (Index {level = 0, offset = 0}))
-                                         App
-                                         RefBound
-                                         (Index {level = 1, offset = 0})
-                                         Lit
-                                         (Boolean False)
-                                         IfThenElse
-                                         Prim
-                                         (Eq
-                                            Lit
-                                            (Boolean False)
-                                            RefBound
-                                            (Index {level = 0, offset = 0}))
-                                         App
-                                         RefBound
-                                         (Index {level = 1, offset = 0})
-                                         Lit
-                                         (Boolean True)
-                                         Exception
-                                         "No patterns matched"}))})])
-                  :|
-                  [])
-               (LocallyNameless
-                  {unLocallyNameless =
-                     App
-                       RefBound
-                       (Index {level = 0, offset = 1})
-                       Lit
-                       (Boolean False)})))],
-    moduleImports = [],
-    moduleExports =
-      [Name "letRec", Name "whereRec", Name "letRecMixed"],
-    moduleReExports = fromList [],
-    moduleForeigns = [],
-    modulePath =
-      "golden/Golden/TestRecursiveBindings.purs",
-    dataTypes = fromList []}]
+[ Module
+  { moduleName = ModuleName "Golden.TestRecursiveBindings", moduleBindings =
+    [ Standalone
+      ( Name "whereRec", Let
+        ( LetBinding
+          ( RecursiveGroup
+            (
+              ( Name "yes", Abs
+                ( AbsBinding
+                  ( ArgNamed ( Name "v" ) ) IfThenElse Prim
+                  ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
+                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean False ) IfThenElse Prim
+                  ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
+                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean True ) Exception "No patterns matched"
+                )
+              ) :|
+              [
+                ( Name "no", Abs
+                  ( AbsBinding
+                    ( ArgNamed ( Name "v" ) ) IfThenElse Prim
+                    ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
+                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean False ) IfThenElse Prim
+                    ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
+                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean True ) Exception "No patterns matched"
+                  )
+                )
+              ]
+            ) :| []
+          ) App RefBound
+          ( Index { level = 0, offset = 1 } ) Lit ( Boolean False )
+        )
+      ), Standalone
+      ( Name "letRecMixed", Let
+        ( LetBinding
+          ( Standalone
+            ( Name "z", Lit ( Integer 1 ) ) :|
+            [ RecursiveGroup
+              (
+                ( Name "b", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) App RefBound ( Index { level = 1, offset = 2 } ) RefBound ( Index { level = 1, offset = 0 } ) ) ) :|
+                [ ( Name "a", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) App RefBound ( Index { level = 1, offset = 1 } ) RefBound ( Index { level = 1, offset = 0 } ) ) ) ]
+              ), Standalone
+              ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) Abs ( AbsBinding ( ArgNamed ( Name "k" ) ) App RefBound ( Index { level = 2, offset = 2 } ) RefBound ( Index { level = 0, offset = 0 } ) ) ) ), Standalone
+              ( Name "y", App App RefBound ( Index { level = 0, offset = 3 } ) RefBound ( Index { level = 0, offset = 0 } ) RefBound ( Index { level = 0, offset = 0 } ) ), Standalone
+              ( Name "x", App App RefBound ( Index { level = 0, offset = 3 } ) RefBound ( Index { level = 0, offset = 4 } ) RefBound ( Index { level = 0, offset = 4 } ) )
+            ]
+          ) App App RefBound
+          ( Index { level = 0, offset = 3 } ) App App RefBound
+          ( Index { level = 0, offset = 3 } ) RefBound
+          ( Index { level = 0, offset = 4 } ) RefBound
+          ( Index { level = 0, offset = 4 } ) App App RefBound
+          ( Index { level = 0, offset = 3 } ) RefBound
+          ( Index { level = 0, offset = 4 } ) Lit
+          ( Integer 0 )
+        )
+      ), Standalone
+      ( Name "letRec", Let
+        ( LetBinding
+          ( RecursiveGroup
+            (
+              ( Name "yes", Abs
+                ( AbsBinding
+                  ( ArgNamed ( Name "v" ) ) IfThenElse Prim
+                  ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
+                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean False ) IfThenElse Prim
+                  ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
+                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean True ) Exception "No patterns matched"
+                )
+              ) :|
+              [
+                ( Name "no", Abs
+                  ( AbsBinding
+                    ( ArgNamed ( Name "v" ) ) IfThenElse Prim
+                    ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
+                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean False ) IfThenElse Prim
+                    ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
+                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean True ) Exception "No patterns matched"
+                  )
+                )
+              ]
+            ) :| []
+          ) App RefBound
+          ( Index { level = 0, offset = 1 } ) Lit ( Boolean False )
+        )
+      )
+    ], moduleImports = [], moduleExports =
+    [ Name "letRec", Name "whereRec", Name "letRecMixed" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestRecursiveBindings.purs", dataTypes = fromList []
+  }
+]

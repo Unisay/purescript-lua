@@ -53,6 +53,7 @@ data Precedence
   = PrecFunction
   | PrecOperation Natural
   | PrecPrefix
+  | PrecTable
   | PrecAtom
   deriving stock (Show, Eq, Ord)
 

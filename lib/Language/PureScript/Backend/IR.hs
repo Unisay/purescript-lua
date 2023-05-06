@@ -338,7 +338,7 @@ mkCase expressions alternatives = do
 
 expressionsToRefs :: [CfnExp] -> RepM ([Exp], Exp -> Exp)
 expressionsToRefs cfnExps =
-  traverse mkExp cfnExps >>= fmap bindingareBinds . foldrM inlineOrReference []
+  traverse mkExp cfnExps >>= fmap declareBinds . foldrM inlineOrReference []
  where
   inlineOrReference
     :: Exp
@@ -359,8 +359,8 @@ expressionsToRefs cfnExps =
     referenceExpr = (: acc) . Right . (,e) <$> generateName "e"
 
   -- Declare extracted references
-  bindingareBinds :: [Either Exp (Name, Exp)] -> ([Exp], Exp -> Exp)
-  bindingareBinds expressionsOrRefs =
+  declareBinds :: [Either Exp (Name, Exp)] -> ([Exp], Exp -> Exp)
+  declareBinds expressionsOrRefs =
     ( either id (refFreeLocal . fst) <$> expressionsOrRefs
     , case NE.nonEmpty (mapMaybe rightToMaybe expressionsOrRefs) of
         Nothing -> id
@@ -462,11 +462,7 @@ mkCaseClauses = mkClauses mempty
                             & fmap renderCtorName
                             & qualified string \modname c ->
                               string (renderModuleName modname <> "." <> c)
-                        history' b =
-                          Map.insert
-                            expr
-                            (constructor, b)
-                            history
+                        history' b = Map.insert expr (constructor, b) history
                     -- Either this constructor is matched for the first time,
                     -- or other constructor didn't pass the match before.
                     ifThenElse (qctor `eq` reflectCtor expr)

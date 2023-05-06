@@ -13,9 +13,22 @@ import Test.Hspec (Spec, describe, it, shouldBe)
 
 spec :: Spec
 spec = do
-  describe "Var" do
-    it "local" do
-      (rendered . Printer.printName) [Lua.name|foo|] `shouldBe` "foo"
+  it "Name" do
+    (rendered . Printer.printName) [Lua.name|foo|] `shouldBe` "foo"
+
+  it "VarName" do
+    renderedExpression (Lua.varName [Lua.name|foo|]) `shouldBe` "foo"
+
+  describe "VarField" do
+    it "var.field" do
+      let e = Lua.varName [Lua.name|expr|]
+          f = [Lua.name|foo|]
+      renderedExpression (Lua.varField e f) `shouldBe` "expr.foo"
+
+    it "({field = 1}).field" do
+      let e = Lua.table [Lua.tableRowNV f (Lua.Integer 1)]
+          f = [Lua.name|foo|]
+      renderedExpression (Lua.varField e f) `shouldBe` "({ foo = 1 }).foo"
 
   it "Assignment" do
     let s = Lua.assign (Lua.VarName [Lua.name|foo|]) (Lua.Boolean True)

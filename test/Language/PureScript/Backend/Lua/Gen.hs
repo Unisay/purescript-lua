@@ -17,6 +17,9 @@ chunk = Gen.list (Range.linear 1 16) statement
 statement :: Gen Lua.Statement
 statement = Gen.recursiveFrequency nonRecursiveStatements recursiveStatements
 
+nonRecursiveStatement :: Gen Lua.Statement
+nonRecursiveStatement = Gen.frequency nonRecursiveStatements
+
 nonRecursiveStatements :: [(Int, Gen Lua.Statement)]
 nonRecursiveStatements =
   [ (2, Lua.return <$> expression)

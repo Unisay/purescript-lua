@@ -62,7 +62,7 @@ printExp = \case
   Lua.String t -> (PrecAtom, dquotes (pretty t))
   Lua.Function params body ->
     (PrecFunction, printFunction params (unAnn <$> body))
-  Lua.TableCtor rows -> (PrecAtom, printTableCtor (unAnn <$> rows))
+  Lua.TableCtor rows -> (PrecTable, printTableCtor (unAnn <$> rows))
   Lua.UnOp op (Ann a) -> printUnaryOp op (printExp a)
   Lua.BinOp op (Ann l) (Ann r) -> printBinaryOp op (printExp l) (printExp r)
   Lua.Var (Ann v) -> (PrecAtom, printVar v)
@@ -104,7 +104,7 @@ printVar :: Lua.Var -> ADoc
 printVar = \case
   Lua.VarName name -> printName name
   Lua.VarIndex (Ann e) (Ann i) -> printedExp e <> brackets (printedExp i)
-  Lua.VarField (Ann e) n -> printedExp e <> "." <> printName n
+  Lua.VarField (Ann e) n -> wrapPrec PrecAtom (printExp e) <> "." <> printName n
 
 printFunctionCall :: PADoc -> [PADoc] -> ADoc
 printFunctionCall prefix args =

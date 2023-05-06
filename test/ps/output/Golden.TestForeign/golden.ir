@@ -1,9 +1,6 @@
-[Module
-   {moduleName = ModuleName "Golden.TestForeign",
-    moduleBindings = [],
-    moduleImports = [],
-    moduleExports = [Name "foo"],
-    moduleReExports = fromList [],
-    moduleForeigns = [Name "foo"],
-    modulePath = "golden/Golden/TestForeign.purs",
-    dataTypes = fromList []}]
+[ Module
+  { moduleName = ModuleName "Golden.TestForeign", moduleBindings = [], moduleImports = [], moduleExports =
+    [ Name "foo" ], moduleReExports = fromList [], moduleForeigns =
+    [ Name "foo" ], modulePath = "golden/Golden/TestForeign.purs", dataTypes = fromList []
+  }
+]

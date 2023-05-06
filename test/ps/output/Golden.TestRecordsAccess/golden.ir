@@ -1,79 +1,16 @@
-[Module
-   {moduleName = ModuleName "Golden.TestRecordsAccess",
-    moduleBindings =
-      [Standalone
-         (Name "test4",
-          Abs
-            (AbsBinding
-               (ArgNamed (Name "v"))
-               (LocallyNameless
-                  {unLocallyNameless =
-                     Let
-                       (LetBinding
-                          (Standalone
-                             (Name "x",
-                              LocallyNameless
-                                {unLocallyNameless =
-                                   ObjectProp
-                                     RefBound
-                                     (Index {level = 1, offset = 0})
-                                     (PropName "x")})
-                             :|
-                             [])
-                          (LocallyNameless
-                             {unLocallyNameless =
-                                RefBound (Index {level = 0, offset = 0})}))}))),
-       Standalone
-         (Name "test3",
-          Abs
-            (AbsBinding
-               (ArgNamed (Name "v"))
-               (LocallyNameless
-                  {unLocallyNameless =
-                     Let
-                       (LetBinding
-                          (Standalone
-                             (Name "x",
-                              LocallyNameless
-                                {unLocallyNameless =
-                                   ObjectProp
-                                     RefBound
-                                     (Index {level = 1, offset = 0})
-                                     (PropName "x")})
-                             :|
-                             [])
-                          (LocallyNameless
-                             {unLocallyNameless =
-                                RefBound (Index {level = 0, offset = 0})}))}))),
-       Standalone
-         (Name "test2",
-          Abs
-            (AbsBinding
-               (ArgNamed (Name "v"))
-               (LocallyNameless
-                  {unLocallyNameless =
-                     ObjectProp
-                       RefBound
-                       (Index {level = 0, offset = 0})
-                       (PropName "x")}))),
-       Standalone
-         (Name "r",
-          Lit
-            (Object
-               [(PropName "x", Lit (Integer 1)),
-                (PropName "y", Lit (Boolean True))])),
-       Standalone
-         (Name "test1",
-          ObjectProp
-            RefFree (Local (Name "r")) (PropName "x"))],
-    moduleImports = [],
-    moduleExports =
-      [Name "r",
-       Name "test1",
-       Name "test2",
-       Name "test3",
-       Name "test4"],
-    moduleReExports = fromList [],
-    moduleForeigns = [],
-    modulePath = "golden/Golden/TestRecordsAccess.purs",
-    dataTypes = fromList []}]
+[ Module
+  { moduleName = ModuleName "Golden.TestRecordsAccess", moduleBindings =
+    [ Standalone
+      ( Name "test4", Abs
+        ( AbsBinding ( ArgNamed ( Name "v" ) ) Let ( LetBinding ( Standalone ( Name "x", ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) )
+      ), Standalone
+      ( Name "test3", Abs
+        ( AbsBinding ( ArgNamed ( Name "v" ) ) Let ( LetBinding ( Standalone ( Name "x", ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) )
+      ), Standalone
+      ( Name "test2", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) ObjectProp RefBound ( Index { level = 0, offset = 0 } ) ( PropName "x" ) ) ), Standalone
+      ( Name "r", Lit ( Object [ ( PropName "x", Lit ( Integer 1 ) ), ( PropName "y", Lit ( Boolean True ) ) ] ) ), Standalone
+      ( Name "test1", ObjectProp RefFree ( Local ( Name "r" ) ) ( PropName "x" ) )
+    ], moduleImports = [], moduleExports =
+    [ Name "r", Name "test1", Name "test2", Name "test3", Name "test4" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestRecordsAccess.purs", dataTypes = fromList []
+  }
+]

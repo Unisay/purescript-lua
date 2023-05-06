@@ -1,181 +1,36 @@
-[Module
-   {moduleName =
-      ModuleName "Golden.TestPatternMatching1",
-    moduleBindings =
-      [Standalone
-         (Name "Zero",
-          Ctor SumType (TyName "N") (CtorName "Zero") []),
-       Standalone
-         (Name "Succ",
-          Ctor
-            SumType
-            (TyName "N")
-            (CtorName "Succ")
-            [FieldName "value0"]),
-       Standalone
-         (Name "Num",
-          Ctor
-            SumType
-            (TyName "E")
-            (CtorName "Num")
-            [FieldName "value0"]),
-       Standalone
-         (Name "Not",
-          Ctor
-            SumType
-            (TyName "E")
-            (CtorName "Not")
-            [FieldName "value0"]),
-       Standalone
-         (Name "pat",
-          Abs
-            (AbsBinding
-               (ArgNamed (Name "e"))
-               (LocallyNameless
-                  {unLocallyNameless =
-                     IfThenElse
-                       Prim
-                       (Eq
-                          Lit
-                          (String "Golden.TestPatternMatching1.Not")
-                          Prim
-                          (ReflectCtor
-                             RefBound (Index {level = 0, offset = 0})))
-                       IfThenElse
-                       Prim
-                       (Eq
-                          Lit
-                          (String "Golden.TestPatternMatching1.Num")
-                          Prim
-                          (ReflectCtor
-                             ArrayIndex
-                             RefBound
-                             (Index {level = 0, offset = 0})
-                             0))
-                       IfThenElse
-                       Prim
-                       (Eq
-                          Lit
-                          (String "Golden.TestPatternMatching1.Succ")
-                          Prim
-                          (ReflectCtor
-                             ArrayIndex
-                             ArrayIndex
-                             RefBound
-                             (Index {level = 0, offset = 0})
-                             0
-                             0))
-                       Lit
-                       (Integer 1)
-                       IfThenElse
-                       Prim
-                       (Eq
-                          Lit
-                          (String "Golden.TestPatternMatching1.Zero")
-                          Prim
-                          (ReflectCtor
-                             ArrayIndex
-                             ArrayIndex
-                             RefBound
-                             (Index {level = 0, offset = 0})
-                             0
-                             0))
-                       Lit
-                       (Integer 2)
-                       Lit
-                       (Integer 6)
-                       IfThenElse
-                       Prim
-                       (Eq
-                          Lit
-                          (String "Golden.TestPatternMatching1.Not")
-                          Prim
-                          (ReflectCtor
-                             ArrayIndex
-                             RefBound
-                             (Index {level = 0, offset = 0})
-                             0))
-                       IfThenElse
-                       Prim
-                       (Eq
-                          Lit
-                          (String "Golden.TestPatternMatching1.Num")
-                          Prim
-                          (ReflectCtor
-                             ArrayIndex
-                             ArrayIndex
-                             RefBound
-                             (Index {level = 0, offset = 0})
-                             0
-                             0))
-                       IfThenElse
-                       Prim
-                       (Eq
-                          Lit
-                          (String "Golden.TestPatternMatching1.Succ")
-                          Prim
-                          (ReflectCtor
-                             ArrayIndex
-                             ArrayIndex
-                             ArrayIndex
-                             RefBound
-                             (Index {level = 0, offset = 0})
-                             0
-                             0
-                             0))
-                       Lit
-                       (Integer 3)
-                       Lit
-                       (Integer 6)
-                       Lit
-                       (Integer 6)
-                       Lit
-                       (Integer 6)
-                       IfThenElse
-                       Prim
-                       (Eq
-                          Lit
-                          (String "Golden.TestPatternMatching1.Num")
-                          Prim
-                          (ReflectCtor
-                             RefBound (Index {level = 0, offset = 0})))
-                       IfThenElse
-                       Prim
-                       (Eq
-                          Lit
-                          (String "Golden.TestPatternMatching1.Succ")
-                          Prim
-                          (ReflectCtor
-                             ArrayIndex
-                             RefBound
-                             (Index {level = 0, offset = 0})
-                             0))
-                       Lit
-                       (Integer 4)
-                       Lit
-                       (Integer 5)
-                       Lit
-                       (Integer 6)})))],
-    moduleImports = [],
-    moduleExports =
-      [Name "Zero",
-       Name "Succ",
-       Name "Num",
-       Name "Not",
-       Name "pat"],
-    moduleReExports = fromList [],
-    moduleForeigns = [],
-    modulePath =
-      "golden/Golden/TestPatternMatching1.purs",
-    dataTypes =
-      fromList
-        [(TyName "E",
-          (SumType,
-           fromList
-             [(CtorName "Not", [FieldName "value0"]),
-              (CtorName "Num", [FieldName "value0"])])),
-         (TyName "N",
-          (SumType,
-           fromList
-             [(CtorName "Succ", [FieldName "value0"]),
-              (CtorName "Zero", [])]))]}]
+[ Module
+  { moduleName = ModuleName "Golden.TestPatternMatching1", moduleBindings =
+    [ Standalone
+      ( Name "Zero", Ctor SumType ( TyName "N" ) ( CtorName "Zero" ) [] ), Standalone
+      ( Name "Succ", Ctor SumType ( TyName "N" ) ( CtorName "Succ" ) [ FieldName "value0" ] ), Standalone
+      ( Name "Num", Ctor SumType ( TyName "E" ) ( CtorName "Num" ) [ FieldName "value0" ] ), Standalone
+      ( Name "Not", Ctor SumType ( TyName "E" ) ( CtorName "Not" ) [ FieldName "value0" ] ), Standalone
+      ( Name "pat", Abs
+        ( AbsBinding
+          ( ArgNamed ( Name "e" ) ) IfThenElse Prim
+          ( Eq Lit ( String "Golden.TestPatternMatching1.Not" ) Prim ( ReflectCtor RefBound ( Index { level = 0, offset = 0 } ) ) ) IfThenElse Prim
+          ( Eq Lit ( String "Golden.TestPatternMatching1.Num" ) Prim ( ReflectCtor ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 0 ) ) IfThenElse Prim
+          ( Eq Lit ( String "Golden.TestPatternMatching1.Succ" ) Prim ( ReflectCtor ArrayIndex ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 0 0 ) ) Lit
+          ( Integer 1 ) IfThenElse Prim
+          ( Eq Lit ( String "Golden.TestPatternMatching1.Zero" ) Prim ( ReflectCtor ArrayIndex ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 0 0 ) ) Lit
+          ( Integer 2 ) Lit
+          ( Integer 6 ) IfThenElse Prim
+          ( Eq Lit ( String "Golden.TestPatternMatching1.Not" ) Prim ( ReflectCtor ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 0 ) ) IfThenElse Prim
+          ( Eq Lit ( String "Golden.TestPatternMatching1.Num" ) Prim ( ReflectCtor ArrayIndex ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 0 0 ) ) IfThenElse Prim
+          ( Eq Lit ( String "Golden.TestPatternMatching1.Succ" ) Prim ( ReflectCtor ArrayIndex ArrayIndex ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 0 0 0 ) ) Lit
+          ( Integer 3 ) Lit
+          ( Integer 6 ) Lit
+          ( Integer 6 ) Lit
+          ( Integer 6 ) IfThenElse Prim
+          ( Eq Lit ( String "Golden.TestPatternMatching1.Num" ) Prim ( ReflectCtor RefBound ( Index { level = 0, offset = 0 } ) ) ) IfThenElse Prim
+          ( Eq Lit ( String "Golden.TestPatternMatching1.Succ" ) Prim ( ReflectCtor ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 0 ) ) Lit
+          ( Integer 4 ) Lit
+          ( Integer 5 ) Lit
+          ( Integer 6 )
+        )
+      )
+    ], moduleImports = [], moduleExports =
+    [ Name "Zero", Name "Succ", Name "Num", Name "Not", Name "pat" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestPatternMatching1.purs", dataTypes = fromList
+    [ ( TyName "E", ( SumType, fromList [ ( CtorName "Not", [ FieldName "value0" ] ), ( CtorName "Num", [ FieldName "value0" ] ) ] ) ), ( TyName "N", ( SumType, fromList [ ( CtorName "Succ", [ FieldName "value0" ] ), ( CtorName "Zero", [] ) ] ) ) ]
+  }
+]

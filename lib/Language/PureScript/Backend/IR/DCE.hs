@@ -143,7 +143,7 @@ adjacencyListFromDeclarations modname bindings =
 
 expDependencies :: ModuleName -> Exp -> [QName]
 expDependencies thisModule Exp {expInfo = Info {refsFree}} =
-  toList refsFree >>= \case
+  Map.keys refsFree >>= \case
     Local name -> [(thisModule, name)]
     Imported fromModule name -> [(fromModule, name)]
 

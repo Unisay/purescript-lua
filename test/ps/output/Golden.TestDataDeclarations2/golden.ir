@@ -1,60 +1,19 @@
-[Module
-   {moduleName =
-      ModuleName "Golden.TestDataDeclarations2",
-    moduleBindings =
-      [Standalone
-         (Name "CtorSameName",
-          Ctor
-            ProductType
-            (TyName "TySameName")
-            (CtorName "CtorSameName")
-            []),
-       Standalone
-         (Name "test",
-          Abs
-            (AbsBinding
-               (ArgNamed (Name "v"))
-               (LocallyNameless
-                  {unLocallyNameless =
-                     Abs
-                       (AbsBinding
-                          (ArgNamed (Name "v1"))
-                          (LocallyNameless
-                             {unLocallyNameless =
-                                IfThenElse
-                                  Prim
-                                  (Eq
-                                     Lit
-                                     (String
-                                        "Golden.TestDataDeclarations1.CtorSameName")
-                                     Prim
-                                     (ReflectCtor
-                                        RefBound
-                                        (Index {level = 1, offset = 0})))
-                                  IfThenElse
-                                  Prim
-                                  (Eq
-                                     Lit
-                                     (String
-                                        "Golden.TestDataDeclarations2.CtorSameName")
-                                     Prim
-                                     (ReflectCtor
-                                        RefBound
-                                        (Index {level = 0, offset = 0})))
-                                  Lit
-                                  (Boolean True)
-                                  Exception
-                                  "No patterns matched"
-                                  Exception
-                                  "No patterns matched"}))})))],
-    moduleImports = [],
-    moduleExports = [Name "CtorSameName", Name "test"],
-    moduleReExports = fromList [],
-    moduleForeigns = [],
-    modulePath =
-      "golden/Golden/TestDataDeclarations2.purs",
-    dataTypes =
-      fromList
-        [(TyName "TySameName",
-          (ProductType,
-           fromList [(CtorName "CtorSameName", [])]))]}]
+[ Module
+  { moduleName = ModuleName "Golden.TestDataDeclarations2", moduleBindings =
+    [ Standalone
+      ( Name "CtorSameName", Ctor ProductType ( TyName "TySameName" ) ( CtorName "CtorSameName" ) [] ), Standalone
+      ( Name "test", Abs
+        ( AbsBinding
+          ( ArgNamed ( Name "v" ) ) Abs
+          ( AbsBinding
+            ( ArgNamed ( Name "v1" ) ) IfThenElse Prim
+            ( Eq Lit ( String "Golden.TestDataDeclarations1.CtorSameName" ) Prim ( ReflectCtor RefBound ( Index { level = 1, offset = 0 } ) ) ) IfThenElse Prim
+            ( Eq Lit ( String "Golden.TestDataDeclarations2.CtorSameName" ) Prim ( ReflectCtor RefBound ( Index { level = 0, offset = 0 } ) ) ) Lit ( Boolean True ) Exception "No patterns matched" Exception "No patterns matched"
+          )
+        )
+      )
+    ], moduleImports = [], moduleExports =
+    [ Name "CtorSameName", Name "test" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestDataDeclarations2.purs", dataTypes = fromList
+    [ ( TyName "TySameName", ( ProductType, fromList [ ( CtorName "CtorSameName", [] ) ] ) ) ]
+  }
+]

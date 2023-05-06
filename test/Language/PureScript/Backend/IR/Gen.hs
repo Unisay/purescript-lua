@@ -5,130 +5,143 @@ import Hedgehog (MonadGen)
 import Hedgehog.Corpus qualified as Corpus
 import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
-import Language.PureScript.Backend.IR.Types hiding (moduleName, qualified)
+import Language.PureScript.Backend.IR.Types qualified as IR
 import Prelude hiding (exp)
 
-exp :: forall m. MonadGen m => m Exp
+exp :: forall m. MonadGen m => m IR.Exp
 exp =
   Gen.recursiveFrequency
     [(1, nonRecursiveExp)]
     [
       ( 7
-      , Gen.subterm2 exp exp application
+      , Gen.subterm2 exp exp IR.application
       )
     ,
       ( 3
-      , Gen.subterm3 exp exp exp ifThenElse
+      , Gen.subterm3 exp exp exp IR.ifThenElse
       )
     ,
       ( 1
       , Gen.subtermM exp \e ->
-          arrayIndex e <$> Gen.integral (Range.linear 0 9)
+          IR.arrayIndex e <$> Gen.integral (Range.linear 0 9)
       )
     ,
       ( 1
-      , Gen.subtermM exp \e -> objectProp e <$> genPropName
+      , Gen.subtermM exp \e -> IR.objectProp e <$> genPropName
       )
     ,
       ( 2
-      , array <$> Gen.list (Range.linear 1 10) exp
+      , IR.array <$> Gen.list (Range.linear 1 10) exp
       )
     ,
       ( 2
-      , object <$> Gen.list (Range.linear 1 10) ((,) <$> genPropName <*> exp)
+      , IR.object <$> Gen.list (Range.linear 1 10) ((,) <$> genPropName <*> exp)
       )
     ,
       ( 1
       , Gen.subtermM exp \e ->
-          wrapExpF . ObjectUpdate e
+          IR.wrapExpF . IR.ObjectUpdate e
             <$> Gen.nonEmpty
               (Range.linear 1 10)
               ((,) <$> genPropName <*> exp)
       )
     ,
       ( 5
-      , Gen.subtermM exp \e -> (`abstraction` e) <$> argument
+      , Gen.subtermM exp \e -> (`IR.abstraction` e) <$> argument
       )
     ,
       ( 6
       , Gen.subtermM exp \e ->
-          (`lets` e) <$> Gen.nonEmpty (Range.linear 1 5) binding
+          (`IR.lets` e) <$> Gen.nonEmpty (Range.linear 1 5) binding
       )
     ]
 
-binding :: MonadGen m => m Binding
+binding :: MonadGen m => m IR.Binding
 binding = Gen.frequency [(8, standaloneBinding), (2, recursiveBinding)]
 
-namedExp :: MonadGen m => m (Name, Exp)
+namedExp :: MonadGen m => m (IR.Name, IR.Exp)
 namedExp = (,) <$> name <*> exp
 
-recursiveBinding :: MonadGen m => m Binding
-recursiveBinding = RecursiveGroup <$> Gen.nonEmpty (Range.linear 1 5) namedExp
+recursiveBinding :: MonadGen m => m IR.Binding
+recursiveBinding =
+  IR.RecursiveGroup <$> Gen.nonEmpty (Range.linear 1 5) namedExp
 
-standaloneBinding :: MonadGen m => m Binding
-standaloneBinding = Standalone <$> namedExp
+standaloneBinding :: MonadGen m => m IR.Binding
+standaloneBinding = IR.Standalone <$> namedExp
 
-nonRecursiveExp :: MonadGen m => m Exp
+nonRecursiveExp :: MonadGen m => m IR.Exp
 nonRecursiveExp =
-  wrapExpF
+  IR.wrapExpF
     <$> Gen.frequency
-      [ (5, Lit <$> literalNonRecursive)
-      , (1, Exception <$> Gen.text (Range.linear 0 10) Gen.unicode)
+      [ (5, IR.Lit <$> literalNonRecursive)
+      , (1, IR.Exception <$> Gen.text (Range.linear 0 10) Gen.unicode)
       ,
         ( 1
-        , Ctor
+        , IR.Ctor
             <$> Gen.enumBounded
             <*> tyName
             <*> ctorName
             <*> Gen.list (Range.linear 0 10) fieldName
         )
-      , (3, RefFree <$> qualified name)
+      , (3, IR.RefFree <$> qualified name)
       ]
 
-literalNonRecursiveExp :: MonadGen m => m Exp
-literalNonRecursiveExp = wrapExpF . Lit <$> literalNonRecursive
+literalNonRecursiveExp :: MonadGen m => m IR.Exp
+literalNonRecursiveExp = IR.wrapExpF . IR.Lit <$> literalNonRecursive
 
-literalNonRecursive :: MonadGen m => m (Literal Exp)
+scalarExp :: MonadGen m => m IR.Exp
+scalarExp = IR.wrapExpF . IR.Lit <$> scalarLiteral
+
+literalNonRecursive :: MonadGen m => m (IR.Literal IR.Exp)
 literalNonRecursive =
-  Gen.choice
-    [ Integer <$> Gen.integral (Range.exponential 0 1000)
-    , String <$> Gen.text (Range.linear 0 10) Gen.unicode
-    , Boolean <$> Gen.bool
-    , Char <$> Gen.unicode
-    , Floating <$> Gen.double (Range.exponentialFloat 0 1000000000000000000)
-    , pure $ Array []
-    , pure $ Object []
+  Gen.frequency
+    [ (5, scalarLiteral)
+    , (1, pure $ IR.Array [])
+    , (1, pure $ IR.Object [])
     ]
 
-argument :: MonadGen m => m Argument
+scalarLiteral :: MonadGen m => m (IR.Literal IR.Exp)
+scalarLiteral =
+  Gen.choice
+    [ IR.Integer <$> Gen.integral (Range.exponential 0 1000)
+    , IR.String <$> Gen.text (Range.linear 0 10) Gen.unicode
+    , IR.Boolean <$> Gen.bool
+    , IR.Char <$> Gen.unicode
+    , IR.Floating <$> Gen.double (Range.exponentialFloat 0 1000000000000000000)
+    ]
+
+argument :: MonadGen m => m IR.Argument
 argument =
   Gen.frequency
-    [ (1, pure ArgUnused)
-    , (1, pure ArgAnonymous)
-    , (8, ArgNamed <$> name)
+    [ (1, pure IR.ArgUnused)
+    , (1, pure IR.ArgAnonymous)
+    , (8, IR.ArgNamed <$> name)
     ]
 
-qualified :: MonadGen m => m a -> m (Qualified a)
+qualified :: MonadGen m => m a -> m (IR.Qualified a)
 qualified q =
   Gen.frequency
-    [ (8, Local <$> q)
-    , (2, Imported <$> moduleName <*> q)
+    [ (8, IR.Local <$> q)
+    , (2, IR.Imported <$> moduleName <*> q)
     ]
 
-moduleName :: MonadGen m => m ModuleName
-moduleName = ModuleName <$> Gen.element Corpus.colours
+refFreeLocal :: MonadGen m => m IR.Exp
+refFreeLocal = IR.refFreeLocal <$> name
 
-name :: MonadGen m => m Name
-name = Name <$> Gen.element ["x", "y", "z", "i", "j", "k", "l"]
+moduleName :: MonadGen m => m IR.ModuleName
+moduleName = IR.ModuleName <$> Gen.element Corpus.colours
 
-tyName :: MonadGen m => m TyName
-tyName = TyName . Text.toTitle <$> Gen.element Corpus.waters
+name :: MonadGen m => m IR.Name
+name = IR.Name <$> Gen.element ["x", "y", "z", "i", "j", "k", "l"]
 
-ctorName :: MonadGen m => m CtorName
-ctorName = CtorName . Text.toTitle <$> Gen.element Corpus.colours
+tyName :: MonadGen m => m IR.TyName
+tyName = IR.TyName . Text.toTitle <$> Gen.element Corpus.waters
 
-genPropName :: MonadGen m => m PropName
-genPropName = PropName <$> Gen.element Corpus.metasyntactic
+ctorName :: MonadGen m => m IR.CtorName
+ctorName = IR.CtorName . Text.toTitle <$> Gen.element Corpus.colours
 
-fieldName :: MonadGen m => m FieldName
-fieldName = FieldName <$> Gen.element Corpus.metasyntactic
+genPropName :: MonadGen m => m IR.PropName
+genPropName = IR.PropName <$> Gen.element Corpus.metasyntactic
+
+fieldName :: MonadGen m => m IR.FieldName
+fieldName = IR.FieldName <$> Gen.element Corpus.metasyntactic

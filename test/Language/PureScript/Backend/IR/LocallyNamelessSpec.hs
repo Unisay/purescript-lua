@@ -2,7 +2,7 @@ module Language.PureScript.Backend.IR.LocallyNamelessSpec where
 
 import Control.Monad.Trans.Accum (Accum, add, execAccum)
 import Data.List.NonEmpty qualified as NE
-import Hedgehog (annotate, forAll, (===))
+import Hedgehog (annotate, annotateShow, forAll, (===))
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Internal.Range qualified as Range
 import Language.PureScript.Backend.IR.Gen qualified as Gen
@@ -95,6 +95,90 @@ spec = describe "LocallyNameless encoding" do
         (const $ Just . refFreeLocal)
         (const $ Just . refBound)
         expr
+
+  test "subst" do
+    v <- forAll Gen.literalNonRecursiveExp
+    let a = Name "a"
+        b = Name "b"
+        c = Name "c"
+        d = Name "d"
+    let original =
+          abstraction (ArgNamed b) $
+            lets
+              (Standalone (a, refFreeLocal b) :| [Standalone (d, v)])
+              (abstraction (ArgNamed c) (refFreeLocal a))
+    annotateShow original
+    let expected =
+          abstraction (ArgNamed b) $
+            lets
+              (Standalone (a, refFreeLocal b) :| [Standalone (d, v)])
+              (abstraction (ArgNamed c) (refFreeLocal b))
+    let substituted =
+          case unExp original of
+            Abs
+              ( AbsBinding
+                  arg
+                  ( LocallyNameless
+                      ( unExp ->
+                          Let (LetBinding binds@(Standalone (_, r) :| _) body)
+                        )
+                    )
+                ) ->
+                abstraction arg $
+                  lets
+                    (fmap unLocallyNameless <<$>> binds)
+                    (unLocallyNameless (subst body (Offset 0) r))
+            _ -> error "subst: impossible"
+
+    substituted === expected
+
+  test "subst2" do
+    let inlinee = LocallyNameless $ refBound (Index {level = 0, offset = 0})
+    let body :: Exp =
+          lets'
+            ( Standalone
+                ( Name "v"
+                , LocallyNameless $ refBound (Index {level = 0, offset = 0})
+                )
+                :| []
+            )
+            (LocallyNameless (integer 0))
+
+    unLocallyNameless (subst inlinee (Offset 0) (LocallyNameless body))
+      === lets'
+        ( Standalone
+            ( Name "v"
+            , LocallyNameless $ refBound (Index {level = 0, offset = 0})
+            )
+            :| []
+        )
+        (LocallyNameless (integer 0))
+
+  test "countBoundRefs" do
+    v <- forAll Gen.literalNonRecursiveExp
+    let a = Name "a"
+        b = Name "b"
+        c = Name "c"
+        d = Name "d"
+    let
+      ex =
+        abstraction
+          (ArgNamed b)
+          ( lets
+              (Standalone (a, refFreeLocal b) :| [Standalone (d, v)])
+              ( abstraction
+                  (ArgNamed c)
+                  (application (refFreeLocal b) (refFreeLocal a))
+              )
+          )
+    case ex of
+      Exp {unExp = Abs (AbsBinding _ namelessBody)} -> do
+        annotateShow namelessBody
+        countBoundRefs namelessBody (Offset 0) === 2
+      _ -> fail "Precondition failed: ex is not an abstraction"
+
+--------------------------------------------------------------------------------
+-- Helpers ---------------------------------------------------------------------
 
 collectBoundRefs :: Exp -> [Index]
 collectBoundRefs e = execAccum (everywhereTopDownExpM visit e) []

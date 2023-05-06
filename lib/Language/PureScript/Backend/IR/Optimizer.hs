@@ -1,5 +1,6 @@
 module Language.PureScript.Backend.IR.Optimizer where
 
+import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Types
@@ -9,12 +10,13 @@ import Language.PureScript.Backend.IR.Types
   , Grouping (..)
   , Info (..)
   , LetBinding (..)
-  , Literal (Boolean)
+  , Literal (..)
   , LocallyNameless (..)
   , Module (moduleBindings, moduleImports)
   , ModuleName (..)
   , Name
   , bindingNames
+  , countBoundRefs
   , everywhereTopDownExpM
   , findOffset
   , listGrouping
@@ -45,7 +47,8 @@ groupingsExprs groupings = [e | g <- groupings, (_name, e) <- listGrouping g]
 
 collectImportedModules :: Exp -> Set ModuleName
 collectImportedModules Exp {expInfo = Info {refsFree}} =
-  foldMap (qualified mempty \m _ -> Set.singleton m) refsFree
+  Map.keys refsFree
+    & foldMap (qualified mempty \modname _ -> Set.singleton modname)
 
 optimizeDecls
   :: FreshNames m => [Grouping (name, Exp)] -> m [Grouping (name, Exp)]
@@ -76,8 +79,8 @@ removeUnreachableElseBranch e = pure case unExp e of
 -- https://www.microsoft.com/en-us/research/wp-content/uploads/2002/07/inline.pdf
 
 inlineBindings :: FreshNames m => RewriteRule m
-inlineBindings e@Exp {unExp} =
-  case unExp of
+inlineBindings e =
+  case unExp e of
     Let (LetBinding groupings body) -> do
       let names = toList groupings >>= bindingNames
       pure . wrapExpF . Let . LetBinding groupings $
@@ -91,10 +94,12 @@ inlineBinding
   -> LocallyNameless Exp
 inlineBinding names grouping body =
   case grouping of
-    Standalone (name, replacement@(LocallyNameless expr)) | isRef expr ->
-      case names `findOffset` name of
-        Nothing -> body
-        Just offset -> subst body offset replacement
+    Standalone (name, replacement@(LocallyNameless inlinee))
+      | Just offset <- names `findOffset` name
+      , isRef inlinee
+          || isNonRecursiveLiteral inlinee
+          || countBoundRefs body offset == 1 ->
+          subst body offset replacement
     _ -> body
  where
   isRef :: Exp -> Bool
@@ -102,4 +107,14 @@ inlineBinding names grouping body =
     unExp >>> \case
       RefFree {} -> True
       RefBound {} -> True
+      _ -> False
+
+  isNonRecursiveLiteral :: Exp -> Bool
+  isNonRecursiveLiteral =
+    unExp >>> \case
+      Lit Integer {} -> True
+      Lit Floating {} -> True
+      Lit String {} -> True
+      Lit Char {} -> True
+      Lit Boolean {} -> True
       _ -> False

@@ -1,39 +1,13 @@
-[Module
-   {moduleName = ModuleName "Golden.TestValues",
-    moduleBindings =
-      [Standalone (Name "i", Lit (Integer 1)),
-       Standalone
-         (Name "f",
-          Abs
-            (AbsBinding
-               (ArgNamed (Name "v"))
-               (LocallyNameless
-                  {unLocallyNameless = Lit (Boolean True)}))),
-       Standalone (Name "c", Lit (Char 'c')),
-       Standalone (Name "b", Lit (Boolean True)),
-       Standalone
-         (Name "o",
-          Lit
-            (Object
-               [(PropName "i", RefFree (Local (Name "i"))),
-                (PropName "b", RefFree (Local (Name "b"))),
-                (PropName "c", RefFree (Local (Name "c")))])),
-       Standalone
-         (Name "a",
-          Lit
-            (Array
-               [Lit (Integer 1),
-                Lit (Integer 2),
-                Lit (Integer 3)]))],
-    moduleImports = [],
-    moduleExports =
-      [Name "i",
-       Name "b",
-       Name "c",
-       Name "a",
-       Name "o",
-       Name "f"],
-    moduleReExports = fromList [],
-    moduleForeigns = [],
-    modulePath = "golden/Golden/TestValues.purs",
-    dataTypes = fromList []}]
+[ Module
+  { moduleName = ModuleName "Golden.TestValues", moduleBindings =
+    [ Standalone
+      ( Name "i", Lit ( Integer 1 ) ), Standalone
+      ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) Lit ( Boolean True ) ) ), Standalone
+      ( Name "c", Lit ( Char 'c' ) ), Standalone
+      ( Name "b", Lit ( Boolean True ) ), Standalone
+      ( Name "o", Lit ( Object [ ( PropName "i", RefFree ( Local ( Name "i" ) ) ), ( PropName "b", RefFree ( Local ( Name "b" ) ) ), ( PropName "c", RefFree ( Local ( Name "c" ) ) ) ] ) ), Standalone
+      ( Name "a", Lit ( Array [ Lit ( Integer 1 ), Lit ( Integer 2 ), Lit ( Integer 3 ) ] ) )
+    ], moduleImports = [], moduleExports =
+    [ Name "i", Name "b", Name "c", Name "a", Name "o", Name "f" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestValues.purs", dataTypes = fromList []
+  }
+]

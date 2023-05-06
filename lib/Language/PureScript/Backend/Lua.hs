@@ -31,7 +31,7 @@ import Prelude hiding (exp, local)
 type LuaM a = StateT Natural (Either Error) a
 
 data Error
-  = UnexpectedRefBound IR.Exp IR.Index
+  = UnexpectedRefBound IR.ModuleName IR.Exp
   | LinkerErrorForeign Foreign.Error
   deriving stock (Show)
 
@@ -45,9 +45,9 @@ fromIrModules (Tagged foreigns) modules =
     DList.fromList (topoSorted modules)
       & foldMapM \m@IR.Module {..} -> do
         foreignCode <-
-          case moduleForeigns of
-            [] -> pure mempty
-            _ -> do
+          if null moduleForeigns
+            then pure mempty
+            else do
               moduleForeign <-
                 liftIO (Foreign.resolveForModule modulePath foreigns)
                   >>= Oops.hoistEither . first LinkerErrorForeign
@@ -167,8 +167,8 @@ fromExp topLevelNames modname ir = case IR.unExp ir of
         Lua.varName (fromNameLocal name)
       IR.Imported modname' name ->
         Lua.varName (fromName modname' name)
-  IR.RefBound index ->
-    throwError $ UnexpectedRefBound ir index
+  IR.RefBound _index ->
+    throwError $ UnexpectedRefBound modname ir
   IR.Let binding -> do
     (bindings, bodyExp) <- IR.unbindLet binding
     body <- go bodyExp

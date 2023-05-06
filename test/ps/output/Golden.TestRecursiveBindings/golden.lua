@@ -37,8 +37,7 @@ local Golden_TestRecursiveBindings_I_letRecMixed = (function()
   a6 = function(v11) return b5(z4) end
   local f7 = function(v12) return function(k13) return a6(k13) end end
   local y8 = f7(z4)(z4)
-  local x9 = f7(y8)(y8)
-  return f7(x9)(f7(y8)(0))
+  return f7(f7(y8)(y8))(f7(y8)(0))
 end)()
 local Golden_TestRecursiveBindings_I_letRec = (function()
   local yes14

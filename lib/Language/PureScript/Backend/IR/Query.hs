@@ -1,6 +1,6 @@
 module Language.PureScript.Backend.IR.Query where
 
-import Data.Set qualified as Set
+import Data.Map qualified as Map
 import Language.PureScript.Backend.IR.Types
   ( Exp (..)
   , Info (..)
@@ -17,11 +17,12 @@ usesRuntimeLazy Module {moduleBindings = bs} =
   getAny $ foldMap (foldMap (Any . findRuntimeLazyInExpr) . bindingExprs) bs
  where
   findRuntimeLazyInExpr Exp {expInfo = Info {refsFree}} =
-    Local (Name "$__runtime_lazy") `Set.member` refsFree
+    Local (Name "$__runtime_lazy") `Map.member` refsFree
 
 usesPrimModule :: Module -> Bool
 usesPrimModule Module {moduleBindings = bs} =
   getAny $ foldMap (foldMap (Any . findPrimModuleInExpr) . bindingExprs) bs
  where
   findPrimModuleInExpr Exp {expInfo = Info {refsFree}} =
-    any (qualifiedByModule >>> (== Just (ModuleName "Prim"))) refsFree
+    Map.keys refsFree
+      & any (qualifiedByModule >>> (== Just (ModuleName "Prim")))

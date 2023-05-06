@@ -1,9 +1,14 @@
 module Language.PureScript.Backend.Lua.Optimizer where
 
+import Control.Monad.Trans.Accum (Accum, add, execAccum)
 import Data.List qualified as List
+import Data.Map qualified as Map
+import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Language.PureScript.Backend.Lua.Traversal
   ( everywhereExp
+  , everywhereInChunkM
   , everywhereStat
+  , everywhereStatM
   )
 import Language.PureScript.Backend.Lua.Types
   ( Chunk
@@ -16,17 +21,48 @@ import Language.PureScript.Backend.Lua.Types
   , unAnn
   , pattern Ann
   )
+import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prelude hiding (return)
 
 optimizeChunk :: Chunk -> Chunk
-optimizeChunk = fmap optimizeStatement
+optimizeChunk = inlineTopLevelLocalDefs . fmap optimizeStatement
+
+inlineTopLevelLocalDefs :: Chunk -> Chunk
+inlineTopLevelLocalDefs = snd . foldr inlineTopLevelLocalDef mempty
+ where
+  inlineTopLevelLocalDef
+    :: Statement
+    -> (Map Lua.Name (Sum Natural), Chunk)
+    -> (Map Lua.Name (Sum Natural), Chunk)
+  inlineTopLevelLocalDef statement (counts, result) =
+    case statement of
+      Local name (Just value)
+        | Just (Sum 1) <- Map.lookup name counts ->
+            (counts, substituteVarForValue name (Lua.unAnn value) result)
+      other -> (countRefs other <> counts, other : result)
+
+substituteVarForValue :: Lua.Name -> Exp -> Chunk -> Chunk
+substituteVarForValue name inlinee =
+  runIdentity . everywhereInChunkM (pure . subst) pure
+ where
+  subst = \case
+    Lua.Var (Lua.unAnn -> Lua.VarName varName) | varName == name -> inlinee
+    expr -> expr
+
+countRefs :: Statement -> Map Lua.Name (Sum Natural)
+countRefs = everywhereStatM pure countRefsInExpression >>> (`execAccum` mempty)
+ where
+  countRefsInExpression :: Exp -> Accum (Map Lua.Name (Sum Natural)) Exp
+  countRefsInExpression = \case
+    expr@(Lua.Var (Lua.unAnn -> Lua.VarName name)) ->
+      add (Map.singleton name (Sum 1)) $> expr
+    expr -> pure expr
 
 optimizeStatement :: Statement -> Statement
 optimizeStatement = everywhereStat identity optimizeExpression
 
 optimizeExpression :: Exp -> Exp
-optimizeExpression =
-  foldr (>>>) identity rewriteRulesInOrder
+optimizeExpression = foldr (>>>) identity rewriteRulesInOrder
 
 rewriteRulesInOrder :: [RewriteRule]
 rewriteRulesInOrder =

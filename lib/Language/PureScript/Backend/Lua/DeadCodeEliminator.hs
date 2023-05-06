@@ -13,9 +13,9 @@ import Language.PureScript.Backend.Lua.Traversal
   ( Annotator (..)
   , Visitor (..)
   , annotateStatementInsideOutM
-  , noopVisitor
+  , makeVisitor
   , unAnnotateStatement
-  , visitStatementOutsideInM
+  , visitStatementM
   )
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prelude hiding (exp)
@@ -162,23 +162,29 @@ adjacencyList = DList.toList . (`go` mempty)
       _ -> mempty
 
 findReturns :: [Lua.Annotated Node Lua.StatementF] -> DList Key
-findReturns = foldMap \(Node key _scope, statement) ->
+findReturns = (keyOf . nodeOf <$>) . findReturnStatements
+
+findReturnStatements
+  :: [Lua.Annotated Node Lua.StatementF]
+  -> DList (Lua.Annotated Node Lua.StatementF)
+findReturnStatements = foldMap \node@(_node, statement) ->
   case statement of
-    Lua.Return _ -> DList.singleton key
+    Lua.Return _ -> DList.singleton node
     Lua.IfThenElse _cond th el ->
-      DList.cons key (findReturns th <> findReturns el)
+      DList.cons node (findReturnStatements th <> findReturnStatements el)
     _ -> DList.empty
 
 findAssignments :: Name -> [Lua.Annotated Node Lua.StatementF] -> [Key]
 findAssignments name = foldMap do
   toList
     . (`execAccum` DList.empty)
-    . visitStatementOutsideInM
-      noopVisitor
-        { visitStat = \node@(Node key _scope, statement) -> case statement of
-            Lua.Assign (Lua.Ann (Lua.VarName name')) _val
-              | name' == name -> add (DList.singleton key) $> node
-            _ -> pure node
+    . visitStatementM
+      makeVisitor
+        { beforeStat = \node@(Node key _scope, statement) ->
+            case statement of
+              Lua.Assign (Lua.Ann (Lua.VarName name')) _val
+                | name' == name -> add (DList.singleton key) $> node
+              _ -> pure node
         }
 
 expressionAdjacencyList
@@ -279,61 +285,94 @@ nodeOf = fst
 makeNodesStatement :: [Lua.Statement] -> [Lua.Annotated Node Lua.StatementF]
 makeNodesStatement chunk =
   evalState (forM chunk assignKeys) 0 & \keyedChunk ->
-    evalState (forM keyedChunk assignScopes) []
+    evalState @[Scope] (assignScopes keyedChunk) []
+
+assignKeys :: Lua.Statement -> State Key (Lua.Annotated Node Lua.StatementF)
+assignKeys =
+  annotateStatementInsideOutM
+    Annotator
+      { unAnnotate = Lua.unAnn
+      , annotateStat = mkNodeWithKey
+      , annotateExp = mkNodeWithKey
+      , annotateRow = mkNodeWithKey
+      , annotateVar = mkNodeWithKey
+      }
+    . Lua.ann
  where
-  assignScopes
-    :: Lua.Annotated Node Lua.StatementF
-    -> State [Scope] (Lua.Annotated Node Lua.StatementF)
-  assignScopes =
-    visitStatementOutsideInM
-      Visitor
-        { visitStat
-        , visitExp
-        , visitVar = mkNodeWithScopes
-        , visitRow = mkNodeWithScopes
-        }
-
-  mkNodeWithScopes :: (Node, t) -> State [Scope] (Node, t)
-  mkNodeWithScopes (Node key _scopes, expr) = gets ((,expr) . Node key)
-
-  assignKeys :: Lua.Statement -> State Key (Lua.Annotated Node Lua.StatementF)
-  assignKeys =
-    annotateStatementInsideOutM
-      Annotator
-        { unAnnotate = Lua.unAnn
-        , annotateStat = mkNodeWithKey
-        , annotateExp = mkNodeWithKey
-        , annotateRow = mkNodeWithKey
-        , annotateVar = mkNodeWithKey
-        }
-      . Lua.ann
-
   mkNodeWithKey :: f Node -> State Key (Lua.Annotated Node f)
   mkNodeWithKey f = state \key -> ((Node key mempty, f), key + 1)
 
-  visitStat
+assignScopes
+  :: forall m
+   . MonadScopes m
+  => [Lua.Annotated Node Lua.StatementF]
+  -> m [Lua.Annotated Node Lua.StatementF]
+assignScopes = traverse do
+  visitStatementM
+    makeVisitor
+      { beforeStat = beforeStat
+      , afterStat = afterStat
+      , beforeExp = beforeExp
+      , beforeVar = mkNodeWithScopes
+      , beforeRow = mkNodeWithScopes
+      }
+ where
+  beforeStat
     :: Lua.Annotated Node Lua.StatementF
-    -> State [Scope] (Lua.Annotated Node Lua.StatementF)
-  visitStat node@(Node key _scopes, stat) =
+    -> m (Lua.Annotated Node Lua.StatementF)
+  beforeStat node@(Node key _scopes, stat) =
     case stat of
       Lua.Local name _value -> do
-        scopes <- get
-        let scopes' = case scopes of
-              [] -> [Map.singleton name key]
-              inner : outer -> Map.insert name key inner : outer
-        put scopes' $> (Node key scopes', stat)
+        scopes <- addName name key
+        pure (Node key (toList scopes), stat)
+      Lua.IfThenElse p t e -> do
+        t' <- addScope $> t
+        e' <- addScope $> e
+        scopes <- getScopes
+        pure (Node key (toList scopes), Lua.IfThenElse p t' e')
       _ -> pure node
 
-  visitExp
-    :: Lua.Annotated Node Lua.ExpF
-    -> State [Scope] (Lua.Annotated Node Lua.ExpF)
-  visitExp node@(Node key _scopes, expr) =
+  afterStat :: Lua.StatementF Node -> m (Lua.StatementF Node)
+  afterStat = \case
+    stat@Lua.Return {} -> dropScope $> stat
+    other -> pure other
+
+  beforeExp :: Lua.Annotated Node Lua.ExpF -> m (Lua.Annotated Node Lua.ExpF)
+  beforeExp node@(Node key _scopes, expr) =
     case expr of
-      Lua.Function _args _body -> do
-        scopes <- get
-        let scopes' = Map.empty : scopes
-        put scopes' $> (Node key scopes', expr)
+      Lua.Function _args _body ->
+        addScope <&> \scopes -> (Node key (toList scopes), expr)
       _ -> mkNodeWithScopes node
+
+  mkNodeWithScopes :: (Node, t) -> m (Node, t)
+  mkNodeWithScopes (Node key _scopes, t) = getScopes <&> ((,t) . Node key)
 
 unNodesStatement :: Lua.Annotated Node Lua.StatementF -> Lua.Statement
 unNodesStatement = unAnnotateStatement Lua.unAnn
+
+class Monad m => MonadScopes m where
+  addName :: Name -> Key -> m (NonEmpty Scope)
+  addScope :: m (NonEmpty Scope)
+  dropScope :: m ()
+  getScopes :: m [Scope]
+
+instance Monad m => MonadScopes (StateT [Scope] m) where
+  addName name key = do
+    scopes <- get
+    let scopes' = case scopes of
+          [] -> Map.singleton name key :| []
+          inner : outer -> Map.insert name key inner :| outer
+    put $ toList scopes'
+    pure scopes'
+
+  addScope = do
+    scopes <- get
+    let scopes' = Map.empty :| scopes
+    put $ toList scopes'
+    pure scopes'
+
+  dropScope = modify' \case
+    [] -> []
+    _ : remainingScopes -> remainingScopes
+
+  getScopes = get

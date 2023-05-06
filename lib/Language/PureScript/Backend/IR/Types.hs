@@ -2,13 +2,12 @@
 
 module Language.PureScript.Backend.IR.Types where
 
+import Control.Monad.Trans.Accum (AccumT, add, execAccumT)
 import Data.Deriving (deriveEq1, deriveOrd1, deriveShow1)
 import Data.List (elemIndex)
-import Data.Set qualified as Set
+import Data.Map qualified as Map
 import Data.Tagged (Tagged (..), untag)
 import Data.Text qualified as Text
-import Data.Traversable (for)
-import GHC.Generics.Generically (Generically (..))
 import Quiet (Quiet (..))
 import Text.Show (show)
 import Prelude hiding (show)
@@ -43,9 +42,13 @@ bindingNames = fmap fst . listGrouping
 bindingExprs :: Grouping (name, Exp) -> [Exp]
 bindingExprs = fmap snd . listGrouping
 
-newtype Info = Info {refsFree :: Set (Qualified Name)}
-  deriving stock (Generic)
-  deriving (Semigroup, Monoid) via Generically Info
+newtype Info = Info {refsFree :: Map (Qualified Name) Natural}
+
+instance Semigroup Info where
+  Info a <> Info b = Info (Map.unionWith (+) a b)
+
+instance Monoid Info where
+  mempty = Info mempty
 
 data Exp = Exp {unExp :: ExpF Exp, expInfo :: Info}
 
@@ -93,8 +96,8 @@ data LetBinding a
   deriving stock (Show, Eq, Ord, Functor)
 
 newtype LocallyNameless a = LocallyNameless {unLocallyNameless :: a}
-  deriving newtype (Eq, Ord)
-  deriving stock (Show, Functor, Foldable, Traversable)
+  deriving newtype (Show, Eq, Ord)
+  deriving stock (Functor, Foldable, Traversable)
 
 data Literal a
   = Integer Integer
@@ -181,6 +184,8 @@ $( let ts =
  )
 
 deriving stock instance Show Info
+
+-- deriving stock instance Show Exp
 
 instance Show Exp where
   show :: Exp -> String
@@ -275,15 +280,17 @@ bindLet bindings inExp =
 
 unbindLet :: FreshNames m => LetBinding Exp -> m (NonEmpty Binding, Exp)
 unbindLet (LetBinding bindings inExp) = do
-  freshNames <- for (bindingNames =<< toList bindings) refresh
+  freshNames <- forM names refresh
   let openedBindings = (`evalState` (Tagged @"fresh" <$> freshNames)) $
-        for bindings \case
+        forM bindings \case
           Standalone (name, expr) ->
             Standalone . (,open freshNames expr) <$> refresh name
           RecursiveGroup bs ->
-            RecursiveGroup <$> for bs \(name, expr) ->
+            RecursiveGroup <$> forM bs \(name, expr) ->
               refresh name <&> (,open freshNames expr)
   pure (openedBindings, open freshNames inExp)
+ where
+  names = toList bindings >>= bindingNames
 
 close :: BindingPattern pat => pat -> Exp -> LocallyNameless Exp
 close pat =
@@ -324,8 +331,23 @@ updateRefs withFree withBound e =
     RefBound index' -> do
       level <- get
       maybe (pure expr) pure (withBound level index')
-    Abs _binding -> modify (+ 1) $> expr
-    Let _binding -> modify (+ 1) $> expr
+    Abs {} -> modify (+ 1) $> expr
+    Let {} -> modify (+ 1) $> expr
+    _other -> pure expr
+
+countBoundRefs :: LocallyNameless Exp -> Offset -> Natural
+countBoundRefs (LocallyNameless namelessExp) boundOffset =
+  getSum . (`evalState` Level 0) . (`execAccumT` Sum 0) $
+    everywhereTopDownExpM visitor namelessExp
+ where
+  visitor :: Exp -> AccumT (Sum Natural) (State Level) Exp
+  visitor expr = case unExp expr of
+    Abs {} -> modify (+ 1) $> expr
+    Let {} -> modify (+ 1) $> expr
+    RefBound Index {level, offset} -> do
+      atLevel <- get
+      expr <$ when (level == atLevel && offset == boundOffset) do
+        add (Sum 1)
     _other -> pure expr
 
 subst
@@ -333,15 +355,28 @@ subst
   -> Offset
   -> LocallyNameless Exp
   -> LocallyNameless Exp
-subst (LocallyNameless expr) replacedOffset (LocallyNameless replacement) =
-  LocallyNameless $
-    updateRefs
-      (\_currentLevel _name -> Nothing)
-      ( \currentLevel Index {level, offset} -> do
-          guard (currentLevel == level && offset == replacedOffset)
-          pure replacement
-      )
-      expr
+subst (LocallyNameless nameless) replacedOffset (LocallyNameless replacement) =
+  LocallyNameless (evalState (topDownExpM rewrite nameless) (Level 0))
+ where
+  rewrite :: MonadState Level m => Exp -> m (TopDownStep, Exp)
+  rewrite expr = case unExp expr of
+    RefBound Index {level, offset} ->
+      get <&> \currentLevel ->
+        if currentLevel == level && offset == replacedOffset
+          then (Stop, adjustFor currentLevel replacement)
+          else (Continue, expr)
+    Abs {} -> modify (+ 1) $> (Continue, expr)
+    Let {} -> modify (+ 1) $> (Continue, expr)
+    _other -> pure (Continue, expr)
+
+  adjustFor :: Level -> Exp -> Exp
+  adjustFor = \case
+    Level 0 -> Prelude.identity
+    adjustment -> updateRefs noUpdate \_atLevel index ->
+      Just . wrapExpF $ RefBound index {level = adjustment + level index}
+
+  noUpdate :: Level -> Name -> Maybe Exp
+  noUpdate _currentLevel _name = Nothing
 
 -- Constructors for expresssions -----------------------------------------------
 
@@ -358,7 +393,7 @@ wrapExpF e = Exp e case e of
   ObjectProp a _prop -> expInfo a
   ObjectUpdate a patches -> expInfo a <> foldMap (expInfo . snd) patches
   App f x -> expInfo f <> expInfo x
-  RefFree ref -> mempty {refsFree = Set.singleton ref}
+  RefFree ref -> Info {refsFree = Map.singleton ref 1}
   RefBound _index -> mempty
   Abs (AbsBinding _arg (LocallyNameless expr)) -> expInfo expr
   Let (LetBinding binds (LocallyNameless body)) ->
@@ -382,6 +417,9 @@ ctor = (((wrapExpF .) .) .) . Ctor
 abstraction :: Argument -> Exp -> Exp
 abstraction arg = wrapExpF . Abs . bindAbs arg
 
+abstraction' :: Argument -> LocallyNameless Exp -> Exp
+abstraction' arg = wrapExpF . Abs . AbsBinding arg
+
 identity :: Exp
 identity =
   wrapExpF . Abs . AbsBinding ArgAnonymous . LocallyNameless $
@@ -389,6 +427,12 @@ identity =
 
 lets :: NonEmpty Binding -> Exp -> Exp
 lets = ((wrapExpF . Let) .) . bindLet
+
+lets'
+  :: NonEmpty (Grouping (Name, LocallyNameless Exp))
+  -> LocallyNameless Exp
+  -> Exp
+lets' bindings body = wrapExpF $ Let $ LetBinding bindings body
 
 application :: Exp -> Exp -> Exp
 application = (wrapExpF .) . App
@@ -491,16 +535,23 @@ everywhereExpM visit = go
     IfThenElse p th el -> visit =<< ifThenElse <$> go p <*> go th <*> go el
     _ -> visit e
 
-everywhereTopDownExp :: (Exp -> Exp) -> Exp -> Exp
-everywhereTopDownExp f = runIdentity . everywhereTopDownExpM (pure . f)
+-- everywhereTopDownExp :: (Exp -> Maybe Exp) -> Exp -> Exp
+-- everywhereTopDownExp f = runIdentity . everywhereTopDownExpM (pure . f)
 
-everywhereTopDownExpM :: forall m. Monad m => (Exp -> m Exp) -> Exp -> m Exp
-everywhereTopDownExpM f = f >=> go
+everywhereTopDownExpM :: Monad m => (Exp -> m Exp) -> Exp -> m Exp
+everywhereTopDownExpM rewrite = topDownExpM ((Continue,) <<$>> rewrite)
+
+data TopDownStep = Continue | Stop
+
+topDownExpM :: Monad m => (Exp -> m (TopDownStep, Exp)) -> Exp -> m Exp
+topDownExpM f = visit
  where
-  visit = f >=> go
+  visit x =
+    f x >>= \case
+      (Continue, a) -> step a
+      (Stop, a) -> pure a
 
-  go :: Exp -> m Exp
-  go e = case unExp e of
+  step e = case unExp e of
     Lit (Array as) -> array <$> traverse visit as
     Lit (Object props) -> object <$> traverse (traverse visit) props
     Prim op ->

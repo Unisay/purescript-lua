@@ -1,40 +1,11 @@
-[Module
-   {moduleName = ModuleName "Golden.TestUnbinding",
-    moduleBindings =
-      [Standalone
-         (Name "f",
-          Abs
-            (AbsBinding
-               (ArgNamed (Name "v"))
-               (LocallyNameless
-                  {unLocallyNameless =
-                     Abs
-                       (AbsBinding
-                          (ArgNamed (Name "v1"))
-                          (LocallyNameless
-                             {unLocallyNameless = Lit (Integer 3)}))}))),
-       Standalone (Name "b", Lit (Integer 2)),
-       Standalone (Name "a", Lit (Integer 1)),
-       Standalone
-         (Name "c",
-          App
-            App
-            RefFree
-            (Local (Name "f"))
-            RefFree
-            (Local (Name "a"))
-            App
-            App
-            RefFree
-            (Local (Name "f"))
-            RefFree
-            (Local (Name "b"))
-            RefFree
-            (Local (Name "a")))],
-    moduleImports = [],
-    moduleExports =
-      [Name "a", Name "b", Name "f", Name "c"],
-    moduleReExports = fromList [],
-    moduleForeigns = [],
-    modulePath = "golden/Golden/TestUnbinding.purs",
-    dataTypes = fromList []}]
+[ Module
+  { moduleName = ModuleName "Golden.TestUnbinding", moduleBindings =
+    [ Standalone
+      ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) Abs ( AbsBinding ( ArgNamed ( Name "v1" ) ) Lit ( Integer 3 ) ) ) ), Standalone
+      ( Name "b", Lit ( Integer 2 ) ), Standalone
+      ( Name "a", Lit ( Integer 1 ) ), Standalone
+      ( Name "c", App App RefFree ( Local ( Name "f" ) ) RefFree ( Local ( Name "a" ) ) App App RefFree ( Local ( Name "f" ) ) RefFree ( Local ( Name "b" ) ) RefFree ( Local ( Name "a" ) ) )
+    ], moduleImports = [], moduleExports =
+    [ Name "a", Name "b", Name "f", Name "c" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestUnbinding.purs", dataTypes = fromList []
+  }
+]
