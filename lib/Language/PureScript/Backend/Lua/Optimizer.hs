@@ -25,7 +25,10 @@ import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prelude hiding (return)
 
 optimizeChunk :: Chunk -> Chunk
-optimizeChunk = inlineTopLevelLocalDefs . fmap optimizeStatement
+optimizeChunk = identity
+
+-- fmap optimizeStatement
+--   >>> inlineTopLevelLocalDefs
 
 inlineTopLevelLocalDefs :: Chunk -> Chunk
 inlineTopLevelLocalDefs = snd . foldr inlineTopLevelLocalDef mempty
@@ -88,9 +91,11 @@ pushDeclarationsDownTheInnerScope = \case
     , not (null declarations)
     , all isDeclaration declarations ->
         functionDef
-          outerArgs
+          (fmap unAnn outerArgs)
           [ return $
-              functionDef innerArgs (declarations <> fmap unAnn innerBody)
+              functionDef
+                (fmap unAnn innerArgs)
+                (declarations <> fmap unAnn innerBody)
           ]
   e -> e
  where

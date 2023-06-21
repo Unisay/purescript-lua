@@ -47,7 +47,7 @@ exp =
       )
     ,
       ( 5
-      , Gen.subtermM exp \e -> (`IR.abstraction` e) <$> argument
+      , Gen.subtermM exp \e -> (`IR.abstraction` e) <$> parameter
       )
     ,
       ( 6
@@ -56,17 +56,17 @@ exp =
       )
     ]
 
-binding :: MonadGen m => m IR.Binding
+binding :: MonadGen m => m (IR.Grouping (IR.Name, IR.Exp))
 binding = Gen.frequency [(8, standaloneBinding), (2, recursiveBinding)]
 
 namedExp :: MonadGen m => m (IR.Name, IR.Exp)
 namedExp = (,) <$> name <*> exp
 
-recursiveBinding :: MonadGen m => m IR.Binding
+recursiveBinding :: MonadGen m => m (IR.Grouping (IR.Name, IR.Exp))
 recursiveBinding =
   IR.RecursiveGroup <$> Gen.nonEmpty (Range.linear 1 5) namedExp
 
-standaloneBinding :: MonadGen m => m IR.Binding
+standaloneBinding :: MonadGen m => m (IR.Grouping (IR.Name, IR.Exp))
 standaloneBinding = IR.Standalone <$> namedExp
 
 nonRecursiveExp :: MonadGen m => m IR.Exp
@@ -83,7 +83,7 @@ nonRecursiveExp =
             <*> ctorName
             <*> Gen.list (Range.linear 0 10) fieldName
         )
-      , (3, IR.RefFree <$> qualified name)
+      , (3, IR.Ref <$> qualified name <*> pure 0)
       ]
 
 literalNonRecursiveExp :: MonadGen m => m IR.Exp
@@ -110,12 +110,11 @@ scalarLiteral =
     , IR.Floating <$> Gen.double (Range.exponentialFloat 0 1000000000000000000)
     ]
 
-argument :: MonadGen m => m IR.Argument
-argument =
+parameter :: MonadGen m => m IR.Parameter
+parameter =
   Gen.frequency
-    [ (1, pure IR.ArgUnused)
-    , (1, pure IR.ArgAnonymous)
-    , (8, IR.ArgNamed <$> name)
+    [ (1, pure IR.ParamUnused)
+    , (9, IR.ParamNamed <$> name)
     ]
 
 qualified :: MonadGen m => m a -> m (IR.Qualified a)
@@ -125,8 +124,8 @@ qualified q =
     , (2, IR.Imported <$> moduleName <*> q)
     ]
 
-refFreeLocal :: MonadGen m => m IR.Exp
-refFreeLocal = IR.refFreeLocal <$> name
+refLocal :: MonadGen m => m IR.Exp
+refLocal = flip IR.refLocal 0 <$> name
 
 moduleName :: MonadGen m => m IR.ModuleName
 moduleName = IR.ModuleName <$> Gen.element Corpus.colours

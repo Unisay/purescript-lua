@@ -6,6 +6,7 @@ import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
 import Language.PureScript.Backend.Lua.Name (Name, unsafeName)
 import Language.PureScript.Backend.Lua.Printer (printStatement)
+import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
@@ -70,6 +71,9 @@ name = do
 expression :: Gen Lua.Exp
 expression = Gen.recursiveFrequency nonRecursiveExpressions recursiveExpressions
 
+nonRecursiveExpression :: Gen Lua.Exp
+nonRecursiveExpression = Gen.frequency nonRecursiveExpressions
+
 nonRecursiveExpressions :: [(Int, Gen Lua.Exp)]
 nonRecursiveExpressions =
   [ (2, nil)
@@ -114,7 +118,12 @@ recursiveExpressions =
   ]
 
 function :: Gen Lua.Exp
-function = Lua.functionDef <$> Gen.list (Range.linear 0 5) name <*> chunk
+function =
+  Lua.functionDef
+    <$> Gen.list
+      (Range.linear 0 5)
+      (maybe ParamUnused ParamNamed <$> Gen.maybe name)
+    <*> chunk
 
 unOp :: Gen Lua.Exp
 unOp = Lua.unOp <$> Gen.enumBounded <*> expression

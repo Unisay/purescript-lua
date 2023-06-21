@@ -1,3 +1,4 @@
+local Golden_TestValues_I_f = function() return true end
 local Golden_TestCaseStatements_I_J = function(value0)
   return { ["$ctor"] = "Golden_TestCaseStatements.J", value0 = value0 }
 end
@@ -5,58 +6,60 @@ local Golden_TestCaseStatements_I_N = function()
   return { ["$ctor"] = "Golden_TestCaseStatements.N" }
 end
 local Golden_TestCaseStatements_I_multipleGuards = 1
-local Golden_TestCaseStatements_I_d = function(m0)
-  return function(n1)
-    return function(x2)
-      local v3 = function(v15) if "y" == x2 then return 0 else return 1 end end
+local Golden_TestCaseStatements_I_d = function(m)
+  return function(n)
+    return function(x)
       return (function()
-        if "x" == x2 then
-          return (function()
-            if "Golden.TestCaseStatements.J" == m0["$ctor"] then
-              return (function()
+        local v = function()
+          return (function() if "y" == x then return 0 else return 1 end end)()
+        end
+        return (function()
+          if "x" == x then
+            return (function()
+              if "Golden.TestCaseStatements.J" == m["$ctor"] then
                 return (function()
-                  if "Golden.TestCaseStatements.N" == n1["$ctor"] then
-                    return m0[0]
+                  if "Golden.TestCaseStatements.N" == n["$ctor"] then
+                    return m[0]
                   else
-                    return v3(true)
+                    return v(true)
                   end
                 end)()
-              end)()
-            else
-              return v3(true)
-            end
-          end)()
-        else
-          return v3(true)
-        end
+              else
+                return v(true)
+              end
+            end)()
+          else
+            return v(true)
+          end
+        end)()
       end)()
     end
   end
 end
+local Golden_TestCaseStatements_I_b = "b"
+local Golden_TestCaseStatements_I_a = 1
 local Golden_TestCaseStatements_I_c = (function()
-  local v6 = function(v19)
-    if 2 == 1 then
-      return (function()
-        if (function(v0) return true end)(0) then
-          return 10
-        else
-          return (function()
-            if 3 == 1 then
-              return (function()
+  local v = function()
+    return (function()
+      if 2 == Golden_TestCaseStatements_I_a then
+        return (function()
+          if Golden_TestValues_I_f(0) then
+            return 10
+          else
+            return (function()
+              if 3 == Golden_TestCaseStatements_I_a then
                 return (function()
-                  if (function(v0) return true end)(1) then
-                    return 1
+                  if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                    return Golden_TestCaseStatements_I_a
                   else
                     return (function()
-                      if 4 == 1 then
+                      if 4 == Golden_TestCaseStatements_I_a then
                         return (function()
-                          return (function()
-                            if (function(v0) return true end)(1) then
-                              return 1
-                            else
-                              return 0
-                            end
-                          end)()
+                          if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                            return Golden_TestCaseStatements_I_a
+                          else
+                            return 0
+                          end
                         end)()
                       else
                         return 0
@@ -64,45 +67,39 @@ local Golden_TestCaseStatements_I_c = (function()
                     end)()
                   end
                 end)()
-              end)()
-            else
-              return (function()
-                if 4 == 1 then
-                  return (function()
+              else
+                return (function()
+                  if 4 == Golden_TestCaseStatements_I_a then
                     return (function()
-                      if (function(v0) return true end)(1) then
-                        return 1
+                      if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                        return Golden_TestCaseStatements_I_a
                       else
                         return 0
                       end
                     end)()
-                  end)()
-                else
-                  return 0
-                end
-              end)()
-            end
-          end)()
-        end
-      end)()
-    else
-      return (function()
-        if 3 == 1 then
-          return (function()
+                  else
+                    return 0
+                  end
+                end)()
+              end
+            end)()
+          end
+        end)()
+      else
+        return (function()
+          if 3 == Golden_TestCaseStatements_I_a then
             return (function()
-              if (function(v0) return true end)(1) then
-                return 1
+              if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                return Golden_TestCaseStatements_I_a
               else
                 return (function()
-                  if 4 == 1 then
+                  if 4 == Golden_TestCaseStatements_I_a then
                     return (function()
-                      return (function()
-                        if (function(v0) return true end)(1) then
-                          return 1
-                        else
-                          return 0
-                        end
-                      end)()
+                      if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                        return Golden_TestCaseStatements_I_a
+                      else
+                        return 0
+                      end
                     end)()
                   else
                     return 0
@@ -110,54 +107,48 @@ local Golden_TestCaseStatements_I_c = (function()
                 end)()
               end
             end)()
-          end)()
-        else
-          return (function()
-            if 4 == 1 then
-              return (function()
+          else
+            return (function()
+              if 4 == Golden_TestCaseStatements_I_a then
                 return (function()
-                  if (function(v0) return true end)(1) then
-                    return 1
+                  if Golden_TestValues_I_f(Golden_TestCaseStatements_I_a) then
+                    return Golden_TestCaseStatements_I_a
                   else
                     return 0
                   end
                 end)()
-              end)()
-            else
-              return 0
-            end
-          end)()
-        end
-      end)()
-    end
-  end
-  return (function()
-    if 1 == 1 then
-      return (function()
-        if "b" == "b" then
-          return (function()
-            return (function()
-              if true == (function(v0) return true end)(2) then
-                return (function()
-                  return (function()
-                    if true == (function(v0) return true end)(1) then
-                      return 42
-                    else
-                      return v6(true)
-                    end
-                  end)()
-                end)()
               else
-                return v6(true)
+                return 0
               end
             end)()
+          end
+        end)()
+      end
+    end)()
+  end
+  return (function()
+    if 1 == Golden_TestCaseStatements_I_a then
+      return (function()
+        if "b" == Golden_TestCaseStatements_I_b then
+          return (function()
+            if true == Golden_TestValues_I_f(2) then
+              return (function()
+                if true == Golden_TestValues_I_f(1) then
+                  return 42
+                else
+                  return v(true)
+                end
+              end)()
+            else
+              return v(true)
+            end
           end)()
         else
-          return v6(true)
+          return v(true)
         end
       end)()
     else
-      return v6(true)
+      return v(true)
     end
   end)()
 end)()

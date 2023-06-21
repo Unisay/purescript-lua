@@ -3,38 +3,46 @@ module Language.PureScript.Backend.IR.Optimizer where
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.DCE qualified as DCE
+import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Types
   ( Exp (..)
   , ExpF (..)
-  , FreshNames
   , Grouping (..)
   , Info (..)
-  , LetBinding (..)
   , Literal (..)
-  , LocallyNameless (..)
-  , Module (moduleBindings, moduleImports)
   , ModuleName (..)
   , Name
-  , bindingNames
-  , countBoundRefs
-  , everywhereTopDownExpM
-  , findOffset
+  , PrimOp (..)
+  , Qualified (..)
+  , RewriteMod (..)
+  , RewriteRule
+  , Rewritten (..)
+  , boolean
+  , countFreeRefs
+  , expInfo
+  , isScalar
+  , lets
   , listGrouping
-  , qualified
+  , rewriteExpTopDown
   , subst
-  , wrapExpF
+  , thenRewrite
+  , unExp
   )
 
-optimizeAll :: FreshNames m => DCE.Strategy -> [Module] -> m [Module]
-optimizeAll dceStrategy modules =
-  DCE.eliminateDeadCode dceStrategy <$> traverse optimizeModule modules
+optimizeUberModule :: DCE.EntryPoint -> UberModule -> UberModule
+optimizeUberModule dceStrategy =
+  idempotently $ DCE.eliminateDeadCode dceStrategy . optimizeModule
 
-optimizeModule :: FreshNames m => Module -> m Module
-optimizeModule m = do
-  moduleBindings <- optimizeDecls (moduleBindings m)
-  pure m {moduleImports = moduleImports', moduleBindings}
- where
-  moduleImports' = moduleImports m
+idempotently :: Eq a => (a -> a) -> a -> a
+idempotently = fix $ \i f a ->
+  let a' = f a
+   in if a' == a
+        then a
+        else i f a'
+
+optimizeModule :: UberModule -> UberModule
+optimizeModule m =
+  m {uberModuleBindings = optimizeDecls (uberModuleBindings m)}
 
 optimizeImports :: [ModuleName] -> [Grouping (name, Exp)] -> [ModuleName]
 optimizeImports imports bindings =
@@ -46,75 +54,75 @@ groupingsExprs :: [Grouping (name, exp)] -> [exp]
 groupingsExprs groupings = [e | g <- groupings, (_name, e) <- listGrouping g]
 
 collectImportedModules :: Exp -> Set ModuleName
-collectImportedModules Exp {expInfo = Info {refsFree}} =
-  Map.keys refsFree
-    & foldMap (qualified mempty \modname _ -> Set.singleton modname)
+collectImportedModules expr =
+  Map.keys (refsFree (expInfo expr)) & foldMap \case
+    Local _ -> Set.empty
+    Imported modname _ -> Set.singleton modname
 
-optimizeDecls
-  :: FreshNames m => [Grouping (name, Exp)] -> m [Grouping (name, Exp)]
-optimizeDecls = (traverse . traverse . traverse) optimizeExpression
+optimizeDecls :: [Grouping (name, Exp)] -> [Grouping (name, Exp)]
+optimizeDecls = (fmap . fmap . fmap) optimizeExpression
 
-type RewriteRule m = Exp -> m Exp
-
-optimizeExpression :: FreshNames m => Exp -> m Exp
+optimizeExpression :: Exp -> Exp
 optimizeExpression =
-  everywhereTopDownExpM $
-    inlineBindings
-      <=< removeUnreachableElseBranch
-      <=< removeUnreachableThenBranch
+  rewriteExpTopDown $
+    constantFolding
+      `thenRewrite` removeUnreachableThenBranch
+      `thenRewrite` removeUnreachableElseBranch
+      `thenRewrite` inlineBindings
 
-removeUnreachableThenBranch :: Applicative m => RewriteRule m
-removeUnreachableThenBranch e = pure case unExp e of
-  IfThenElse (Exp (Lit (Boolean False)) _info) _unreachable elseBranch ->
-    elseBranch
-  _ -> e
+constantFolding :: RewriteRule
+constantFolding e =
+  pure case unExp e of
+    Prim (Eq (unExp -> Lit a) (unExp -> Lit b))
+      | isScalar a ->
+          Rewritten Stop $ boolean $ a == b
+    _ -> NoChange
 
-removeUnreachableElseBranch :: Applicative m => RewriteRule m
+removeUnreachableThenBranch :: RewriteRule
+removeUnreachableThenBranch e =
+  pure case unExp e of
+    IfThenElse (unExp -> Lit (Boolean False)) _unreachable elseBranch ->
+      Rewritten Recurse elseBranch
+    _ -> NoChange
+
+removeUnreachableElseBranch :: RewriteRule
 removeUnreachableElseBranch e = pure case unExp e of
-  IfThenElse (Exp (Lit (Boolean True)) _info) thenBranch _unreachable ->
-    thenBranch
-  _ -> e
+  IfThenElse (unExp -> Lit (Boolean True)) thenBranch _unreachable ->
+    Rewritten Recurse thenBranch
+  _ -> NoChange
 
 -- Inlining is a tricky business:
 -- https://www.microsoft.com/en-us/research/wp-content/uploads/2002/07/inline.pdf
 
-inlineBindings :: FreshNames m => RewriteRule m
-inlineBindings e =
-  case unExp e of
-    Let (LetBinding groupings body) -> do
-      let names = toList groupings >>= bindingNames
-      pure . wrapExpF . Let . LetBinding groupings $
-        foldr (inlineBinding names) body groupings
-    _ -> pure e
+inlineBindings :: RewriteRule
+inlineBindings = \case
+  Exp {unExp = Let groupings body} -> do
+    pure . Rewritten Recurse . lets groupings $ foldr inlineBinding body groupings
+  _ -> pure NoChange
 
-inlineBinding
-  :: [Name]
-  -> Grouping (Name, LocallyNameless Exp)
-  -> LocallyNameless Exp
-  -> LocallyNameless Exp
-inlineBinding names grouping body =
+inlineBinding :: Grouping (Name, Exp) -> Exp -> Exp
+inlineBinding grouping body =
   case grouping of
-    Standalone (name, replacement@(LocallyNameless inlinee))
-      | Just offset <- names `findOffset` name
-      , isRef inlinee
-          || isNonRecursiveLiteral inlinee
-          || countBoundRefs body offset == 1 ->
-          subst body offset replacement
-    _ -> body
- where
-  isRef :: Exp -> Bool
-  isRef =
-    unExp >>> \case
-      RefFree {} -> True
-      RefBound {} -> True
-      _ -> False
+    RecursiveGroup _grp -> body -- TODO: inline recursive bindings
+    Standalone (name, inlinee) ->
+      if isRef inlinee
+        || isNonRecursiveLiteral inlinee
+        || countFreeRefs (Local name) body == 1
+        then subst body (Local name) inlinee
+        else body
 
-  isNonRecursiveLiteral :: Exp -> Bool
-  isNonRecursiveLiteral =
-    unExp >>> \case
-      Lit Integer {} -> True
-      Lit Floating {} -> True
-      Lit String {} -> True
-      Lit Char {} -> True
-      Lit Boolean {} -> True
-      _ -> False
+isRef :: Exp -> Bool
+isRef =
+  unExp >>> \case
+    Ref {} -> True
+    _ -> False
+
+isNonRecursiveLiteral :: Exp -> Bool
+isNonRecursiveLiteral =
+  unExp >>> \case
+    Lit Integer {} -> True
+    Lit Floating {} -> True
+    Lit String {} -> True
+    Lit Char {} -> True
+    Lit Boolean {} -> True
+    _ -> False

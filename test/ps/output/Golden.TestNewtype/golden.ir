@@ -1,10 +1,24 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestNewtype", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "NT", Abs ( AbsBinding ( ArgNamed ( Name "x" ) ) RefBound ( Index { level = 0, offset = 0 } ) ) ), Standalone
-      ( Name "g", RefFree ( Local ( Name "NT" ) ) ), Standalone
-      ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) Let ( LetBinding ( Standalone ( Name "n", RefBound ( Index { level = 1, offset = 0 } ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "foo" ) ) ) )
-    ], moduleImports = [], moduleExports =
-    [ Name "NT", Name "f", Name "g" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestNewtype.purs", dataTypes = fromList []
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestNewtype", qnameName = Name "NT" }, Abs
+        ( ParamNamed ( Name "x" ) )
+        ( Ref ( Local ( Name "x" ) ) ( 0 ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestNewtype", qnameName = Name "g" }, Ref
+        ( Imported ( ModuleName "Golden.TestNewtype" ) ( Name "NT" ) ) ( 0 )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestNewtype", qnameName = Name "f" }, Abs
+        ( ParamNamed ( Name "v" ) )
+        ( ObjectProp ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( PropName "foo" ) )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( ModuleName "Golden.TestNewtype", Name "NT" ),
+      ( ModuleName "Golden.TestNewtype", Name "f" ),
+      ( ModuleName "Golden.TestNewtype", Name "g" )
+    ]
   }
-]

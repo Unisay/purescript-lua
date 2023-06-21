@@ -1,88 +1,122 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestRecursiveBindings", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "whereRec", Let
-        ( LetBinding
-          ( RecursiveGroup
-            (
-              ( Name "yes", Abs
-                ( AbsBinding
-                  ( ArgNamed ( Name "v" ) ) IfThenElse Prim
-                  ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean False ) IfThenElse Prim
-                  ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean True ) Exception "No patterns matched"
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecursiveBindings", qnameName = Name "whereRec"
+        }, Let
+        ( RecursiveGroup
+          (
+            ( Name "yes", Abs
+              ( ParamNamed ( Name "v" ) )
+              ( IfThenElse
+                ( Prim ( Eq ( Lit ( Boolean True ) ) ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ) )
+                ( App ( Ref ( Local ( Name "no" ) ) ( 0 ) ) ( Lit ( Boolean False ) ) )
+                ( IfThenElse
+                  ( Prim ( Eq ( Lit ( Boolean False ) ) ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ) )
+                  ( App ( Ref ( Local ( Name "no" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
+                  ( Exception ( "No patterns matched" ) )
                 )
-              ) :|
-              [
-                ( Name "no", Abs
-                  ( AbsBinding
-                    ( ArgNamed ( Name "v" ) ) IfThenElse Prim
-                    ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean False ) IfThenElse Prim
-                    ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean True ) Exception "No patterns matched"
+              )
+            ) :|
+            [
+              ( Name "no", Abs
+                ( ParamNamed ( Name "v" ) )
+                ( IfThenElse
+                  ( Prim ( Eq ( Lit ( Boolean True ) ) ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ) )
+                  ( App ( Ref ( Local ( Name "yes" ) ) ( 0 ) ) ( Lit ( Boolean False ) ) )
+                  ( IfThenElse
+                    ( Prim ( Eq ( Lit ( Boolean False ) ) ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ) )
+                    ( App ( Ref ( Local ( Name "yes" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
+                    ( Exception ( "No patterns matched" ) )
                   )
                 )
-              ]
-            ) :| []
-          ) App RefBound
-          ( Index { level = 0, offset = 1 } ) Lit ( Boolean False )
-        )
-      ), Standalone
-      ( Name "letRecMixed", Let
-        ( LetBinding
-          ( Standalone
-            ( Name "z", Lit ( Integer 1 ) ) :|
-            [ RecursiveGroup
-              (
-                ( Name "b", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) App RefBound ( Index { level = 1, offset = 2 } ) RefBound ( Index { level = 1, offset = 0 } ) ) ) :|
-                [ ( Name "a", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) App RefBound ( Index { level = 1, offset = 1 } ) RefBound ( Index { level = 1, offset = 0 } ) ) ) ]
-              ), Standalone
-              ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) Abs ( AbsBinding ( ArgNamed ( Name "k" ) ) App RefBound ( Index { level = 2, offset = 2 } ) RefBound ( Index { level = 0, offset = 0 } ) ) ) ), Standalone
-              ( Name "y", App App RefBound ( Index { level = 0, offset = 3 } ) RefBound ( Index { level = 0, offset = 0 } ) RefBound ( Index { level = 0, offset = 0 } ) ), Standalone
-              ( Name "x", App App RefBound ( Index { level = 0, offset = 3 } ) RefBound ( Index { level = 0, offset = 4 } ) RefBound ( Index { level = 0, offset = 4 } ) )
+              )
             ]
-          ) App App RefBound
-          ( Index { level = 0, offset = 3 } ) App App RefBound
-          ( Index { level = 0, offset = 3 } ) RefBound
-          ( Index { level = 0, offset = 4 } ) RefBound
-          ( Index { level = 0, offset = 4 } ) App App RefBound
-          ( Index { level = 0, offset = 3 } ) RefBound
-          ( Index { level = 0, offset = 4 } ) Lit
-          ( Integer 0 )
+          ) :| []
         )
+        ( App ( Ref ( Local ( Name "no" ) ) ( 0 ) ) ( Lit ( Boolean False ) ) )
       ), Standalone
-      ( Name "letRec", Let
-        ( LetBinding
-          ( RecursiveGroup
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecursiveBindings", qnameName = Name "letRecMixed"
+        }, Let
+        ( Standalone
+          ( Name "z", Lit ( Integer 1 ) ) :|
+          [ RecursiveGroup
             (
-              ( Name "yes", Abs
-                ( AbsBinding
-                  ( ArgNamed ( Name "v" ) ) IfThenElse Prim
-                  ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean False ) IfThenElse Prim
-                  ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean True ) Exception "No patterns matched"
-                )
+              ( Name "b", Abs ( ParamUnused )
+                ( App ( Ref ( Local ( Name "a" ) ) ( 0 ) ) ( Ref ( Local ( Name "z" ) ) ( 0 ) ) )
               ) :|
               [
-                ( Name "no", Abs
-                  ( AbsBinding
-                    ( ArgNamed ( Name "v" ) ) IfThenElse Prim
-                    ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean False ) IfThenElse Prim
-                    ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean True ) Exception "No patterns matched"
-                  )
+                ( Name "a", Abs ( ParamUnused )
+                  ( App ( Ref ( Local ( Name "b" ) ) ( 0 ) ) ( Ref ( Local ( Name "z" ) ) ( 0 ) ) )
                 )
               ]
-            ) :| []
-          ) App RefBound
-          ( Index { level = 0, offset = 1 } ) Lit ( Boolean False )
+            ), Standalone
+            ( Name "f", Abs ( ParamUnused )
+              ( Abs
+                ( ParamNamed ( Name "k" ) )
+                ( App ( Ref ( Local ( Name "a" ) ) ( 0 ) ) ( Ref ( Local ( Name "k" ) ) ( 0 ) ) )
+              )
+            ), Standalone
+            ( Name "y", App
+              ( App ( Ref ( Local ( Name "f" ) ) ( 0 ) ) ( Ref ( Local ( Name "z" ) ) ( 0 ) ) )
+              ( Ref ( Local ( Name "z" ) ) ( 0 ) )
+            )
+          ]
         )
+        ( App
+          ( App
+            ( Ref ( Local ( Name "f" ) ) ( 0 ) )
+            ( App
+              ( App ( Ref ( Local ( Name "f" ) ) ( 0 ) ) ( Ref ( Local ( Name "y" ) ) ( 0 ) ) )
+              ( Ref ( Local ( Name "y" ) ) ( 0 ) )
+            )
+          )
+          ( App
+            ( App ( Ref ( Local ( Name "f" ) ) ( 0 ) ) ( Ref ( Local ( Name "y" ) ) ( 0 ) ) )
+            ( Lit ( Integer 0 ) )
+          )
+        )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecursiveBindings", qnameName = Name "letRec"
+        }, Let
+        ( RecursiveGroup
+          (
+            ( Name "yes", Abs
+              ( ParamNamed ( Name "v" ) )
+              ( IfThenElse
+                ( Prim ( Eq ( Lit ( Boolean True ) ) ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ) )
+                ( App ( Ref ( Local ( Name "no" ) ) ( 0 ) ) ( Lit ( Boolean False ) ) )
+                ( IfThenElse
+                  ( Prim ( Eq ( Lit ( Boolean False ) ) ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ) )
+                  ( App ( Ref ( Local ( Name "no" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
+                  ( Exception ( "No patterns matched" ) )
+                )
+              )
+            ) :|
+            [
+              ( Name "no", Abs
+                ( ParamNamed ( Name "v" ) )
+                ( IfThenElse
+                  ( Prim ( Eq ( Lit ( Boolean True ) ) ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ) )
+                  ( App ( Ref ( Local ( Name "yes" ) ) ( 0 ) ) ( Lit ( Boolean False ) ) )
+                  ( IfThenElse
+                    ( Prim ( Eq ( Lit ( Boolean False ) ) ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ) )
+                    ( App ( Ref ( Local ( Name "yes" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
+                    ( Exception ( "No patterns matched" ) )
+                  )
+                )
+              )
+            ]
+          ) :| []
+        )
+        ( App ( Ref ( Local ( Name "no" ) ) ( 0 ) ) ( Lit ( Boolean False ) ) )
       )
-    ], moduleImports = [], moduleExports =
-    [ Name "letRec", Name "whereRec", Name "letRecMixed" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestRecursiveBindings.purs", dataTypes = fromList []
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( ModuleName "Golden.TestRecursiveBindings", Name "letRec" ),
+      ( ModuleName "Golden.TestRecursiveBindings", Name "whereRec" ),
+      ( ModuleName "Golden.TestRecursiveBindings", Name "letRecMixed" )
+    ]
   }
-]

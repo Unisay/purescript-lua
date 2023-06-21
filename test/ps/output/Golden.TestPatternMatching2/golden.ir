@@ -1,32 +1,113 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestPatternMatching2", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "Zero", Ctor SumType ( TyName "N" ) ( CtorName "Zero" ) [] ), Standalone
-      ( Name "Succ", Ctor SumType ( TyName "N" ) ( CtorName "Succ" ) [ FieldName "value0" ] ), Standalone
-      ( Name "Add", Ctor SumType ( TyName "N" ) ( CtorName "Add" ) [ FieldName "value0", FieldName "value1" ] ), Standalone
-      ( Name "Mul", Ctor SumType ( TyName "N" ) ( CtorName "Mul" ) [ FieldName "value0", FieldName "value1" ] ), Standalone
-      ( Name "pat", Abs
-        ( AbsBinding
-          ( ArgNamed ( Name "e" ) ) IfThenElse Prim
-          ( Eq Lit ( String "Golden.TestPatternMatching2.Add" ) Prim ( ReflectCtor RefBound ( Index { level = 0, offset = 0 } ) ) ) IfThenElse Prim
-          ( Eq Lit ( String "Golden.TestPatternMatching2.Zero" ) Prim ( ReflectCtor ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 1 ) ) IfThenElse Prim
-          ( Eq Lit ( String "Golden.TestPatternMatching2.Add" ) Prim ( ReflectCtor ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 0 ) ) Lit
-          ( Integer 1 ) IfThenElse Prim
-          ( Eq Lit ( String "Golden.TestPatternMatching2.Mul" ) Prim ( ReflectCtor ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 0 ) ) Lit
-          ( Integer 2 ) Lit
-          ( Integer 5 ) IfThenElse Prim
-          ( Eq Lit ( String "Golden.TestPatternMatching2.Mul" ) Prim ( ReflectCtor ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 1 ) ) Lit
-          ( Integer 3 ) IfThenElse Prim
-          ( Eq Lit ( String "Golden.TestPatternMatching2.Add" ) Prim ( ReflectCtor ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 1 ) ) Lit
-          ( Integer 4 ) IfThenElse Prim
-          ( Eq Lit ( String "Golden.TestPatternMatching2.Zero" ) Prim ( ReflectCtor ArrayIndex RefBound ( Index { level = 0, offset = 0 } ) 1 ) ) Lit
-          ( Integer 5 ) Lit
-          ( Integer 6 ) Lit
-          ( Integer 6 )
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "Zero"
+        }, Ctor ( SumType )
+        ( TyName "N" )
+        ( CtorName "Zero" ) ( [] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "Succ"
+        }, Ctor ( SumType )
+        ( TyName "N" )
+        ( CtorName "Succ" )
+        ( [ FieldName "value0" ] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "Add"
+        }, Ctor ( SumType )
+        ( TyName "N" )
+        ( CtorName "Add" )
+        ( [ FieldName "value0", FieldName "value1" ] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "Mul"
+        }, Ctor ( SumType )
+        ( TyName "N" )
+        ( CtorName "Mul" )
+        ( [ FieldName "value0", FieldName "value1" ] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "pat" }, Abs
+        ( ParamNamed ( Name "e" ) )
+        ( IfThenElse
+          ( Prim
+            ( Eq
+              ( Lit ( String "Golden.TestPatternMatching2.Add" ) )
+              ( Prim ( ReflectCtor ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ) )
+            )
+          )
+          ( IfThenElse
+            ( Prim
+              ( Eq
+                ( Lit ( String "Golden.TestPatternMatching2.Zero" ) )
+                ( Prim ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 1 ) ) ) )
+              )
+            )
+            ( IfThenElse
+              ( Prim
+                ( Eq
+                  ( Lit ( String "Golden.TestPatternMatching2.Add" ) )
+                  ( Prim ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) ) )
+                )
+              )
+              ( Lit ( Integer 1 ) )
+              ( IfThenElse
+                ( Prim
+                  ( Eq
+                    ( Lit ( String "Golden.TestPatternMatching2.Mul" ) )
+                    ( Prim
+                      ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) )
+                    )
+                  )
+                )
+                ( Lit ( Integer 2 ) )
+                ( Lit ( Integer 5 ) )
+              )
+            )
+            ( IfThenElse
+              ( Prim
+                ( Eq
+                  ( Lit ( String "Golden.TestPatternMatching2.Mul" ) )
+                  ( Prim ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 1 ) ) ) )
+                )
+              )
+              ( Lit ( Integer 3 ) )
+              ( IfThenElse
+                ( Prim
+                  ( Eq
+                    ( Lit ( String "Golden.TestPatternMatching2.Add" ) )
+                    ( Prim
+                      ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 1 ) ) )
+                    )
+                  )
+                )
+                ( Lit ( Integer 4 ) )
+                ( IfThenElse
+                  ( Prim
+                    ( Eq
+                      ( Lit ( String "Golden.TestPatternMatching2.Zero" ) )
+                      ( Prim
+                        ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 1 ) ) )
+                      )
+                    )
+                  )
+                  ( Lit ( Integer 5 ) )
+                  ( Lit ( Integer 6 ) )
+                )
+              )
+            )
+          )
+          ( Lit ( Integer 6 ) )
         )
       )
-    ], moduleImports = [], moduleExports =
-    [ Name "Zero", Name "Succ", Name "Add", Name "Mul", Name "pat" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestPatternMatching2.purs", dataTypes = fromList
-    [ ( TyName "N", ( SumType, fromList [ ( CtorName "Add", [ FieldName "value0", FieldName "value1" ] ), ( CtorName "Mul", [ FieldName "value0", FieldName "value1" ] ), ( CtorName "Succ", [ FieldName "value0" ] ), ( CtorName "Zero", [] ) ] ) ) ]
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( ModuleName "Golden.TestPatternMatching2", Name "Zero" ),
+      ( ModuleName "Golden.TestPatternMatching2", Name "Succ" ),
+      ( ModuleName "Golden.TestPatternMatching2", Name "Add" ),
+      ( ModuleName "Golden.TestPatternMatching2", Name "Mul" ),
+      ( ModuleName "Golden.TestPatternMatching2", Name "pat" )
+    ]
   }
-]

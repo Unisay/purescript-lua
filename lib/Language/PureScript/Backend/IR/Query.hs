@@ -1,28 +1,47 @@
 module Language.PureScript.Backend.IR.Query where
 
 import Data.Map qualified as Map
+import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Types
-  ( Exp (..)
+  ( Exp
   , Info (..)
   , Module (..)
   , ModuleName (..)
   , Name (..)
-  , Qualified (Local)
+  , Qualified (..)
   , bindingExprs
-  , qualifiedByModule
+  , expInfo
+  , listGrouping
   )
 
 usesRuntimeLazy :: Module -> Bool
 usesRuntimeLazy Module {moduleBindings = bs} =
   getAny $ foldMap (foldMap (Any . findRuntimeLazyInExpr) . bindingExprs) bs
- where
-  findRuntimeLazyInExpr Exp {expInfo = Info {refsFree}} =
-    Local (Name "$__runtime_lazy") `Map.member` refsFree
+
+usesRuntimeLazyUber :: UberModule -> Bool
+usesRuntimeLazyUber UberModule {uberModuleBindings = bs} =
+  getAny $
+    foldMap
+      (foldMap (\(_qname, e) -> Any (findRuntimeLazyInExpr e)) . listGrouping)
+      bs
+
+findRuntimeLazyInExpr :: Exp -> Bool
+findRuntimeLazyInExpr expr =
+  Local (Name "$__runtime_lazy") `Map.member` refsFree (expInfo expr)
 
 usesPrimModule :: Module -> Bool
 usesPrimModule Module {moduleBindings = bs} =
   getAny $ foldMap (foldMap (Any . findPrimModuleInExpr) . bindingExprs) bs
- where
-  findPrimModuleInExpr Exp {expInfo = Info {refsFree}} =
-    Map.keys refsFree
-      & any (qualifiedByModule >>> (== Just (ModuleName "Prim")))
+
+usesPrimModuleUber :: UberModule -> Bool
+usesPrimModuleUber UberModule {uberModuleBindings = bs} =
+  getAny $
+    foldMap
+      (foldMap (\(_qname, e) -> Any (findPrimModuleInExpr e)) . listGrouping)
+      bs
+
+findPrimModuleInExpr :: Exp -> Bool
+findPrimModuleInExpr expr =
+  Map.keys (refsFree (expInfo expr)) & any \case
+    Local _name -> False
+    Imported (ModuleName moduleName) _name -> moduleName == "Prim"

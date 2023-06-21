@@ -1,9 +1,24 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestCurrying", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "i" ) ) Abs ( AbsBinding ( ArgNamed ( Name "b" ) ) Abs ( AbsBinding ( ArgNamed ( Name "c" ) ) Abs ( AbsBinding ( ArgNamed ( Name "d" ) ) Lit ( String "ok" ) ) ) ) ) ), Standalone
-      ( Name "apply", Abs ( AbsBinding ( ArgNamed ( Name "f1" ) ) Abs ( AbsBinding ( ArgNamed ( Name "x" ) ) App RefBound ( Index { level = 1, offset = 0 } ) RefBound ( Index { level = 0, offset = 0 } ) ) ) )
-    ], moduleImports = [], moduleExports =
-    [ Name "apply", Name "f" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestCurrying.purs", dataTypes = fromList []
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestCurrying", qnameName = Name "f"
+        }, Abs ( ParamUnused )
+        ( Abs ( ParamUnused )
+          ( Abs ( ParamUnused ) ( Abs ( ParamUnused ) ( Lit ( String "ok" ) ) ) )
+        )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestCurrying", qnameName = Name "apply" }, Abs
+        ( ParamNamed ( Name "f1" ) )
+        ( Abs
+          ( ParamNamed ( Name "x" ) )
+          ( App ( Ref ( Local ( Name "f1" ) ) ( 0 ) ) ( Ref ( Local ( Name "x" ) ) ( 0 ) ) )
+        )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( ModuleName "Golden.TestCurrying", Name "apply" ),
+      ( ModuleName "Golden.TestCurrying", Name "f" )
+    ]
   }
-]

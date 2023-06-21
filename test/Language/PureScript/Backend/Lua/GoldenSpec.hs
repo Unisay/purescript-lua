@@ -6,16 +6,21 @@ module Language.PureScript.Backend.Lua.GoldenSpec where
 import Control.Monad.Catch (MonadMask)
 import Control.Monad.Oops qualified as Oops
 import Data.List qualified as List
-import Data.List.NonEmpty qualified as NE
 import Data.String qualified as String
 import Data.Tagged (Tagged (..))
 import Data.Text qualified as Text
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.DCE qualified as DCE
-import Language.PureScript.Backend.IR.Optimizer (optimizeAll)
+import Language.PureScript.Backend.IR.Linker (LinkMode (..))
+import Language.PureScript.Backend.IR.Linker qualified as IR
+import Language.PureScript.Backend.IR.Linker qualified as Linker
+import Language.PureScript.Backend.IR.Optimizer (optimizeUberModule)
 import Language.PureScript.Backend.IR.Query qualified as Query
 import Language.PureScript.Backend.Lua qualified as Lua
-import Language.PureScript.Backend.Lua.DeadCodeEliminator (DceMode (PreserveTopLevel), eliminateDeadCode)
+import Language.PureScript.Backend.Lua.DeadCodeEliminator
+  ( DceMode (PreserveTopLevel)
+  , eliminateDeadCode
+  )
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
@@ -65,7 +70,11 @@ import Test.Hspec
   )
 import Test.Hspec.Extra (annotatingWith)
 import Test.Hspec.Golden (defaultGolden)
-import Text.Pretty.Simple (OutputOptions (..), defaultOutputOptionsNoColor, pShowOpt)
+import Text.Pretty.Simple
+  ( OutputOptions (..)
+  , defaultOutputOptionsNoColor
+  , pShowOpt
+  )
 
 spec :: Spec
 spec = do
@@ -77,6 +86,7 @@ spec = do
               String.unwords ["spago", "build", "-u", "'-g corefn'"]
           exitCode `shouldBe` ExitSuccess
         psOutputPath = $(mkRelDir "test/ps/output/")
+
     describe "compiles corefn files to lua" $ beforeAll_ compilePs do
       runIO $ ensureDir psOutputPath
       corefns <- runIO $ collectGoldenCorefns psOutputPath
@@ -96,15 +106,15 @@ spec = do
           toFilePath <$> makeRelativeToCurrentDir irGolden
         it irTestName do
           defaultGolden irGolden (Just irActual) do
-            irOutput <- compileCorefn (Tagged (Rel psOutputPath)) moduleName
+            uberModule <- compileCorefn (Tagged (Rel psOutputPath)) moduleName
             pure . toStrict $
               pShowOpt
                 defaultOutputOptionsNoColor
                   { outputOptionsIndentAmount = 2
-                  , outputOptionsPageWidth = 256
+                  , outputOptionsPageWidth = 100
                   , outputOptionsCompact = True
                   }
-                irOutput
+                uberModule
         -- lua golden
         let luaGolden = modulePath </> $(mkRelFile "golden.lua")
         let luaActual = modulePath </> $(mkRelFile "actual.lua")
@@ -112,8 +122,8 @@ spec = do
           toFilePath <$> makeRelativeToCurrentDir luaGolden
         it luaTestName do
           defaultGolden luaGolden (Just luaActual) do
-            modules <- compileCorefn (Tagged (Rel psOutputPath)) moduleName
-            compileIr modules
+            uberModule <- compileCorefn (Tagged (Rel psOutputPath)) moduleName
+            compileIr uberModule
 
     describe "golden files should typecheck" do
       luas <- runIO do collectLuas psOutputPath
@@ -163,7 +173,7 @@ compileCorefn
    . (MonadIO m, MonadFail m)
   => Tagged "output" (SomeBase Dir)
   -> PS.ModuleName
-  -> m [IR.Module]
+  -> m IR.UberModule
 compileCorefn outputDir moduleName = do
   cfnModules <-
     CoreFn.readModuleRecursively outputDir moduleName
@@ -172,28 +182,27 @@ compileCorefn outputDir moduleName = do
       & Oops.runOops
       & liftIO
 
-  let irModuleName = IR.mkModuleName moduleName
+  let uberModuleName = IR.mkModuleName moduleName
   modules <-
     forM (toList cfnModules) $
       either (fail . show) (pure . snd) . IR.mkModule
-  pure do
-    let entry = DCE.EntryPointsSomeModules (NE.singleton irModuleName)
-    evalState (optimizeAll entry modules) (0 :: Natural)
+  let uberModule = Linker.makeUberModule (LinkAsModule uberModuleName) modules
+  pure $ optimizeUberModule (DCE.EntryPoint uberModuleName []) uberModule
 
-compileIr :: (MonadIO m, MonadMask m) => [IR.Module] -> m Text
-compileIr irModules = withCurrentDir [reldir|test/ps|] do
+compileIr :: (MonadIO m, MonadMask m) => IR.UberModule -> m Text
+compileIr uberModule = withCurrentDir [reldir|test/ps|] do
   let addPrim =
-        if any Query.usesPrimModule irModules
+        if Query.usesPrimModuleUber uberModule
           then (Fixture.prim :)
           else identity
   let addRuntimeLazy =
-        if any Query.usesRuntimeLazy irModules
+        if Query.usesRuntimeLazyUber uberModule
           then (Fixture.runtimeLazy :)
           else identity
 
   foreignPath <- Tagged <$> makeAbsolute [reldir|foreign|]
   luaChunk <-
-    Lua.fromIrModules foreignPath irModules
+    Lua.fromUberModule foreignPath uberModule
       & handleLuaError
       & Oops.runOops
       & liftIO

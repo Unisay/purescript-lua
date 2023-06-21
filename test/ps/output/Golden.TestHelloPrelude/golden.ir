@@ -1,183 +1,250 @@
-[ Module
-  { moduleName = ModuleName "Control.Applicative", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "pure", Abs
-        ( AbsBinding ( ArgNamed ( Name "dict" ) ) Let ( LetBinding ( Standalone ( Name "v", RefBound ( Index { level = 1, offset = 0 } ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "pure" ) ) )
+      ( QName
+        { qnameModuleName = ModuleName "Control.Apply", qnameName = Name "apply" }, Abs
+        ( ParamNamed ( Name "dict" ) )
+        ( ObjectProp ( Ref ( Local ( Name "dict" ) ) ( 0 ) ) ( PropName "apply" ) )
       ), Standalone
-      ( Name "liftA1", Abs
-        ( AbsBinding
-          ( ArgNamed ( Name "dictApplicative" ) ) Let
-          ( LetBinding
-            ( Standalone
-              ( Name "apply", App RefFree ( Imported ( ModuleName "Control.Apply" ) ( Name "apply" ) ) App ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "Apply0" ) RefFree ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) ) :|
-              [ Standalone ( Name "pure1", App RefFree ( Local ( Name "pure" ) ) RefBound ( Index { level = 1, offset = 0 } ) ) ]
-            ) Abs
-            ( AbsBinding
-              ( ArgNamed ( Name "f" ) ) Abs
-              ( AbsBinding
-                ( ArgNamed ( Name "a" ) ) App App App RefFree
-                ( Imported ( ModuleName "Control.Apply" ) ( Name "apply" ) ) App ObjectProp RefBound
-                ( Index { level = 3, offset = 0 } )
-                ( PropName "Apply0" ) RefFree
-                ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) App App RefFree
-                ( Local ( Name "pure" ) ) RefBound
-                ( Index { level = 3, offset = 0 } ) RefBound
-                ( Index { level = 1, offset = 0 } ) RefBound
-                ( Index { level = 0, offset = 0 } )
+      ( QName
+        { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "pure" }, Abs
+        ( ParamNamed ( Name "dict" ) )
+        ( ObjectProp ( Ref ( Local ( Name "dict" ) ) ( 0 ) ) ( PropName "pure" ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "liftA1" }, Abs
+        ( ParamNamed ( Name "dictApplicative" ) )
+        ( Abs
+          ( ParamNamed ( Name "f" ) )
+          ( Abs
+            ( ParamNamed ( Name "a" ) )
+            ( App
+              ( App
+                ( App
+                  ( Ref ( Imported ( ModuleName "Control.Apply" ) ( Name "apply" ) ) ( 0 ) )
+                  ( App
+                    ( ObjectProp
+                      ( Ref ( Local ( Name "dictApplicative" ) ) ( 0 ) )
+                      ( PropName "Apply0" )
+                    )
+                    ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) ( 0 ) )
+                  )
+                )
+                ( App
+                  ( App
+                    ( Ref ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) ( 0 ) )
+                    ( Ref ( Local ( Name "dictApplicative" ) ) ( 0 ) )
+                  )
+                  ( Ref ( Local ( Name "f" ) ) ( 0 ) )
+                )
               )
+              ( Ref ( Local ( Name "a" ) ) ( 0 ) )
             )
           )
         )
-      )
-    ], moduleImports =
-    [ ModuleName "Control.Apply", ModuleName "Prim" ], moduleExports =
-    [ Name "pure", Name "liftA1" ], moduleReExports = fromList
-    [ ( ModuleName "Control.Apply", [] ), ( ModuleName "Data.Functor", [] ) ], moduleForeigns = [], modulePath = ".spago/lua-prelude/v6.0.2/src/Control/Applicative.purs", dataTypes = fromList []
-  }, Module
-  { moduleName = ModuleName "Control.Apply", moduleBindings =
-    [ Standalone
-      ( Name "apply", Abs ( AbsBinding ( ArgNamed ( Name "dict" ) ) Let ( LetBinding ( Standalone ( Name "v", RefBound ( Index { level = 1, offset = 0 } ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "apply" ) ) ) )
-    ], moduleImports = [], moduleExports =
-    [ Name "apply" ], moduleReExports = fromList
-    [ ( ModuleName "Data.Functor", [] ) ], moduleForeigns = [], modulePath = ".spago/lua-prelude/v6.0.2/src/Control/Apply.purs", dataTypes = fromList []
-  }, Module
-  { moduleName = ModuleName "Control.Bind", moduleBindings =
-    [ Standalone
-      ( Name "bind", Abs ( AbsBinding ( ArgNamed ( Name "dict" ) ) Let ( LetBinding ( Standalone ( Name "v", RefBound ( Index { level = 1, offset = 0 } ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "bind" ) ) ) )
-    ], moduleImports = [], moduleExports =
-    [ Name "bind" ], moduleReExports = fromList
-    [ ( ModuleName "Control.Applicative", [] ), ( ModuleName "Control.Apply", [] ), ( ModuleName "Data.Functor", [] ) ], moduleForeigns = [], modulePath = ".spago/lua-prelude/v6.0.2/src/Control/Bind.purs", dataTypes = fromList []
-  }, Module
-  { moduleName = ModuleName "Control.Monad", moduleBindings =
-    [ Standalone
-      ( Name "ap", Abs
-        ( AbsBinding
-          ( ArgNamed ( Name "dictMonad" ) ) Let
-          ( LetBinding
-            ( Standalone
-              ( Name "bind", App RefFree ( Imported ( ModuleName "Control.Bind" ) ( Name "bind" ) ) App ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "Bind1" ) RefFree ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) ) :|
-              [ Standalone
-                ( Name "pure", App RefFree
-                  ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) App ObjectProp RefBound
-                  ( Index { level = 1, offset = 0 } )
-                  ( PropName "Applicative0" ) RefFree
-                  ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Control.Bind", qnameName = Name "bind" }, Abs
+        ( ParamNamed ( Name "dict" ) )
+        ( ObjectProp ( Ref ( Local ( Name "dict" ) ) ( 0 ) ) ( PropName "bind" ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Control.Monad", qnameName = Name "ap" }, Abs
+        ( ParamNamed ( Name "dictMonad" ) )
+        ( Let
+          ( Standalone
+            ( Name "bind", App
+              ( Ref ( Imported ( ModuleName "Control.Bind" ) ( Name "bind" ) ) ( 0 ) )
+              ( App
+                ( ObjectProp ( Ref ( Local ( Name "dictMonad" ) ) ( 0 ) ) ( PropName "Bind1" ) )
+                ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) ( 0 ) )
+              )
+            ) :| []
+          )
+          ( Abs
+            ( ParamNamed ( Name "f" ) )
+            ( Abs
+              ( ParamNamed ( Name "a" ) )
+              ( App
+                ( App
+                  ( Ref ( Local ( Name "bind" ) ) ( 0 ) )
+                  ( Ref ( Local ( Name "f" ) ) ( 0 ) )
                 )
-              ]
-            ) Abs
-            ( AbsBinding
-              ( ArgNamed ( Name "f" ) ) Abs
-              ( AbsBinding
-                ( ArgNamed ( Name "a" ) ) App App RefBound
-                ( Index { level = 2, offset = 0 } ) RefBound
-                ( Index { level = 1, offset = 0 } ) Abs
-                ( AbsBinding
-                  ( ArgNamed ( Name "f'" ) ) App App RefBound
-                  ( Index { level = 3, offset = 0 } ) RefBound
-                  ( Index { level = 1, offset = 0 } ) Abs
-                  ( AbsBinding
-                    ( ArgNamed ( Name "a'" ) ) App App RefFree
-                    ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) App ObjectProp RefBound
-                    ( Index { level = 5, offset = 0 } )
-                    ( PropName "Applicative0" ) RefFree
-                    ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) App RefBound
-                    ( Index { level = 1, offset = 0 } ) RefBound
-                    ( Index { level = 0, offset = 0 } )
+                ( Abs
+                  ( ParamNamed ( Name "f'" ) )
+                  ( App
+                    ( App
+                      ( Ref ( Local ( Name "bind" ) ) ( 0 ) )
+                      ( Ref ( Local ( Name "a" ) ) ( 0 ) )
+                    )
+                    ( Abs
+                      ( ParamNamed ( Name "a'" ) )
+                      ( App
+                        ( App
+                          ( Ref
+                            ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) ( 0 )
+                          )
+                          ( App
+                            ( ObjectProp
+                              ( Ref ( Local ( Name "dictMonad" ) ) ( 0 ) )
+                              ( PropName "Applicative0" )
+                            )
+                            ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) ( 0 ) )
+                          )
+                        )
+                        ( App
+                          ( Ref ( Local ( Name "f'" ) ) ( 0 ) )
+                          ( Ref ( Local ( Name "a'" ) ) ( 0 ) )
+                        )
+                      )
+                    )
                   )
                 )
               )
             )
           )
         )
-      )
-    ], moduleImports =
-    [ ModuleName "Control.Applicative", ModuleName "Control.Bind", ModuleName "Prim" ], moduleExports =
-    [ Name "ap" ], moduleReExports = fromList
-    [
-      ( ModuleName "Control.Applicative", [] ),
-      ( ModuleName "Control.Apply", [] ),
-      ( ModuleName "Control.Bind", [] ),
-      ( ModuleName "Data.Functor", [] )
-    ], moduleForeigns = [], modulePath = ".spago/lua-prelude/v6.0.2/src/Control/Monad.purs", dataTypes = fromList []
-  }, Module
-  { moduleName = ModuleName "Data.Unit", moduleBindings = [], moduleImports = [], moduleExports =
-    [ Name "unit" ], moduleReExports = fromList [], moduleForeigns =
-    [ Name "unit" ], modulePath = ".spago/lua-prelude/v6.0.2/src/Data/Unit.purs", dataTypes = fromList []
-  }, Module
-  { moduleName = ModuleName "Effect", moduleBindings =
-    [ RecursiveGroup
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Prelude", qnameName = Name "pass" }, Abs
+        ( ParamNamed ( Name "dictApplicative" ) )
+        ( App
+          ( App
+            ( Ref ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) ( 0 ) )
+            ( Ref ( Local ( Name "dictApplicative" ) ) ( 0 ) )
+          )
+          ( Ref ( Imported ( ModuleName "Data.Unit" ) ( Name "unit" ) ) ( 0 ) )
+        )
+      ), RecursiveGroup
       (
-        ( Name "monadEffect", Lit ( Object [ ( PropName "Applicative0", Abs ( AbsBinding ArgUnused RefFree ( Local ( Name "applicativeEffect" ) ) ) ), ( PropName "Bind1", Abs ( AbsBinding ArgUnused RefFree ( Local ( Name "bindEffect" ) ) ) ) ] ) ) :|
+        ( QName
+          { qnameModuleName = ModuleName "Effect", qnameName = Name "monadEffect" }, Lit
+          ( Object
+            [
+              ( PropName "Applicative0", Abs ( ParamUnused )
+                ( Ref ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) ( 0 ) )
+              ),
+              ( PropName "Bind1", Abs ( ParamUnused )
+                ( Ref ( Imported ( ModuleName "Effect" ) ( Name "bindEffect" ) ) ( 0 ) )
+              )
+            ]
+          )
+        ) :|
         [
-          ( Name "bindEffect", Lit ( Object [ ( PropName "bind", RefFree ( Local ( Name "bindE" ) ) ), ( PropName "Apply0", Abs ( AbsBinding ArgUnused App RefFree ( Local ( Name "$__lazy_applyEffect" ) ) Lit ( Integer 0 ) ) ) ] ) ),
-          ( Name "applicativeEffect", Lit ( Object [ ( PropName "pure", RefFree ( Local ( Name "pureE" ) ) ), ( PropName "Apply0", Abs ( AbsBinding ArgUnused App RefFree ( Local ( Name "$__lazy_applyEffect" ) ) Lit ( Integer 0 ) ) ) ] ) ),
-          ( Name "$__lazy_functorEffect", App App RefFree
-            ( Local ( Name "$__runtime_lazy" ) ) Lit
-            ( String "functorEffect" ) Abs
-            ( AbsBinding ArgUnused Lit ( Object [ ( PropName "map", App RefFree ( Imported ( ModuleName "Control.Applicative" ) ( Name "liftA1" ) ) RefFree ( Local ( Name "applicativeEffect" ) ) ) ] ) )
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "bindEffect" }, Lit
+            ( Object
+              [
+                ( PropName "bind", Ref
+                  ( Imported ( ModuleName "Effect" ) ( Name "bindE" ) ) ( 0 )
+                ),
+                ( PropName "Apply0", Abs ( ParamUnused )
+                  ( App
+                    ( Ref
+                      ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) ( 0 )
+                    )
+                    ( Lit ( Integer 0 ) )
+                  )
+                )
+              ]
+            )
           ),
-          ( Name "$__lazy_applyEffect", App App RefFree
-            ( Local ( Name "$__runtime_lazy" ) ) Lit
-            ( String "applyEffect" ) Abs
-            ( AbsBinding ArgUnused Lit
-              ( Object
-                [
-                  ( PropName "apply", App RefFree ( Imported ( ModuleName "Control.Monad" ) ( Name "ap" ) ) RefFree ( Local ( Name "monadEffect" ) ) ),
-                  ( PropName "Functor0", Abs ( AbsBinding ArgUnused App RefFree ( Local ( Name "$__lazy_functorEffect" ) ) Lit ( Integer 0 ) ) )
-                ]
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "applicativeEffect" }, Lit
+            ( Object
+              [
+                ( PropName "pure", Ref
+                  ( Imported ( ModuleName "Effect" ) ( Name "pureE" ) ) ( 0 )
+                ),
+                ( PropName "Apply0", Abs ( ParamUnused )
+                  ( App
+                    ( Ref
+                      ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) ( 0 )
+                    )
+                    ( Lit ( Integer 0 ) )
+                  )
+                )
+              ]
+            )
+          ),
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "$__lazy_functorEffect"
+            }, App
+            ( App
+              ( Ref ( Local ( Name "$__runtime_lazy" ) ) ( 0 ) )
+              ( Lit ( String "functorEffect" ) )
+            )
+            ( Abs ( ParamUnused )
+              ( Lit
+                ( Object
+                  [
+                    ( PropName "map", App
+                      ( Ref
+                        ( Imported ( ModuleName "Control.Applicative" ) ( Name "liftA1" ) ) ( 0 )
+                      )
+                      ( Ref
+                        ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) ( 0 )
+                      )
+                    )
+                  ]
+                )
               )
             )
           ),
-          ( Name "functorEffect", App RefFree ( Local ( Name "$__lazy_functorEffect" ) ) Lit ( Integer 0 ) ),
-          ( Name "applyEffect", App RefFree ( Local ( Name "$__lazy_applyEffect" ) ) Lit ( Integer 0 ) )
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "$__lazy_applyEffect" }, App
+            ( App
+              ( Ref ( Local ( Name "$__runtime_lazy" ) ) ( 0 ) )
+              ( Lit ( String "applyEffect" ) )
+            )
+            ( Abs ( ParamUnused )
+              ( Lit
+                ( Object
+                  [
+                    ( PropName "apply", App
+                      ( Ref ( Imported ( ModuleName "Control.Monad" ) ( Name "ap" ) ) ( 0 ) )
+                      ( Ref ( Imported ( ModuleName "Effect" ) ( Name "monadEffect" ) ) ( 0 ) )
+                    ),
+                    ( PropName "Functor0", Abs ( ParamUnused )
+                      ( App
+                        ( Ref
+                          ( Imported
+                            ( ModuleName "Effect" )
+                            ( Name "$__lazy_functorEffect" )
+                          ) ( 0 )
+                        )
+                        ( Lit ( Integer 0 ) )
+                      )
+                    )
+                  ]
+                )
+              )
+            )
+          ),
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "functorEffect" }, App
+            ( Ref ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_functorEffect" ) ) ( 0 ) )
+            ( Lit ( Integer 0 ) )
+          ),
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "applyEffect" }, App
+            ( Ref ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) ( 0 ) )
+            ( Lit ( Integer 0 ) )
+          )
         ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestHelloPrelude", qnameName = Name "main" }, App
+        ( Ref ( Imported ( ModuleName "Prelude" ) ( Name "pass" ) ) ( 0 ) )
+        ( Ref ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) ( 0 ) )
       )
-    ], moduleImports =
-    [ ModuleName "Control.Applicative", ModuleName "Control.Monad" ], moduleExports =
-    [ Name "functorEffect", Name "applyEffect", Name "applicativeEffect", Name "bindEffect", Name "monadEffect" ], moduleReExports = fromList [], moduleForeigns =
-    [ Name "pureE", Name "bindE" ], modulePath = ".spago/lua-effect/v4.0.0/src/Effect.purs", dataTypes = fromList []
-  }, Module
-  { moduleName = ModuleName "Golden.TestHelloPrelude", moduleBindings =
-    [ Standalone ( Name "main", App RefFree ( Imported ( ModuleName "Prelude" ) ( Name "pass" ) ) RefFree ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) ) ], moduleImports =
-    [ ModuleName "Effect", ModuleName "Prelude" ], moduleExports =
-    [ Name "main" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestHelloPrelude.purs", dataTypes = fromList []
-  }, Module
-  { moduleName = ModuleName "Prelude", moduleBindings =
-    [ Standalone
-      ( Name "pass", Abs
-        ( AbsBinding ( ArgNamed ( Name "dictApplicative" ) ) App App RefFree ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) RefBound ( Index { level = 0, offset = 0 } ) RefFree ( Imported ( ModuleName "Data.Unit" ) ( Name "unit" ) ) )
-      )
-    ], moduleImports =
-    [ ModuleName "Control.Applicative", ModuleName "Data.Unit" ], moduleExports =
-    [ Name "pass" ], moduleReExports = fromList
+    ], uberModuleForeigns =
     [
-      ( ModuleName "Control.Applicative", [] ),
-      ( ModuleName "Control.Apply", [] ),
-      ( ModuleName "Control.Bind", [] ),
-      ( ModuleName "Control.Category", [] ),
-      ( ModuleName "Control.Monad", [] ),
-      ( ModuleName "Control.Semigroupoid", [] ),
-      ( ModuleName "Data.Boolean", [] ),
-      ( ModuleName "Data.BooleanAlgebra", [] ),
-      ( ModuleName "Data.Bounded", [] ),
-      ( ModuleName "Data.CommutativeRing", [] ),
-      ( ModuleName "Data.DivisionRing", [] ),
-      ( ModuleName "Data.Eq", [] ),
-      ( ModuleName "Data.EuclideanRing", [] ),
-      ( ModuleName "Data.Field", [] ),
-      ( ModuleName "Data.Function", [] ),
-      ( ModuleName "Data.Functor", [] ),
-      ( ModuleName "Data.HeytingAlgebra", [] ),
-      ( ModuleName "Data.Monoid", [] ),
-      ( ModuleName "Data.NaturalTransformation", [] ),
-      ( ModuleName "Data.Ord", [] ),
-      ( ModuleName "Data.Ordering", [] ),
-      ( ModuleName "Data.Ring", [] ),
-      ( ModuleName "Data.Semigroup", [] ),
-      ( ModuleName "Data.Semiring", [] ),
-      ( ModuleName "Data.Show", [] ),
-      ( ModuleName "Data.Unit", [] ),
-      ( ModuleName "Data.Void", [] )
-    ], moduleForeigns = [], modulePath = ".spago/lua-prelude/v6.0.2/src/Prelude.purs", dataTypes = fromList []
+      ( ModuleName "Data.Unit", ".spago/lua-prelude/v6.0.2/src/Data/Unit.purs", Name "unit" :| []
+      ),
+      ( ModuleName "Effect", ".spago/lua-effect/v4.0.0/src/Effect.purs", Name "bindE" :|
+        [ Name "pureE" ]
+      )
+    ], uberModuleExports =
+    [ ( ModuleName "Golden.TestHelloPrelude", Name "main" ) ]
   }
-]

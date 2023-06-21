@@ -2,20 +2,16 @@
 
 module Language.PureScript.Backend.IR.Types where
 
-import Control.Monad.Trans.Accum (AccumT, add, execAccumT)
 import Data.Deriving (deriveEq1, deriveOrd1, deriveShow1)
-import Data.List (elemIndex)
 import Data.Map qualified as Map
-import Data.Tagged (Tagged (..), untag)
-import Data.Text qualified as Text
+import Fmt ((+||), (||+))
 import Quiet (Quiet (..))
 import Text.Show (show)
 import Prelude hiding (show)
-import Prelude qualified as Show
 
 data Module = Module
   { moduleName :: ModuleName
-  , moduleBindings :: [Binding]
+  , moduleBindings :: [Grouping (Name, Exp)]
   , moduleImports :: [ModuleName]
   , moduleExports :: [Name]
   , moduleReExports :: Map ModuleName [Name]
@@ -34,9 +30,7 @@ listGrouping = \case
   Standalone a -> [a]
   RecursiveGroup as -> toList as
 
-type Binding = Grouping (Name, Exp)
-
-bindingNames :: Grouping (Name, exp) -> [Name]
+bindingNames :: Grouping (name, exp) -> [name]
 bindingNames = fmap fst . listGrouping
 
 bindingExprs :: Grouping (name, Exp) -> [Exp]
@@ -50,7 +44,10 @@ instance Semigroup Info where
 instance Monoid Info where
   mempty = Info mempty
 
-data Exp = Exp {unExp :: ExpF Exp, expInfo :: Info}
+data Exp = Exp
+  { expInfo :: Info
+  , unExp :: ExpF Exp
+  }
 
 data ExpF a
   = Lit (Literal a)
@@ -59,45 +56,23 @@ data ExpF a
   | ArrayIndex a Natural
   | ObjectProp a PropName
   | ObjectUpdate a (NonEmpty (PropName, a))
-  | Abs (AbsBinding a)
+  | Abs Parameter a
   | App a a
-  | RefFree (Qualified Name)
-  | RefBound Index
-  | Let (LetBinding a)
+  | Ref (Qualified Name) Index
+  | Let (NonEmpty (Grouping (Name, a))) a
   | IfThenElse a a a
   | Exception Text
   deriving stock (Eq, Functor)
 
-newtype Level = Level {unLevel :: Natural}
+newtype Index = Index {unIndex :: Natural}
   deriving newtype (Show, Eq, Ord, Num, Enum, Real, Integral)
 
-newtype Offset = Offset {unOffset :: Natural}
-  deriving newtype (Show, Eq, Ord, Num, Enum, Real, Integral)
-
-data Index = Index {level :: Level, offset :: Offset}
+data Parameter = ParamUnused | ParamNamed Name
   deriving stock (Show, Eq, Ord)
 
-data Argument = ArgUnused | ArgAnonymous | ArgNamed Name
-  deriving stock (Show, Eq, Ord)
-
-argumentName :: Argument -> Maybe Name
-argumentName = \case
-  ArgUnused -> Nothing
-  ArgAnonymous -> Nothing
-  ArgNamed name -> Just name
-
-data AbsBinding a = AbsBinding Argument (LocallyNameless a)
-  deriving stock (Show, Eq, Ord, Functor)
-
-data LetBinding a
-  = LetBinding
-      (NonEmpty (Grouping (Name, LocallyNameless a)))
-      (LocallyNameless a)
-  deriving stock (Show, Eq, Ord, Functor)
-
-newtype LocallyNameless a = LocallyNameless {unLocallyNameless :: a}
-  deriving newtype (Show, Eq, Ord)
-  deriving stock (Functor, Foldable, Traversable)
+paramName :: Parameter -> Maybe Name
+paramName ParamUnused = Nothing
+paramName (ParamNamed name) = Just name
 
 data Literal a
   = Integer Integer
@@ -109,12 +84,22 @@ data Literal a
   | Object [(PropName, a)]
   deriving stock (Show, Eq, Ord, Functor)
 
+isScalar :: Literal a -> Bool
+isScalar = \case
+  Integer _ -> True
+  Floating _ -> True
+  String _ -> True
+  Char _ -> True
+  Boolean _ -> True
+  Array _as -> False
+  Object _ps -> False
+
 data PrimOp a
   = ArrayLength a
   | ReflectCtor a
   | DataArgumentByIndex Natural a
   | Eq a a
-  deriving stock (Show, Eq, Ord, Functor)
+  deriving stock (Eq, Ord, Functor)
 
 data AlgebraicType = SumType | ProductType
   deriving stock (Generic, Eq, Ord, Show, Enum, Bounded)
@@ -131,6 +116,9 @@ newtype ModuleName = ModuleName {renderModuleName :: Text}
   deriving newtype (Eq, Ord)
   deriving stock (Generic)
   deriving (Show) via (Quiet ModuleName)
+
+data QName = QName {qnameModuleName :: ModuleName, qnameName :: Name}
+  deriving stock (Eq, Ord, Show)
 
 newtype TyName = TyName {renderTyName :: Text}
   deriving newtype (Eq, Ord)
@@ -155,233 +143,98 @@ newtype PropName = PropName {renderPropName :: Text}
 data Qualified a = Local a | Imported ModuleName a
   deriving stock (Show, Eq, Ord, Functor)
 
-qualified :: (a -> b) -> (ModuleName -> a -> b) -> Qualified a -> b
-qualified l i = \case
-  Local a -> l a
-  Imported m a -> i m a
-
-qualifiedByModule :: Qualified a -> Maybe ModuleName
-qualifiedByModule = qualified (const Nothing) (const . Just)
-
 --------------------------------------------------------------------------------
 -- Instances -------------------------------------------------------------------
 
-$( let ts =
-        [ ''PrimOp
-        , ''Literal
-        , ''ExpF
-        , ''Grouping
-        , ''AbsBinding
-        , ''LetBinding
-        , ''LocallyNameless
-        ]
-    in concat . concat
-        <$> sequence
-          [ traverse deriveEq1 ts
-          , traverse deriveOrd1 ts
-          , traverse deriveShow1 ts
-          ]
- )
+$(deriveEq1 ''PrimOp)
+$(deriveEq1 ''Literal)
+$(deriveEq1 ''Grouping)
+$(deriveEq1 ''ExpF)
+
+$(deriveOrd1 ''PrimOp)
+$(deriveOrd1 ''Literal)
+$(deriveOrd1 ''Grouping)
+$(deriveOrd1 ''ExpF)
+
+$(deriveShow1 ''PrimOp)
+$(deriveShow1 ''Literal)
+$(deriveShow1 ''Grouping)
+
+instance Show a => Show (PrimOp a) where
+  show = \case
+    ArrayLength a ->
+      "ArrayLength (" +|| a ||+ ")"
+    ReflectCtor a ->
+      "ReflectCtor (" +|| a ||+ ")"
+    DataArgumentByIndex index a ->
+      "DataArgumentByIndex (" +|| index ||+ ") (" +|| a ||+ ")"
+    Eq a b ->
+      "Eq (" +|| a ||+ ") (" +|| b ||+ ")"
 
 deriving stock instance Show Info
 
--- deriving stock instance Show Exp
+instance Show a => Show (ExpF a) where
+  show :: ExpF a -> String
+  show = \case
+    Lit literal ->
+      "Lit (" +|| literal ||+ ")"
+    Prim primOp ->
+      "Prim (" +|| primOp ||+ ")"
+    Ctor algebraicType tyName ctorName fieldNames ->
+      "Ctor ("
+        +|| algebraicType
+        ||+ ") ("
+        +|| tyName
+        ||+ ") ("
+        +|| ctorName
+        ||+ ") ("
+        +|| fieldNames
+        ||+ ")"
+    ArrayIndex a index ->
+      "ArrayIndex (" +|| a ||+ ") (" +|| index ||+ ")"
+    ObjectProp a propName ->
+      "ObjectProp (" +|| a ||+ ") (" +|| propName ||+ ")"
+    ObjectUpdate a patches ->
+      "ObjectUpdate (" +|| a ||+ ") (" +|| patches ||+ ")"
+    Abs argument a ->
+      "Abs (" +|| argument ||+ ") (" +|| a ||+ ")"
+    App a b ->
+      "App (" +|| a ||+ ") (" +|| b ||+ ")"
+    Ref qname index ->
+      "Ref (" +|| qname ||+ ") (" +|| index ||+ ")"
+    Let bindings a ->
+      "Let (" +|| bindings ||+ ") (" +|| a ||+ ")"
+    IfThenElse p t e ->
+      "IfThenElse (" +|| p ||+ ") (" +|| t ||+ ") (" +|| e ||+ ")"
+    Exception msg ->
+      "Exception (" +|| msg ||+ ")"
 
 instance Show Exp where
   show :: Exp -> String
-  show Exp {..} = show unExp
+  show = unExp >>> show
 
-deriving stock instance Show a => Show (ExpF a)
+-- deriving stock instance Show a => Show (ExpF a)
+
 deriving stock instance Show Module
+
 deriving stock instance Eq Info
+
 deriving stock instance Eq Exp
+
 deriving stock instance Eq Module
+
 deriving stock instance Ord Info
+
 deriving stock instance Ord Exp
+
 deriving stock instance Ord a => Ord (ExpF a)
+
 deriving stock instance Ord Module
-
---------------------------------------------------------------------------------
--- Unbound / Locally Nameless --------------------------------------------------
--- https://www.seas.upenn.edu/~sweirich/papers/icfp11.pdf ----------------------
-
-class Monad m => FreshNames m where
-  fresh :: m Name
-  refresh :: Name -> m Name
-
-instance FreshNames Identity where
-  fresh = pure (Name "n")
-  refresh = pure
-
-instance Monad m => FreshNames (StateT [Tagged "fresh" Name] m) where
-  fresh =
-    get >>= \case
-      [] -> error "No more fresh names"
-      n : ns -> put ns $> untag n
-
-  refresh n =
-    get >>= \case
-      [] -> error "No more fresh names"
-      n' : ns
-        | nameToText n `Text.isPrefixOf` nameToText (untag n') ->
-            put ns $> untag n'
-      ns ->
-        error $
-          "Can't refresh a name "
-            <> Show.show n
-            <> ", have these names: "
-            <> Show.show ns
-
-instance Monad m => FreshNames (StateT Natural m) where
-  fresh = do
-    i <- get
-    put (i + 1)
-    pure (Name ("n" <> "_" <> Show.show i))
-  refresh (Name n) = do
-    i <- get
-    put (i + 1)
-    pure (Name (n <> Show.show i))
-
-class BindingPattern p where
-  atOffset :: p -> Offset -> Maybe Name
-  findOffset :: p -> Name -> Maybe Offset
-
-instance BindingPattern Name where
-  atOffset name i = if i == 0 then Just name else Nothing
-  findOffset name name' = if name == name' then Just 0 else Nothing
-
-instance BindingPattern [Name] where
-  atOffset names i = names !!? fromIntegral i
-  findOffset names name = fromIntegral <$> elemIndex name names
-
-bindAbs :: Argument -> Exp -> AbsBinding Exp
-bindAbs arg e = AbsBinding arg case arg of
-  ArgNamed n -> close n e
-  ArgUnused -> LocallyNameless e
-  ArgAnonymous -> LocallyNameless e
-
-unbindAbs :: FreshNames m => AbsBinding Exp -> m (Maybe Name, Exp)
-unbindAbs (AbsBinding argument namelessExp) =
-  case argument of
-    ArgUnused ->
-      pure (Nothing, unLocallyNameless namelessExp)
-    ArgAnonymous -> do
-      freshName <- fresh
-      pure (Just freshName, open freshName namelessExp)
-    ArgNamed nam -> do
-      freshName <- refresh nam
-      pure (Just freshName, open freshName namelessExp)
-
-bindLet :: NonEmpty Binding -> Exp -> LetBinding Exp
-bindLet bindings inExp =
-  LetBinding ((fmap . fmap . fmap) (close names) bindings) (close names inExp)
- where
-  names = toList bindings >>= bindingNames
-
-unbindLet :: FreshNames m => LetBinding Exp -> m (NonEmpty Binding, Exp)
-unbindLet (LetBinding bindings inExp) = do
-  freshNames <- forM names refresh
-  let openedBindings = (`evalState` (Tagged @"fresh" <$> freshNames)) $
-        forM bindings \case
-          Standalone (name, expr) ->
-            Standalone . (,open freshNames expr) <$> refresh name
-          RecursiveGroup bs ->
-            RecursiveGroup <$> forM bs \(name, expr) ->
-              refresh name <&> (,open freshNames expr)
-  pure (openedBindings, open freshNames inExp)
- where
-  names = toList bindings >>= bindingNames
-
-close :: BindingPattern pat => pat -> Exp -> LocallyNameless Exp
-close pat =
-  LocallyNameless <<< updateRefs
-    ( \level name ->
-        pat `findOffset` name <&> \offset ->
-          wrapExpF $ RefBound (Index {level, offset})
-    )
-    \_currentLevel _index -> Nothing
-
-open :: BindingPattern pat => pat -> LocallyNameless Exp -> Exp
-open pat =
-  unLocallyNameless >>> updateRefs
-    (\_currentlevel _name -> Nothing)
-    \currentLevel index -> do
-      guard $ currentLevel == level index
-      wrapExpF . RefFree . Local <$> pat `atOffset` offset index
-
-updateRefs
-  :: (Level -> Name -> Maybe Exp)
-  -- ^ How to update free references. Nothing = leave unchanged
-  -> (Level -> Index -> Maybe Exp)
-  -- ^ How to update bound references. Nothing = leave unchanged
-  -> Exp
-  -- ^ Expression to update
-  -> Exp
-updateRefs withFree withBound e =
-  evalState (everywhereTopDownExpM rewrite e) (Level 0)
- where
-  rewrite :: MonadState Level m => Exp -> m Exp
-  rewrite expr = case unExp expr of
-    RefFree qname ->
-      case qname of
-        Imported _modname _name -> pure expr
-        Local name -> do
-          level <- get
-          maybe (pure expr) pure (withFree level name)
-    RefBound index' -> do
-      level <- get
-      maybe (pure expr) pure (withBound level index')
-    Abs {} -> modify (+ 1) $> expr
-    Let {} -> modify (+ 1) $> expr
-    _other -> pure expr
-
-countBoundRefs :: LocallyNameless Exp -> Offset -> Natural
-countBoundRefs (LocallyNameless namelessExp) boundOffset =
-  getSum . (`evalState` Level 0) . (`execAccumT` Sum 0) $
-    everywhereTopDownExpM visitor namelessExp
- where
-  visitor :: Exp -> AccumT (Sum Natural) (State Level) Exp
-  visitor expr = case unExp expr of
-    Abs {} -> modify (+ 1) $> expr
-    Let {} -> modify (+ 1) $> expr
-    RefBound Index {level, offset} -> do
-      atLevel <- get
-      expr <$ when (level == atLevel && offset == boundOffset) do
-        add (Sum 1)
-    _other -> pure expr
-
-subst
-  :: LocallyNameless Exp
-  -> Offset
-  -> LocallyNameless Exp
-  -> LocallyNameless Exp
-subst (LocallyNameless nameless) replacedOffset (LocallyNameless replacement) =
-  LocallyNameless (evalState (topDownExpM rewrite nameless) (Level 0))
- where
-  rewrite :: MonadState Level m => Exp -> m (TopDownStep, Exp)
-  rewrite expr = case unExp expr of
-    RefBound Index {level, offset} ->
-      get <&> \currentLevel ->
-        if currentLevel == level && offset == replacedOffset
-          then (Stop, adjustFor currentLevel replacement)
-          else (Continue, expr)
-    Abs {} -> modify (+ 1) $> (Continue, expr)
-    Let {} -> modify (+ 1) $> (Continue, expr)
-    _other -> pure (Continue, expr)
-
-  adjustFor :: Level -> Exp -> Exp
-  adjustFor = \case
-    Level 0 -> Prelude.identity
-    adjustment -> updateRefs noUpdate \_atLevel index ->
-      Just . wrapExpF $ RefBound index {level = adjustment + level index}
-
-  noUpdate :: Level -> Name -> Maybe Exp
-  noUpdate _currentLevel _name = Nothing
 
 -- Constructors for expresssions -----------------------------------------------
 
 wrapExpF :: ExpF Exp -> Exp
-wrapExpF e = Exp e case e of
+wrapExpF e = flip Exp e case e of
   Lit (Array as) -> foldMap expInfo as
   Lit (Object ps) -> foldMap (expInfo . snd) ps
   Prim op -> case op of
@@ -393,12 +246,19 @@ wrapExpF e = Exp e case e of
   ObjectProp a _prop -> expInfo a
   ObjectUpdate a patches -> expInfo a <> foldMap (expInfo . snd) patches
   App f x -> expInfo f <> expInfo x
-  RefFree ref -> Info {refsFree = Map.singleton ref 1}
-  RefBound _index -> mempty
-  Abs (AbsBinding _arg (LocallyNameless expr)) -> expInfo expr
-  Let (LetBinding binds (LocallyNameless body)) ->
-    foldMap (expInfo . unLocallyNameless . snd) (listGrouping =<< toList binds)
-      <> expInfo body
+  Ref qname _index -> Info {refsFree = Map.singleton qname 1}
+  Abs param expr ->
+    case param of
+      ParamUnused -> oldInfo
+      ParamNamed name -> oldInfo {refsFree = Map.delete (Local name) refsFree}
+   where
+    oldInfo@Info {refsFree} = expInfo expr
+  Let binds body ->
+    info {refsFree = foldr (Map.delete . Local) refsFree boundNames}
+   where
+    info@Info {refsFree} = foldMap (expInfo . snd) namedExprs <> expInfo body
+    namedExprs = listGrouping =<< toList binds
+    boundNames = fst <$> namedExprs
   IfThenElse p th el -> expInfo p <> expInfo th <> expInfo el
   _ -> mempty
 
@@ -408,46 +268,38 @@ arrayIndex = (wrapExpF .) . ArrayIndex
 objectProp :: Exp -> PropName -> Exp
 objectProp = (wrapExpF .) . ObjectProp
 
-update :: Exp -> NonEmpty (PropName, Exp) -> Exp
-update = (wrapExpF .) . ObjectUpdate
+objectUpdate :: Exp -> NonEmpty (PropName, Exp) -> Exp
+objectUpdate = (wrapExpF .) . ObjectUpdate
 
 ctor :: AlgebraicType -> TyName -> CtorName -> [FieldName] -> Exp
 ctor = (((wrapExpF .) .) .) . Ctor
 
-abstraction :: Argument -> Exp -> Exp
-abstraction arg = wrapExpF . Abs . bindAbs arg
-
-abstraction' :: Argument -> LocallyNameless Exp -> Exp
-abstraction' arg = wrapExpF . Abs . AbsBinding arg
+abstraction :: Parameter -> Exp -> Exp
+abstraction param = wrapExpF . Abs param
 
 identity :: Exp
-identity =
-  wrapExpF . Abs . AbsBinding ArgAnonymous . LocallyNameless $
-    refBound (Index (Level 0) (Offset 0))
+identity = abstraction (ParamNamed name) (refLocal name 0) where name = Name "x"
 
-lets :: NonEmpty Binding -> Exp -> Exp
-lets = ((wrapExpF . Let) .) . bindLet
-
-lets'
-  :: NonEmpty (Grouping (Name, LocallyNameless Exp))
-  -> LocallyNameless Exp
-  -> Exp
-lets' bindings body = wrapExpF $ Let $ LetBinding bindings body
+lets :: NonEmpty (Grouping (Name, Exp)) -> Exp -> Exp
+lets binds body = wrapExpF $ Let binds body
 
 application :: Exp -> Exp -> Exp
 application = (wrapExpF .) . App
 
-refFree :: Qualified Name -> Exp
-refFree = wrapExpF . RefFree
+ref :: Qualified Name -> Index -> Exp
+ref qname index =
+  case qname of
+    Local name -> refLocal name index
+    Imported modname name -> refImported modname name index
 
-refFreeLocal :: Name -> Exp
-refFreeLocal = wrapExpF . RefFree . Local
+refLocal :: Name -> Index -> Exp
+refLocal name index = wrapExpF (Ref (Local name) index)
 
-refFreeImported :: ModuleName -> Name -> Exp
-refFreeImported modname = wrapExpF . RefFree . Imported modname
+refLocal0 :: Name -> Exp
+refLocal0 name = refLocal name (Index 0)
 
-refBound :: Index -> Exp
-refBound = wrapExpF . RefBound
+refImported :: ModuleName -> Name -> Index -> Exp
+refImported modname name index = wrapExpF (Ref (Imported modname name) index)
 
 ifThenElse :: Exp -> Exp -> Exp -> Exp
 ifThenElse = ((wrapExpF .) .) . IfThenElse
@@ -500,58 +352,83 @@ object = wrapExpF . Lit . Object
 --------------------------------------------------------------------------------
 -- Traversals ------------------------------------------------------------------
 
-everywhereExp :: (Exp -> Exp) -> Exp -> Exp
-everywhereExp f = runIdentity . everywhereExpM (pure . f)
-
-everywhereExpM :: forall m. Monad m => (Exp -> m Exp) -> Exp -> m Exp
-everywhereExpM visit = go
+traverseExpM
+  :: forall m. Monad m => (Exp -> m ()) -> (forall x. m x -> m x) -> Exp -> m ()
+traverseExpM visit around = go
  where
-  go :: Exp -> m Exp
-  go e = case unExp e of
-    Lit (Array as) -> visit . array =<< traverse go as
-    Lit (Object props) -> visit . object =<< traverse (traverse go) props
+  go :: Exp -> m ()
+  go e = around case unExp e of
+    Lit (Array as) -> traverse_ go as *> visit e
+    Lit (Object props) -> traverse (traverse go) props *> visit e
     Prim op ->
       case op of
-        ArrayLength a -> visit . arrayLength =<< go a
-        ReflectCtor a -> visit . reflectCtor =<< go a
-        DataArgumentByIndex idx a -> visit . dataArgumentByIndex idx =<< go a
-        Eq a b -> visit . wrapExpF . Prim =<< Eq <$> go a <*> go b
-    ArrayIndex a indx -> visit . flip arrayIndex indx =<< go a
-    ObjectProp a prop -> visit . flip objectProp prop =<< go a
-    ObjectUpdate a patches ->
-      visit . wrapExpF
-        =<< ObjectUpdate
-          <$> go a
-          <*> traverse (traverse go) patches
-    App a b ->
-      visit . wrapExpF =<< App <$> go a <*> go b
-    Abs (AbsBinding arg (LocallyNameless expr)) ->
-      visit . wrapExpF . Abs . AbsBinding arg . LocallyNameless =<< go expr
-    Let (LetBinding binds (LocallyNameless body)) ->
-      visit . wrapExpF . Let
-        =<< LetBinding
-          <$> traverse (traverse (traverse (traverse go))) binds
-          <*> fmap LocallyNameless (go body)
-    IfThenElse p th el -> visit =<< ifThenElse <$> go p <*> go th <*> go el
+        ArrayLength a -> go a *> visit e
+        ReflectCtor a -> go a *> visit e
+        DataArgumentByIndex _idx a -> go a *> visit e
+        Eq a b -> go a *> go b *> visit e
+    ArrayIndex a _indx -> go a *> visit e
+    ObjectProp a _prop -> go a *> visit e
+    ObjectUpdate a patches -> go a *> traverse (traverse go) patches *> visit e
+    App a b -> go a *> go b *> visit e
+    Abs _arg a -> go a *> visit e
+    Let binds body ->
+      traverse (traverse (traverse go)) binds *> go body *> visit e
+    IfThenElse p th el -> go p *> go th *> go el *> visit e
     _ -> visit e
 
--- everywhereTopDownExp :: (Exp -> Maybe Exp) -> Exp -> Exp
--- everywhereTopDownExp f = runIdentity . everywhereTopDownExpM (pure . f)
+data RewriteMod = Recurse | Stop
+  deriving stock (Show, Eq, Ord)
 
-everywhereTopDownExpM :: Monad m => (Exp -> m Exp) -> Exp -> m Exp
-everywhereTopDownExpM rewrite = topDownExpM ((Continue,) <<$>> rewrite)
+instance Semigroup RewriteMod where
+  Recurse <> Recurse = Recurse
+  _ <> _ = Stop
 
-data TopDownStep = Continue | Stop
+data Rewritten a = NoChange | Rewritten RewriteMod a
+  deriving stock (Show, Eq, Ord, Functor)
 
-topDownExpM :: Monad m => (Exp -> m (TopDownStep, Exp)) -> Exp -> m Exp
-topDownExpM f = visit
+instance Applicative Rewritten where
+  pure :: forall a. a -> Rewritten a
+  pure = Rewritten Stop
+  NoChange <*> _ = NoChange
+  _ <*> NoChange = NoChange
+  Rewritten rmf f <*> Rewritten rma a = Rewritten (rmf <> rma) (f a)
+
+instance Monad Rewritten where
+  NoChange >>= _ = NoChange
+  Rewritten m a >>= f = case f a of
+    NoChange -> NoChange
+    Rewritten m' a' -> Rewritten (m <> m') a'
+
+instance Alternative Rewritten where
+  empty = NoChange
+  NoChange <|> a = a
+  a <|> _ = a
+
+type RewriteRule = RewriteRuleM Identity
+type RewriteRuleM m = Exp -> m (Rewritten Exp)
+
+thenRewrite :: Monad m => RewriteRuleM m -> RewriteRuleM m -> RewriteRuleM m
+thenRewrite rewrite1 rewrite2 e =
+  rewrite1 e >>= \case
+    Rewritten m' e' ->
+      rewrite2 e' <&> \case
+        NoChange -> Rewritten m' e'
+        Rewritten m'' e'' -> Rewritten (m' <> m'') e''
+    NoChange -> rewrite2 e
+
+rewriteExpTopDown :: RewriteRule -> Exp -> Exp
+rewriteExpTopDown rewrite = runIdentity . rewriteExpTopDownM rewrite
+
+rewriteExpTopDownM :: Monad m => RewriteRuleM m -> Exp -> m Exp
+rewriteExpTopDownM rewrite = visit
  where
-  visit x =
-    f x >>= \case
-      (Continue, a) -> step a
-      (Stop, a) -> pure a
+  visit expression =
+    rewrite expression >>= \case
+      NoChange -> descendInto expression
+      Rewritten Stop expression' -> pure expression'
+      Rewritten Recurse expression' -> descendInto expression'
 
-  step e = case unExp e of
+  descendInto e = case unExp e of
     Lit (Array as) -> array <$> traverse visit as
     Lit (Object props) -> object <$> traverse (traverse visit) props
     Prim op ->
@@ -563,15 +440,134 @@ topDownExpM f = visit
     ArrayIndex a indx -> flip arrayIndex indx <$> visit a
     ObjectProp a prop -> flip objectProp prop <$> visit a
     ObjectUpdate a patches ->
-      (wrapExpF .) . ObjectUpdate
+      (Exp (expInfo e) .) . ObjectUpdate
         <$> visit a
         <*> traverse (traverse visit) patches
     App a b -> application <$> visit a <*> visit b
-    Abs (AbsBinding arg (LocallyNameless expr)) ->
-      wrapExpF . Abs . AbsBinding arg . LocallyNameless <$> visit expr
-    Let (LetBinding binds (LocallyNameless body)) ->
-      ((wrapExpF . Let) .) . LetBinding
-        <$> traverse (traverse (traverse (traverse visit))) binds
-        <*> fmap LocallyNameless (visit body)
+    Abs param expr -> Exp (expInfo e) . Abs param <$> visit expr
+    Let binds body ->
+      (Exp (expInfo e) .) . Let
+        <$> traverse (traverse (traverse visit)) binds
+        <*> visit body
     IfThenElse p th el -> ifThenElse <$> visit p <*> visit th <*> visit el
     _ -> pure e
+
+countFreeRefs :: Qualified Name -> Exp -> Natural
+countFreeRefs qname e =
+  fromMaybe 0 $ Map.lookup qname (refsFree (expInfo e))
+
+subst :: Exp -> Qualified Name -> Exp -> Exp
+subst body name = substitute body name 0
+
+-- | Substitute the given variable name and index with an expression
+substitute
+  :: Exp
+  -- ^ The expression to substitute into
+  -> Qualified Name
+  -- ^ The name of the variable to replace
+  -> Index
+  -- ^ The index of the variable to replace
+  -> Exp
+  -- ^ The expression to substitute in place of the given variable
+  -> Exp
+substitute expression name index replacement =
+  case unExp expression of
+    Lit (Array as) -> array (as <&> \a -> substitute a name index replacement)
+    Lit (Object props) ->
+      object (props <&> fmap \p -> substitute p name index replacement)
+    Prim op ->
+      case op of
+        ArrayLength a -> arrayLength (substitute a name index replacement)
+        ReflectCtor a -> reflectCtor (substitute a name index replacement)
+        DataArgumentByIndex idx a ->
+          dataArgumentByIndex idx (substitute a name index replacement)
+        Eq a b ->
+          eq
+            (substitute a name index replacement)
+            (substitute b name index replacement)
+    ArrayIndex a indx -> arrayIndex (substitute a name index replacement) indx
+    ObjectProp a prop -> objectProp (substitute a name index replacement) prop
+    ObjectUpdate a patches ->
+      objectUpdate
+        (substitute a name index replacement)
+        (patches <&> fmap \p -> substitute p name index replacement)
+    Ref name' index'
+      | name == name' && index == index' -> replacement
+      | otherwise -> ref name' index'
+    Abs argument@(ParamNamed argName) body ->
+      abstraction argument (substitute body name index' replacement')
+     where
+      index' = if name == Local argName then index + 1 else index
+      replacement' = shift 1 argName 0 replacement
+    Let binds body ->
+      lets binds' body'
+     where
+      binds' =
+        binds <&> \grouping ->
+          case grouping of
+            Standalone (boundName, expr) ->
+              Standalone
+                ( boundName
+                , substitute
+                    expr
+                    name
+                    (if name == Local boundName then index + 1 else index)
+                    (shift 1 boundName 0 replacement)
+                )
+            RecursiveGroup recBinds ->
+              let
+                boundNames = fst <$> grouping
+                index' =
+                  if name `elem` fmap Local boundNames then index + 1 else index
+                replacement' =
+                  foldr (\n r -> shift 1 n 0 r) replacement boundNames
+               in
+                RecursiveGroup $
+                  recBinds <&> \(boundName, expr) ->
+                    (boundName, substitute expr name index' replacement')
+      body' = substitute body name index' replacement'
+       where
+        boundNames = toList binds >>= bindingNames
+        index' = if name `elem` fmap Local boundNames then index + 1 else index
+        replacement' = foldr (\n r -> shift 1 n 0 r) replacement boundNames
+    App argument function ->
+      application
+        (substitute argument name index replacement)
+        (substitute function name index replacement)
+    IfThenElse p th el ->
+      ifThenElse
+        (substitute p name index replacement)
+        (substitute th name index replacement)
+        (substitute el name index replacement)
+    _ -> expression
+
+-- | Increase the index of all bound variables matching the given variable name
+shift
+  :: Int
+  -- ^ The amount to shift by
+  -> Name
+  -- ^ The variable name to match (a.k.a. the namespace)
+  -> Index
+  -- ^ The minimum bound for which indices to shift
+  -> Exp
+  -- ^ The expression to shift
+  -> Exp
+shift offset namespace minIndex expression =
+  case unExp expression of
+    Ref (Local name) index ->
+      refLocal name $
+        if name == namespace && minIndex <= index
+          then index + fromIntegral offset
+          else index
+    Abs argument body -> abstraction argument body'
+     where
+      minIndex'
+        | paramName argument == Just namespace = minIndex + 1
+        | otherwise = minIndex
+
+      body' = shift offset namespace minIndex' body
+    App function argument ->
+      application
+        (shift offset namespace minIndex argument)
+        (shift offset namespace minIndex function)
+    _ -> expression

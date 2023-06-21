@@ -34,7 +34,8 @@ everywhereExpM f g = goe
       VarField (Ann e) n -> f . (`varField` n) =<< goe e
       VarName n -> f (varName n)
     Function names statements ->
-      f . functionDef names =<< forM statements (everywhereStatM g f . unAnn)
+      f . functionDef (snd <$> names)
+        =<< forM statements (everywhereStatM g f . unAnn)
     TableCtor (fmap unAnn -> rows) -> do
       tableRows <- forM rows \case
         TableRowKV (Ann k) (Ann v) -> tableRowKV <$> goe k <*> goe v
@@ -78,6 +79,8 @@ data Annotator m f f' = Annotator
   -- ^ How to annotate a statement
   , annotateExp :: ExpF f' -> m (Annotated f' ExpF)
   -- ^ How to annotate an expression
+  , annotateParam :: ParamF f' -> m (Annotated f' ParamF)
+  -- ^ How to annotate a function parameter
   , annotateVar :: VarF f' -> m (Annotated f' VarF)
   -- ^ How to annotate a variable
   , annotateRow :: TableRowF f' -> m (Annotated f' TableRowF)
@@ -94,6 +97,7 @@ unAnnotateStatement unAnnotate =
         { unAnnotate
         , annotateStat = pure . ann
         , annotateExp = pure . ann
+        , annotateParam = pure . ann
         , annotateVar = pure . ann
         , annotateRow = pure . ann
         }
@@ -133,7 +137,12 @@ annotateExpInsideOutM
 annotateExpInsideOutM annotator@Annotator {..} expf =
   case unAnnotate expf of
     Var v -> annotateExp . Var =<< goV v
-    Function names stats -> annotateExp . Function names =<< forM stats goS
+    Function params stats -> do
+      paramNames <- forM params \case
+        (_, ParamNamed n) -> annotateParam (ParamNamed n)
+        (_, ParamUnused) -> annotateParam ParamUnused
+      aStats <- forM stats goS
+      annotateExp $ Function paramNames aStats
     TableCtor rows ->
       annotateExp . TableCtor =<< forM rows \row ->
         case unAnnotate row of

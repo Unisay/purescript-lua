@@ -1,16 +1,37 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestRecordsAccess", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "test4", Abs
-        ( AbsBinding ( ArgNamed ( Name "v" ) ) Let ( LetBinding ( Standalone ( Name "x", ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) )
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "test4" }, Abs
+        ( ParamNamed ( Name "v" ) )
+        ( ObjectProp ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( PropName "x" ) )
       ), Standalone
-      ( Name "test3", Abs
-        ( AbsBinding ( ArgNamed ( Name "v" ) ) Let ( LetBinding ( Standalone ( Name "x", ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) )
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "test3" }, Abs
+        ( ParamNamed ( Name "v" ) )
+        ( ObjectProp ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( PropName "x" ) )
       ), Standalone
-      ( Name "test2", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) ObjectProp RefBound ( Index { level = 0, offset = 0 } ) ( PropName "x" ) ) ), Standalone
-      ( Name "r", Lit ( Object [ ( PropName "x", Lit ( Integer 1 ) ), ( PropName "y", Lit ( Boolean True ) ) ] ) ), Standalone
-      ( Name "test1", ObjectProp RefFree ( Local ( Name "r" ) ) ( PropName "x" ) )
-    ], moduleImports = [], moduleExports =
-    [ Name "r", Name "test1", Name "test2", Name "test3", Name "test4" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestRecordsAccess.purs", dataTypes = fromList []
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "test2" }, Abs
+        ( ParamNamed ( Name "v" ) )
+        ( ObjectProp ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( PropName "x" ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "r" }, Lit
+        ( Object [ ( PropName "x", Lit ( Integer 1 ) ), ( PropName "y", Lit ( Boolean True ) ) ] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "test1"
+        }, ObjectProp
+        ( Ref ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) ( 0 ) )
+        ( PropName "x" )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( ModuleName "Golden.TestRecordsAccess", Name "r" ),
+      ( ModuleName "Golden.TestRecordsAccess", Name "test1" ),
+      ( ModuleName "Golden.TestRecordsAccess", Name "test2" ),
+      ( ModuleName "Golden.TestRecordsAccess", Name "test3" ),
+      ( ModuleName "Golden.TestRecordsAccess", Name "test4" )
+    ]
   }
-]

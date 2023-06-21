@@ -140,12 +140,12 @@ mkQualified f (PS.Qualified by a) =
 identToName :: PS.Ident -> Name
 identToName = Name . PS.runIdent
 
-mkDecls :: RepM [Binding]
+mkDecls :: RepM [Grouping (Name, Exp)]
 mkDecls = do
   psDecls <- gets $ contextModule >>> Cfn.moduleBindings
   traverse mkGrouping psDecls
 
-mkGrouping :: Cfn.Bind Cfn.Ann -> RepM Binding
+mkGrouping :: Cfn.Bind Cfn.Ann -> RepM (Grouping (Name, Exp))
 mkGrouping = \case
   Cfn.NonRec _ann ident cfnExpr ->
     Standalone . (identToName ident,) <$> mkExp cfnExpr
@@ -240,14 +240,16 @@ mkObjectUpdate cfnExp props = do
   expr <- mkExp cfnExp
   patch <- for props \(prop, cExpr) ->
     (PropName (psStringToText prop),) <$> mkExp cExpr
-  maybe (throwError EmptyObjectUpdate) (pure . update expr) (NE.nonEmpty patch)
+  case NE.nonEmpty patch of
+    Nothing -> throwError EmptyObjectUpdate
+    Just ps -> pure $ objectUpdate expr ps
 
 mkAbstraction :: PS.Ident -> CfnExp -> RepM Exp
 mkAbstraction i e = abstraction arg <$> mkExp e
  where
   arg = case PS.runIdent i of
-    "$__unused" -> ArgUnused
-    n -> ArgNamed (Name n)
+    "$__unused" -> ParamUnused
+    n -> ParamNamed (Name n)
 
 mkApplication :: CfnExp -> CfnExp -> RepM Exp
 mkApplication e1 e2 =
@@ -266,11 +268,11 @@ mkQualifiedIdent (PS.Qualified by ident) =
           else Imported (mkModuleName modName) (identToName ident)
 
 mkRef :: PS.Qualified PS.Ident -> RepM Exp
-mkRef = refFree <<$>> mkQualifiedIdent
+mkRef = flip ref 0 <<$>> mkQualifiedIdent
 
 mkLet :: [Cfn.Bind Cfn.Ann] -> CfnExp -> RepM Exp
 mkLet binds expr = do
-  bindingarations :: NonEmpty Binding <-
+  bindingarations :: NonEmpty (Grouping (Name, Exp)) <-
     NE.nonEmpty binds & maybe (throwError LetWithoutBinds) (traverse mkGrouping)
   lets bindingarations <$> mkExp expr
 
@@ -332,9 +334,9 @@ mkCase
   -> NonEmpty (Cfn.CaseAlternative Cfn.Ann)
   -> RepM Exp
 mkCase expressions alternatives = do
-  (refExpressions, bindingareRefs) <- expressionsToRefs expressions
+  (refExpressions, refs) <- expressionsToRefs expressions
   clauses <- traverse (alternativeToClauses refExpressions) alternatives
-  bindingareRefs <$> mkCaseClauses (NE.toList clauses)
+  refs <$> mkCaseClauses (NE.toList clauses)
 
 expressionsToRefs :: [CfnExp] -> RepM ([Exp], Exp -> Exp)
 expressionsToRefs cfnExps =
@@ -343,7 +345,7 @@ expressionsToRefs cfnExps =
   inlineOrReference
     :: Exp
     -> [Either Exp (Name, Exp)]
-    -- \^ Either an expression to inline, or a named expression reference.
+    -- Either an expression to inline, or a named expression reference.
     -> RepM [Either Exp (Name, Exp)]
   inlineOrReference e acc =
     case unExp e of
@@ -351,8 +353,7 @@ expressionsToRefs cfnExps =
       Lit (Floating _) -> inlineExpr
       Lit (Char _) -> inlineExpr
       Lit (Boolean _) -> inlineExpr
-      RefFree (Local _) -> inlineExpr
-      RefBound _ -> inlineExpr
+      Ref _name _index -> inlineExpr
       _ -> referenceExpr
    where
     inlineExpr = pure (Left e : acc)
@@ -361,7 +362,7 @@ expressionsToRefs cfnExps =
   -- Declare extracted references
   declareBinds :: [Either Exp (Name, Exp)] -> ([Exp], Exp -> Exp)
   declareBinds expressionsOrRefs =
-    ( either id (refFreeLocal . fst) <$> expressionsOrRefs
+    ( either id (flip refLocal 0 . fst) <$> expressionsOrRefs
     , case NE.nonEmpty (mapMaybe rightToMaybe expressionsOrRefs) of
         Nothing -> id
         Just refs -> lets (Standalone <$> refs)
@@ -404,7 +405,7 @@ mkCaseClauses = mkClauses mempty
               Right result -> lets binds result
               Left guardedResults ->
                 lets (Standalone (n, next) <| binds) $
-                  foldr (uncurry ifThenElse) (refFreeLocal n) guardedResults
+                  foldr (uncurry ifThenElse) (refLocal n 0) guardedResults
       Just (Match {..}, clause) ->
         let expr = foldr applyStep matchExp stepsToFocus
             clause' =
@@ -460,8 +461,11 @@ mkCaseClauses = mkClauses mempty
                     let qctor =
                           constructor
                             & fmap renderCtorName
-                            & qualified string \modname c ->
-                              string (renderModuleName modname <> "." <> c)
+                            & string . \case
+                              Local name -> name
+                              Imported modname c ->
+                                renderModuleName modname <> "." <> c
+
                         history' b = Map.insert expr (constructor, b) history
                     -- Either this constructor is matched for the first time,
                     -- or other constructor didn't pass the match before.
@@ -471,7 +475,7 @@ mkCaseClauses = mkClauses mempty
    where
     nextMatch hist clause = mkClause hist clause heuristic nextClause
 
-usedClauseBinds :: CaseClause -> [Binding]
+usedClauseBinds :: CaseClause -> [Grouping (Name, Exp)]
 usedClauseBinds CaseClause {clauseBinds} = clauseBinds
 
 matchChosenByHeuristic
@@ -514,7 +518,7 @@ type Guard = Exp
 data CaseClause = CaseClause
   { clauseMatches :: [Match]
   , clauseResult :: Either [(Guard, Exp)] Exp
-  , clauseBinds :: [Binding]
+  , clauseBinds :: [Grouping (Name, Exp)]
   }
   deriving stock (Show)
 

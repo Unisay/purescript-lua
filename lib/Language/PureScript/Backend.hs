@@ -2,17 +2,23 @@ module Language.PureScript.Backend where
 
 import Control.Monad.Oops (CouldBeAnyOf, Variant)
 import Control.Monad.Oops qualified as Oops
-import Data.List qualified as List
-import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
 import Data.Tagged (Tagged (..), untag)
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.DCE qualified as DCE
-import Language.PureScript.Backend.IR.Optimizer (optimizeAll)
-import Language.PureScript.Backend.IR.Query (usesPrimModule, usesRuntimeLazy)
+import Language.PureScript.Backend.IR.Linker qualified as Linker
+import Language.PureScript.Backend.IR.Optimizer (optimizeUberModule)
+import Language.PureScript.Backend.IR.Query
+  ( usesPrimModuleUber
+  , usesRuntimeLazyUber
+  )
 import Language.PureScript.Backend.Lua qualified as Lua
-import Language.PureScript.Backend.Lua.DeadCodeEliminator (DceMode (PreserveReturned), eliminateDeadCode)
+import Language.PureScript.Backend.Lua.DeadCodeEliminator
+  ( DceMode (PreserveReturned)
+  , eliminateDeadCode
+  )
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
+import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Language.PureScript.Names qualified as PS
@@ -51,47 +57,59 @@ compileModules outputDir foreignDir appOrModule = do
   cfnModules <- CoreFn.readModuleRecursively outputDir entryModuleName
   irResults <- forM (Map.toList cfnModules) \(_psModuleName, cfnModule) ->
     Oops.hoistEither $ IR.mkModule cfnModule
-  let (needsRuntimeLazys, irModules) = unzip irResults
-  optimizedModules <-
-    evalStateT (optimizeAll irDceStrategy irModules) (0 :: Natural)
   let
+    (needsRuntimeLazys, irModules) = unzip irResults
+    uberModule@Linker.UberModule {..} =
+      Linker.makeUberModule (linkerMode appOrModule) irModules
+    optimizedUberModule = optimizeUberModule dceEntryPoint uberModule
     addPrim =
-      if any usesPrimModule optimizedModules
+      if usesPrimModuleUber optimizedUberModule
         then (Fixture.prim :)
         else identity
     addRuntimeLazy =
-      if or (fmap untag needsRuntimeLazys)
-        && any usesRuntimeLazy optimizedModules
+      if or (untag <$> needsRuntimeLazys)
+        && usesRuntimeLazyUber optimizedUberModule
         then (Fixture.runtimeLazy :)
         else identity
-  chunk <- Lua.fromIrModules foreignDir optimizedModules
-  pure . eliminateDeadCode PreserveReturned $
-    addRuntimeLazy (addPrim chunk)
-      <> [ Lua.Return $ Lua.ann case appOrModule of
-            AsModule (ModuleEntryPoint modname) ->
-              let entryModule =
-                    optimizedModules & List.find \IR.Module {moduleName} ->
-                      moduleName == IR.mkModuleName modname
-               in Lua.table case entryModule of
-                    Nothing -> []
-                    Just IR.Module {moduleExports, moduleName} ->
-                      moduleExports <&> \(Lua.fromName moduleName -> name) ->
-                        Lua.tableRowNV name (Lua.varName name)
+    addReturn =
+      flip
+        mappend
+        [ Lua.Return $ Lua.ann case appOrModule of
+            AsModule (ModuleEntryPoint _modname) ->
+              Lua.table $
+                uberModuleExports <&> \(modname, name) ->
+                  Lua.tableRowNV
+                    (Lua.fromName name)
+                    (Lua.varName (Lua.fromQName modname name))
             AsApplication (AppEntryPoint modul ident) ->
               Lua.functionCall
                 ( Lua.varName $
-                    Lua.fromName (IR.mkModuleName modul) (IR.identToName ident)
+                    Lua.fromQName (IR.mkModuleName modul) (IR.identToName ident)
                 )
                 []
-         ]
+        ]
+
+  modulesChunk <- Lua.fromUberModule foreignDir optimizedUberModule
+  pure $
+    modulesChunk
+      & addPrim
+      & addRuntimeLazy
+      & addReturn
+      & optimizeChunk
+      & eliminateDeadCode PreserveReturned
  where
-  irDceStrategy =
+  dceEntryPoint =
     case appOrModule of
       AsApplication (AppEntryPoint modul entryIdent) ->
-        DCE.EntryPoints $
-          NE.singleton
-            ( IR.mkModuleName modul
-            , NE.singleton (IR.identToName entryIdent)
-            )
+        DCE.EntryPoint (IR.mkModuleName modul) [IR.identToName entryIdent]
       AsModule (ModuleEntryPoint modul) ->
-        DCE.EntryPointsSomeModules (NE.singleton (IR.mkModuleName modul))
+        DCE.EntryPoint (IR.mkModuleName modul) []
+
+linkerMode :: AppOrModule -> Linker.LinkMode
+linkerMode = \case
+  AsApplication (AppEntryPoint psModuleName psIdent) ->
+    Linker.LinkAsApplication
+      (IR.mkModuleName psModuleName)
+      (IR.identToName psIdent)
+  AsModule (ModuleEntryPoint psModuleName) ->
+    Linker.LinkAsModule (IR.mkModuleName psModuleName)

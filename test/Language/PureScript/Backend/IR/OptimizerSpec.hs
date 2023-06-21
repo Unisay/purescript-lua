@@ -1,19 +1,31 @@
 module Language.PureScript.Backend.IR.OptimizerSpec where
 
+import Data.Map qualified as Map
 import Hedgehog (annotateShow, forAll, (===))
+import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Gen qualified as Gen
-import Language.PureScript.Backend.IR.Optimizer (optimizeExpression)
+import Language.PureScript.Backend.IR.Linker (LinkMode (..))
+import Language.PureScript.Backend.IR.Linker qualified as Linker
+import Language.PureScript.Backend.IR.Optimizer
+  ( optimizeExpression
+  , optimizeUberModule
+  )
 import Language.PureScript.Backend.IR.Types
-  ( Exp (..)
+  ( Exp
   , ExpF (..)
   , Grouping (Standalone)
   , Literal (..)
-  , Name
+  , Module (..)
+  , ModuleName (..)
+  , Name (..)
   , application
   , boolean
+  , eq
   , ifThenElse
+  , integer
   , lets
-  , refFreeLocal
+  , refLocal0
+  , unExp
   )
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
@@ -26,62 +38,92 @@ spec = describe "IR Optimizer" do
       elseBranch <- forAll Gen.exp
       let ifThenElseStatement = ifThenElse (boolean True) thenBranch elseBranch
       annotateShow ifThenElseStatement
-      thenBranch === optimize ifThenElseStatement
+      thenBranch === optimizeExpression ifThenElseStatement
 
     test "removes redundant then branch" do
       thenBranch <- forAll Gen.exp
       elseBranch <- forAll Gen.exp
       let ifThenElseStatement = ifThenElse (boolean False) thenBranch elseBranch
       annotateShow ifThenElseStatement
-      elseBranch === optimize ifThenElseStatement
+      elseBranch === optimizeExpression ifThenElseStatement
 
   describe "inlines expressions" do
     test "inlines literals" do
       name <- forAll Gen.name
       inlinee <- forAll Gen.scalarExp
-      let original = let1 name inlinee (refFreeLocal name)
+      let original = let1 name inlinee (refLocal0 name)
           expected = let1 name inlinee inlinee
-      optimize original === expected
+      optimizeExpression original === expected
 
     test "inlines references" do
       name <- forAll Gen.name
-      inlinee <- forAll Gen.refFreeLocal
-      let original = let1 name inlinee (refFreeLocal name)
+      inlinee <- forAll Gen.refLocal
+      let original = let1 name inlinee (refLocal0 name)
           expected = let1 name inlinee inlinee
-      optimize original === expected
+      optimizeExpression original === expected
 
     test "inlines expressions referenced once" do
       name <- forAll Gen.name
       inlinee <-
-        forAll $ mfilter (\e -> not (isRefFree e || isLiteral e)) Gen.exp
-      let body = refFreeLocal name
+        forAll $ mfilter (\e -> not (isRef e || isLiteral e)) Gen.exp
+      let body = refLocal0 name
           original = let1 name inlinee body
           expected = let1 name inlinee inlinee
       annotateShow body
-      optimize original === expected
+      optimizeExpression original === expected
 
     test "doesn't inline expressions referenced more than once" do
       name <- forAll Gen.name
       inlinee <-
-        forAll $ mfilter (\e -> not (isRefFree e || isLiteral e)) Gen.exp
-      let body = application (refFreeLocal name) (refFreeLocal name)
-          original = let1 name inlinee body
+        forAll $ mfilter (\e -> not (isRef e || isLiteral e)) Gen.exp
+      let original =
+            let1 name inlinee $
+              application (refLocal0 name) (refLocal0 name)
       annotateShow original
-      optimize original === original
+      optimizeExpression original === original
+
+  describe "inliner unlocks more optimizations" do
+    test "constant folding after inlining" do
+      name <- forAll Gen.name
+      let uberName = ModuleName "Main"
+          linkMode = LinkAsModule uberName
+          dceEntry = DCE.EntryPoint uberName []
+          mkUber = Linker.makeUberModule linkMode . pure . wrapInModule
+      let original =
+            mkUber $
+              let1 name (integer 42) $
+                ifThenElse
+                  (eq (refLocal0 name) (integer 42))
+                  (integer 1)
+                  (integer 2)
+          expected = mkUber $ integer 1
+      annotateShow original
+      annotateShow expected
+      optimizeUberModule dceEntry original === expected
 
 --------------------------------------------------------------------------------
 -- Helpers ---------------------------------------------------------------------
 
-optimize :: Exp -> Exp
-optimize = flip evalState (0 :: Natural) . optimizeExpression
+wrapInModule :: Exp -> Module
+wrapInModule e =
+  Module
+    { moduleName = ModuleName "Main"
+    , moduleBindings = [Standalone (Name "main", e)]
+    , moduleImports = []
+    , moduleExports = [Name "main"]
+    , moduleReExports = Map.empty
+    , moduleForeigns = []
+    , modulePath = "Main.purs"
+    , dataTypes = Map.empty
+    }
 
 let1 :: Name -> Exp -> Exp -> Exp
 let1 n e = lets (Standalone (n, e) :| [])
 
-isRefFree :: Exp -> Bool
-isRefFree =
+isRef :: Exp -> Bool
+isRef =
   unExp >>> \case
-    RefFree {} -> True
+    Ref {} -> True
     _ -> False
 
 isLiteral :: Exp -> Bool

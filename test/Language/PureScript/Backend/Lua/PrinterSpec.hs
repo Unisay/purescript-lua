@@ -6,6 +6,7 @@ module Language.PureScript.Backend.Lua.PrinterSpec where
 import Data.Text qualified as Text
 import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
+import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prettyprinter (Doc, defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
@@ -93,14 +94,14 @@ spec = do
 
   describe "function" do
     it "one-liner" do
-      let params = [[Lua.name|a|], [Lua.name|b|]]
+      let params = ParamNamed <$> [[Lua.name|a|], [Lua.name|b|]]
       let result = Lua.Integer 1
       let stats = [Lua.assign (Lua.VarName [Lua.name|x|]) Lua.Nil]
       let expr = Lua.functionDef params (stats <> [Lua.return result])
       renderedExpression expr `shouldBe` "function(a, b) x = nil return 1 end"
 
     it "multi-liner" do
-      let params = [[Lua.name|aaa|], [Lua.name|bbb|]]
+      let params = ParamNamed <$> [[Lua.name|aaa|], [Lua.name|bbb|]]
       let result =
             Lua.varName
               [Lua.name|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa|]

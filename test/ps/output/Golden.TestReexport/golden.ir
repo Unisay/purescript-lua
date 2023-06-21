@@ -1,16 +1,25 @@
-[ Module
-  { moduleName = ModuleName "Golden.Reexport.Exports", moduleBindings =
-    [ Standalone ( Name "binding1", Lit ( Integer 1 ) ) ], moduleImports = [], moduleExports =
-    [ Name "binding1" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/Reexport/Exports.purs", dataTypes = fromList []
-  }, Module
-  { moduleName = ModuleName "Golden.Reexport.ReExports", moduleBindings =
-    [ Standalone ( Name "binding2", Lit ( Integer 2 ) ) ], moduleImports = [], moduleExports =
-    [ Name "binding2" ], moduleReExports = fromList
-    [ ( ModuleName "Golden.Reexport.Exports", [] ) ], moduleForeigns = [], modulePath = "golden/Golden/Reexport/ReExports.purs", dataTypes = fromList []
-  }, Module
-  { moduleName = ModuleName "Golden.TestReexport", moduleBindings =
-    [ Standalone ( Name "binding3", Lit ( Array [ RefFree ( Imported ( ModuleName "Golden.Reexport.Exports" ) ( Name "binding1" ) ), RefFree ( Imported ( ModuleName "Golden.Reexport.ReExports" ) ( Name "binding2" ) ) ] ) ) ], moduleImports =
-    [ ModuleName "Golden.Reexport.Exports", ModuleName "Golden.Reexport.ReExports" ], moduleExports =
-    [ Name "binding3" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestReexport.purs", dataTypes = fromList []
+UberModule
+  { uberModuleBindings =
+    [ Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.Reexport.Exports", qnameName = Name "binding1"
+        }, Lit
+        ( Integer 1 )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.Reexport.ReExports", qnameName = Name "binding2"
+        }, Lit
+        ( Integer 2 )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestReexport", qnameName = Name "binding3" }, Lit
+        ( Array
+          [ Ref
+            ( Imported ( ModuleName "Golden.Reexport.Exports" ) ( Name "binding1" ) ) ( 0 ), Ref
+            ( Imported ( ModuleName "Golden.Reexport.ReExports" ) ( Name "binding2" ) ) ( 0 )
+          ]
+        )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [ ( ModuleName "Golden.TestReexport", Name "binding3" ) ]
   }
-]

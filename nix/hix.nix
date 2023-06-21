@@ -1,12 +1,12 @@
 { pkgs, easy-ps, ... }: {
   name = "purescript-lua";
-  compiler-nix-name = "ghc927";
-  crossPlatforms = p:
-    pkgs.lib.optionals pkgs.stdenv.hostPlatform.isx86_64 ([ p.mingwW64 ]
-      ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [ p.musl64 ]);
+  compiler-nix-name = "ghc928";
+  # crossPlatforms = p:
+  #   pkgs.lib.optionals pkgs.stdenv.hostPlatform.isx86_64 ([ p.mingwW64 ]
+  #     ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [ p.musl64 ]);
 
   shell = {
-    tools = let index-state = "2023-04-21T00:00:00Z";
+    tools = let index-state = "2023-06-06T00:00:00Z";
     in {
       cabal = {
         inherit index-state;

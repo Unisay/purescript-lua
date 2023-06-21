@@ -1,7 +1,11 @@
-module Test.Hspec.Hedgehog.Extended (module H, test) where
+module Test.Hspec.Hedgehog.Extended
+  ( module H
+  , test
+  , xtest
+  ) where
 
 import Hedgehog (PropertyT)
-import Test.Hspec (SpecWith, it)
+import Test.Hspec (SpecWith, it, xit)
 import Test.Hspec.Hedgehog (hedgehog, modifyMaxShrinks, modifyMaxSuccess)
 import Test.Hspec.Hedgehog qualified as H
 
@@ -11,3 +15,6 @@ test title =
     . modifyMaxSuccess (const 1)
     . it title
     . hedgehog
+
+xtest :: String -> PropertyT IO () -> SpecWith ()
+xtest title = xit title . hedgehog

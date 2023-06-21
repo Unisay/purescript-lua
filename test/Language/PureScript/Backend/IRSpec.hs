@@ -75,7 +75,7 @@ spec = describe "IR representation" do
               )
 
       it "array literal binder" do
-        let x = refFreeLocal (Name "x")
+        let x = refLocal (Name "x") 0
             expectedResult =
               ifThenElse
                 (integer 3 `eq` arrayLength x)
@@ -156,7 +156,7 @@ spec = describe "IR representation" do
           , defaultAlternative
           ]
           >>= ( `shouldBe`
-                  let x = refFreeLocal (Name "x")
+                  let x = refLocal (Name "x") 0
                    in ifThenElse
                         (char 'a' `eq` objectProp x (PropName "foo"))
                         ( ifThenElse
@@ -245,7 +245,7 @@ spec = describe "IR representation" do
                     (Name "e0")
                     (array [])
                     ( ifThenElse
-                        (boolean False `eq` refFreeLocal (Name "e0"))
+                        (boolean False `eq` refLocal (Name "e0") 0)
                         (integer 1)
                         (exception "No patterns matched")
                     )
@@ -272,7 +272,7 @@ spec = describe "IR representation" do
                     ( ifThenElse
                         ( integer 2
                             `eq` objectProp
-                              (refFreeLocal (Name "e0"))
+                              (refLocal (Name "e0") 0)
                               (PropName "a")
                         )
                         (integer 1)
@@ -290,7 +290,7 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (boolean False `eq` refFreeLocal (Name "r"))
+                    (boolean False `eq` refLocal (Name "r") 0)
                     (integer 1)
                     (exception "No patterns matched")
               )
@@ -378,10 +378,10 @@ spec = describe "IR representation" do
           >>= ( `shouldBe`
                   ifThenElse
                     (char 'a' `eq` char 'z')
-                    (let1 (Name "x") (char 't') (refFreeLocal (Name "x")))
+                    (let1 (Name "x") (char 't') (refLocal (Name "x") 0))
                     ( ifThenElse
                         (char 'b' `eq` char 't')
-                        (let1 (Name "y") (char 'z') (refFreeLocal (Name "y")))
+                        (let1 (Name "y") (char 'z') (refLocal (Name "y") 0))
                         (integer 3)
                     )
               )
@@ -402,7 +402,7 @@ spec = describe "IR representation" do
                     ( Standalone (Name "z", char 'y')
                         :| [Standalone (Name "v", char 'x')]
                     )
-                    (refFreeLocal (Name "z"))
+                    (refLocal (Name "z") 0)
               )
 
       it "named binders compile to a let bindings" do
@@ -435,8 +435,8 @@ spec = describe "IR representation" do
                                 :| [IR.Standalone (Name "a", char 'x')]
                             )
                             ( application
-                                (refBound (Index 0 1))
-                                (refBound (Index 0 0))
+                                (refLocal (Name "a") 0)
+                                (refLocal (Name "b") 0)
                             )
                         )
                         ( lets
@@ -444,8 +444,8 @@ spec = describe "IR representation" do
                                 :| [IR.Standalone (Name "o1", char 'x')]
                             )
                             ( application
-                                (refBound (Index 0 0))
-                                (refBound (Index 0 1))
+                                (refLocal (Name "o2") 0)
+                                (refLocal (Name "o1") 0)
                             )
                         )
                     )
@@ -454,8 +454,8 @@ spec = describe "IR representation" do
                             :| [IR.Standalone (Name "o1", char 'x')]
                         )
                         ( application
-                            (refBound (Index 0 0))
-                            (refBound (Index 0 1))
+                            (refLocal (Name "o2") 0)
+                            (refLocal (Name "o1") 0)
                         )
                     )
               )

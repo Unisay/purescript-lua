@@ -1,24 +1,75 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestDataDeclarations1", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "U", Ctor ProductType ( TyName "Unit" ) ( CtorName "U" ) [] ), Standalone
-      ( Name "CtorSameName", Ctor ProductType ( TyName "TySameName" ) ( CtorName "CtorSameName" ) [] ), Standalone
-      ( Name "S0", Ctor SumType ( TyName "TSum" ) ( CtorName "S0" ) [] ), Standalone
-      ( Name "S1", Ctor SumType ( TyName "TSum" ) ( CtorName "S1" ) [ FieldName "value0" ] ), Standalone
-      ( Name "S2", Ctor SumType ( TyName "TSum" ) ( CtorName "S2" ) [ FieldName "value0", FieldName "value1" ] ), Standalone
-      ( Name "PF", Ctor ProductType ( TyName "TProductWithFields" ) ( CtorName "PF" ) [ FieldName "value0" ] ), Standalone
-      ( Name "P3", Ctor ProductType ( TyName "TProduct" ) ( CtorName "P3" ) [ FieldName "value0", FieldName "value1", FieldName "value2" ] ), Standalone
-      ( Name "Nop", Ctor SumType ( TyName "Rec" ) ( CtorName "Nop" ) [] ), Standalone
-      ( Name "More", Ctor SumType ( TyName "Rec" ) ( CtorName "More" ) [ FieldName "value0" ] )
-    ], moduleImports = [], moduleExports =
-    [ Name "U", Name "P3", Name "PF", Name "S0", Name "S1", Name "S2", Name "Nop", Name "More", Name "CtorSameName" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestDataDeclarations1.purs", dataTypes = fromList
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "U"
+        }, Ctor ( ProductType )
+        ( TyName "Unit" )
+        ( CtorName "U" ) ( [] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "CtorSameName"
+        }, Ctor ( ProductType )
+        ( TyName "TySameName" )
+        ( CtorName "CtorSameName" ) ( [] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "S0"
+        }, Ctor ( SumType )
+        ( TyName "TSum" )
+        ( CtorName "S0" ) ( [] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "S1"
+        }, Ctor ( SumType )
+        ( TyName "TSum" )
+        ( CtorName "S1" )
+        ( [ FieldName "value0" ] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "S2"
+        }, Ctor ( SumType )
+        ( TyName "TSum" )
+        ( CtorName "S2" )
+        ( [ FieldName "value0", FieldName "value1" ] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "PF"
+        }, Ctor ( ProductType )
+        ( TyName "TProductWithFields" )
+        ( CtorName "PF" )
+        ( [ FieldName "value0" ] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "P3"
+        }, Ctor ( ProductType )
+        ( TyName "TProduct" )
+        ( CtorName "P3" )
+        ( [ FieldName "value0", FieldName "value1", FieldName "value2" ] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "Nop"
+        }, Ctor ( SumType )
+        ( TyName "Rec" )
+        ( CtorName "Nop" ) ( [] )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "More"
+        }, Ctor ( SumType )
+        ( TyName "Rec" )
+        ( CtorName "More" )
+        ( [ FieldName "value0" ] )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
     [
-      ( TyName "Rec", ( SumType, fromList [ ( CtorName "More", [ FieldName "value0" ] ), ( CtorName "Nop", [] ) ] ) ),
-      ( TyName "TProduct", ( ProductType, fromList [ ( CtorName "P3", [ FieldName "value0", FieldName "value1", FieldName "value2" ] ) ] ) ),
-      ( TyName "TProductWithFields", ( ProductType, fromList [ ( CtorName "PF", [ FieldName "value0" ] ) ] ) ),
-      ( TyName "TSum", ( SumType, fromList [ ( CtorName "S0", [] ), ( CtorName "S1", [ FieldName "value0" ] ), ( CtorName "S2", [ FieldName "value0", FieldName "value1" ] ) ] ) ),
-      ( TyName "TySameName", ( ProductType, fromList [ ( CtorName "CtorSameName", [] ) ] ) ),
-      ( TyName "Unit", ( ProductType, fromList [ ( CtorName "U", [] ) ] ) )
+      ( ModuleName "Golden.TestDataDeclarations1", Name "U" ),
+      ( ModuleName "Golden.TestDataDeclarations1", Name "P3" ),
+      ( ModuleName "Golden.TestDataDeclarations1", Name "PF" ),
+      ( ModuleName "Golden.TestDataDeclarations1", Name "S0" ),
+      ( ModuleName "Golden.TestDataDeclarations1", Name "S1" ),
+      ( ModuleName "Golden.TestDataDeclarations1", Name "S2" ),
+      ( ModuleName "Golden.TestDataDeclarations1", Name "Nop" ),
+      ( ModuleName "Golden.TestDataDeclarations1", Name "More" ),
+      ( ModuleName "Golden.TestDataDeclarations1", Name "CtorSameName" )
     ]
   }
-]
