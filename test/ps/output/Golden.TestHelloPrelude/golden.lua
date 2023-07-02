@@ -20,31 +20,32 @@ local _S___runtime_lazy = function(name)
   end
 end
 local Data_Symbol_I_foreign = (function()
-  return { unsafeCoerce = function(a) return a end }
+  return {unsafeCoerce = function(a) return a end}
 end)()
 local Data_Symbol_I_unsafeCoerce = Data_Symbol_I_foreign.unsafeCoerce
-local Data_Unit_I_foreign = (function() return { unit = nil } end)()
+local Data_Unit_I_foreign = (function() return {unit = nil} end)()
 local Data_Unit_I_unit = Data_Unit_I_foreign.unit
 local Record_Unsafe_I_foreign = (function()
   return {
-      unsafeHas = function(l) return function(r) return r[l] ~= nil end end,
-      unsafeGet = function(l) return function(r) return r[l] end end,
-      unsafeSet = function(l) return function(value) return function(r)
-                  local copy = {}
-                  for key, val in pairs(r) do
-                      copy[key] = val
-                  end
-                  copy[l] = value
-                  return copy
-              end
-          end
-      end,
-      unsafeDelete = function(l) return function(r)
-              local copy = {}
-              for key, val in pairs(r) do if key ~= l then copy[key] = val end end
-              return copy
-          end
+    unsafeHas = function(l) return function(r) return r[l] ~= nil end end,
+    unsafeGet = function(l) return function(r) return r[l] end end,
+    unsafeSet = function(l)
+      return function(value)
+        return function(r)
+          local copy = {}
+          for key, val in pairs(r) do copy[key] = val end
+          copy[l] = value
+          return copy
+        end
       end
+    end,
+    unsafeDelete = function(l)
+      return function(r)
+        local copy = {}
+        for key, val in pairs(r) do if key ~= l then copy[key] = val end end
+        return copy
+      end
+    end
   }
 end)()
 local Record_Unsafe_I_unsafeHas = Record_Unsafe_I_foreign.unsafeHas
@@ -70,12 +71,12 @@ local Data_Eq_I_foreign = (function()
     eqNumberImpl = refEq,
     eqCharImpl = refEq,
     eqStringImpl = refEq,
-    eqArrayImpl = function(f) return function(xs) return function(ys)
+    eqArrayImpl = function(f)
+      return function(xs)
+        return function(ys)
           local l = #xs
           if l ~= #ys then return false end
-          for i = 1, l do
-            if not f(xs[i])(ys[i]) then return false end
-          end
+          for i = 1, l do if not f(xs[i])(ys[i]) then return false end end
           return true
         end
       end
@@ -91,7 +92,8 @@ local Data_Eq_I_eqArrayImpl = Data_Eq_I_foreign.eqArrayImpl
 local Data_Semigroup_I_foreign = (function()
   return {
     concatString = function(s1) return function(s2) return s1 .. s2 end end,
-    concatArray = function(xs) return function(ys)
+    concatArray = function(xs)
+      return function(ys)
         if #xs == 0 then return ys end
         if #ys == 0 then return xs end
         return table.concat(xs, ys)
@@ -171,7 +173,7 @@ local Data_Semiring_I_foreign = (function()
     intAdd = function(x) return function(y) return x + y | 0 end end,
     intMul = function(x) return function(y) return x * y | 0 end end,
     numAdd = function(x) return function(y) return x + y end end,
-    numMul = function(x) return function(y) return x * y end end,
+    numMul = function(x) return function(y) return x * y end end
   }
 end)()
 local Data_Semiring_I_intAdd = Data_Semiring_I_foreign.intAdd
@@ -221,9 +223,7 @@ local Data_Ord_I_foreign = (function()
             local x = xs[i]
             local y = ys[i]
             local o = f(x)(y)
-            if o ~= 0 then
-              return o
-            end
+            if o ~= 0 then return o end
             i = i + 1
           end
           if xlen == ylen then
@@ -246,7 +246,8 @@ local Data_Ord_I_ordCharImpl = Data_Ord_I_foreign.ordCharImpl
 local Data_Ord_I_ordArrayImpl = Data_Ord_I_foreign.ordArrayImpl
 local Data_Functor_I_foreign = (function()
   return {
-    arrayMap = function(f) return function(arr)
+    arrayMap = function(f)
+      return function(arr)
         local l = #arr
         local result = {}
         for i = 1, l do result[i] = f(arr[i]) end
@@ -310,18 +311,20 @@ local Data_Bounded_I_bottomNumber = Data_Bounded_I_foreign.bottomNumber
 local Data_EuclideanRing_I_foreign = (function()
   return {
     intDegree = function(x) return math.min(math.abs(x), math.maxinteger) end,
-    intDiv = function(x) return function(y)
+    intDiv = function(x)
+      return function(y)
         if y == 0 then return 0 end
         return y > 0 and math.floor(x / y) or -math.floor(x / -y)
       end
     end,
-    intMod = function(x) return function(y)
+    intMod = function(x)
+      return function(y)
         if y == 0 then return 0 end
         local yy = math.abs(y)
         return ((x % yy) + yy) % yy
       end
     end,
-    numDiv = function(n1) return function(n2) return n1 / n2 end end,
+    numDiv = function(n1) return function(n2) return n1 / n2 end end
   }
 end)()
 local Data_EuclideanRing_I_intDegree = Data_EuclideanRing_I_foreign.intDegree

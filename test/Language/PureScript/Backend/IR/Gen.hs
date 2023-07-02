@@ -72,17 +72,21 @@ nonRecursiveExp ∷ MonadGen m ⇒ m IR.Exp
 nonRecursiveExp =
   Gen.frequency
     [ (5, literalNonRecursiveExp)
-    , (1, IR.exception <$> Gen.text (Range.linear 0 10) Gen.unicode)
-    ,
-      ( 1
-      , IR.ctor
-          <$> Gen.enumBounded
-          <*> tyName
-          <*> ctorName
-          <*> Gen.list (Range.linear 0 10) fieldName
-      )
+    , (1, exception)
+    , (1, ctor)
     , (3, IR.ref <$> qualified name <*> pure 0)
     ]
+
+exception ∷ MonadGen m ⇒ m IR.Exp
+exception = IR.exception <$> Gen.text (Range.linear 0 10) Gen.unicode
+
+ctor ∷ MonadGen m ⇒ m IR.Exp
+ctor =
+  IR.ctor
+    <$> Gen.enumBounded
+    <*> tyName
+    <*> ctorName
+    <*> Gen.list (Range.linear 0 10) fieldName
 
 literalNonRecursiveExp ∷ MonadGen m ⇒ m IR.Exp
 literalNonRecursiveExp =

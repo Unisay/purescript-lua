@@ -2,6 +2,7 @@ module Language.PureScript.Backend.IR.OptimizerSpec where
 
 import Data.Map qualified as Map
 import Hedgehog (annotateShow, forAll, (===))
+import Hedgehog.Gen qualified as Gen
 import Language.PureScript.Backend.IR.Gen qualified as Gen
 import Language.PureScript.Backend.IR.Linker (LinkMode (..))
 import Language.PureScript.Backend.IR.Linker qualified as Linker
@@ -72,8 +73,7 @@ spec = describe "IR Optimizer" do
 
     test "doesn't inline expressions referenced more than once" do
       name ← forAll Gen.name
-      inlinee ← forAll do
-        mfilter (\e → not (isRef e || isLiteral e)) Gen.nonRecursiveExp
+      inlinee ← forAll $ Gen.choice [Gen.exception, Gen.ctor]
       let original =
             let1 name inlinee $
               application (refLocal0 name) (refLocal0 name)
