@@ -2,36 +2,31 @@ UberModule
   { uberModuleBindings =
     [ Standalone
       ( QName
-        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "test4" }, Abs
-        ( ParamNamed ( Name "v" ) )
-        ( ObjectProp ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( PropName "x" ) )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "test3" }, Abs
-        ( ParamNamed ( Name "v" ) )
-        ( ObjectProp ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( PropName "x" ) )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "test2" }, Abs
-        ( ParamNamed ( Name "v" ) )
-        ( ObjectProp ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( PropName "x" ) )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "r" }, Lit
-        ( Object [ ( PropName "x", Lit ( Integer 1 ) ), ( PropName "y", Lit ( Boolean True ) ) ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "test1"
-        }, ObjectProp
-        ( Ref ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) ( 0 ) )
-        ( PropName "x" )
+        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "r"
+        }, LiteralObject
+        [
+          ( PropName "x", Identity ( LiteralInt 1 ) ),
+          ( PropName "y", Identity ( LiteralBool True ) )
+        ]
       )
     ], uberModuleForeigns = [], uberModuleExports =
     [
-      ( ModuleName "Golden.TestRecordsAccess", Name "r" ),
-      ( ModuleName "Golden.TestRecordsAccess", Name "test1" ),
-      ( ModuleName "Golden.TestRecordsAccess", Name "test2" ),
-      ( ModuleName "Golden.TestRecordsAccess", Name "test3" ),
-      ( ModuleName "Golden.TestRecordsAccess", Name "test4" )
+      ( Name "r", Ref ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) 0 ),
+      ( Name "test1", ObjectProp
+        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) 0 ) )
+        ( PropName "x" )
+      ),
+      ( Name "test2", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) ) )
+      ),
+      ( Name "test3", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) ) )
+      ),
+      ( Name "test4", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) ) )
+      )
     ]
   }

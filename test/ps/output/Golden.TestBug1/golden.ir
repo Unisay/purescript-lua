@@ -1,29 +1,37 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestBug1", qnameName = Name "test" }, App
-        ( Abs
-          ( ParamNamed ( Name "v" ) )
-          ( ObjectProp ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( PropName "elem" ) )
-        )
-        ( App
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "test", App
+        ( Identity
           ( Abs
-            ( ParamNamed ( Name "r" ) )
-            ( Lit
-              ( Object
-                [
-                  ( PropName "elem", ObjectProp
-                    ( Ref ( Local ( Name "r" ) ) ( 0 ) )
-                    ( PropName "elem" )
-                  )
-                ]
-              )
+            ( Identity ( ParamNamed ( Name "v" ) ) )
+            ( Identity
+              ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "elem" ) )
             )
           )
-          ( Lit ( Object [ ( PropName "elem", Lit ( Integer 1 ) ) ] ) )
+        )
+        ( Identity
+          ( App
+            ( Identity
+              ( Abs
+                ( Identity ( ParamNamed ( Name "r" ) ) )
+                ( Identity
+                  ( LiteralObject
+                    [
+                      ( PropName "elem", Identity
+                        ( ObjectProp
+                          ( Identity ( Ref ( Local ( Name "r" ) ) 0 ) )
+                          ( PropName "elem" )
+                        )
+                      )
+                    ]
+                  )
+                )
+              )
+            )
+            ( Identity ( LiteralObject [ ( PropName "elem", Identity ( LiteralInt 1 ) ) ] ) )
+          )
         )
       )
-    ], uberModuleForeigns = [], uberModuleExports =
-    [ ( ModuleName "Golden.TestBug1", Name "test" ) ]
+    ]
   }

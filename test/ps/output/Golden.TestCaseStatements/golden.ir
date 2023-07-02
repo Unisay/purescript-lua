@@ -3,294 +3,161 @@ UberModule
     [ Standalone
       ( QName
         { qnameModuleName = ModuleName "Golden.TestValues", qnameName = Name "f"
-        }, Abs ( ParamUnused )
-        ( Lit ( Boolean True ) )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestCaseStatements", qnameName = Name "J"
-        }, Ctor ( SumType )
-        ( TyName "M" )
-        ( CtorName "J" )
-        ( [ FieldName "value0" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestCaseStatements", qnameName = Name "N"
-        }, Ctor ( SumType )
-        ( TyName "M" )
-        ( CtorName "N" ) ( [] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestCaseStatements", qnameName = Name "multipleGuards"
-        }, Lit
-        ( Integer 1 )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestCaseStatements", qnameName = Name "d" }, Abs
-        ( ParamNamed ( Name "m" ) )
-        ( Abs
-          ( ParamNamed ( Name "n" ) )
-          ( Abs
-            ( ParamNamed ( Name "x" ) )
-            ( Let
-              ( Standalone
-                ( Name "v", Abs ( ParamUnused )
-                  ( IfThenElse
-                    ( Prim ( Eq ( Lit ( Char 'y' ) ) ( Ref ( Local ( Name "x" ) ) ( 0 ) ) ) )
-                    ( Lit ( Integer 0 ) )
-                    ( Lit ( Integer 1 ) )
-                  )
-                ) :| []
-              )
-              ( IfThenElse
-                ( Prim ( Eq ( Lit ( Char 'x' ) ) ( Ref ( Local ( Name "x" ) ) ( 0 ) ) ) )
-                ( IfThenElse
-                  ( Prim
-                    ( Eq
-                      ( Lit ( String "Golden.TestCaseStatements.J" ) )
-                      ( Prim ( ReflectCtor ( Ref ( Local ( Name "m" ) ) ( 0 ) ) ) )
-                    )
-                  )
-                  ( IfThenElse
-                    ( Prim
-                      ( Eq
-                        ( Lit ( String "Golden.TestCaseStatements.N" ) )
-                        ( Prim ( ReflectCtor ( Ref ( Local ( Name "n" ) ) ( 0 ) ) ) )
-                      )
-                    )
-                    ( ArrayIndex ( Ref ( Local ( Name "m" ) ) ( 0 ) ) ( 0 ) )
-                    ( App ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
-                  )
-                  ( App ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
-                )
-                ( App ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
-              )
-            )
-          )
-        )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestCaseStatements", qnameName = Name "b" }, Lit
-        ( Char 'b' )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestCaseStatements", qnameName = Name "a" }, Lit
-        ( Integer 1 )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestCaseStatements", qnameName = Name "c" }, Let
-        ( Standalone
-          ( Name "v", Abs ( ParamUnused )
-            ( IfThenElse
-              ( Prim
-                ( Eq
-                  ( Lit ( Integer 2 ) )
-                  ( Ref ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 ) )
-                )
-              )
-              ( IfThenElse
-                ( App
-                  ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) ( 0 ) )
-                  ( Lit ( Integer 0 ) )
-                )
-                ( Lit ( Integer 10 ) )
-                ( IfThenElse
-                  ( Prim
-                    ( Eq
-                      ( Lit ( Integer 3 ) )
-                      ( Ref
-                        ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                      )
-                    )
-                  )
-                  ( IfThenElse
-                    ( App
-                      ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) ( 0 ) )
-                      ( Ref
-                        ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                      )
-                    )
-                    ( Ref
-                      ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                    )
-                    ( IfThenElse
-                      ( Prim
-                        ( Eq
-                          ( Lit ( Integer 4 ) )
-                          ( Ref
-                            ( Imported
-                              ( ModuleName "Golden.TestCaseStatements" )
-                              ( Name "a" )
-                            ) ( 0 )
-                          )
-                        )
-                      )
-                      ( IfThenElse
-                        ( App
-                          ( Ref
-                            ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) ( 0 )
-                          )
-                          ( Ref
-                            ( Imported
-                              ( ModuleName "Golden.TestCaseStatements" )
-                              ( Name "a" )
-                            ) ( 0 )
-                          )
-                        )
-                        ( Ref
-                          ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                        )
-                        ( Lit ( Integer 0 ) )
-                      )
-                      ( Lit ( Integer 0 ) )
-                    )
-                  )
-                  ( IfThenElse
-                    ( Prim
-                      ( Eq
-                        ( Lit ( Integer 4 ) )
-                        ( Ref
-                          ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                        )
-                      )
-                    )
-                    ( IfThenElse
-                      ( App
-                        ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) ( 0 ) )
-                        ( Ref
-                          ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                        )
-                      )
-                      ( Ref
-                        ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                      )
-                      ( Lit ( Integer 0 ) )
-                    )
-                    ( Lit ( Integer 0 ) )
-                  )
-                )
-              )
-              ( IfThenElse
-                ( Prim
-                  ( Eq
-                    ( Lit ( Integer 3 ) )
-                    ( Ref
-                      ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                    )
-                  )
-                )
-                ( IfThenElse
-                  ( App
-                    ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) ( 0 ) )
-                    ( Ref
-                      ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                    )
-                  )
-                  ( Ref
-                    ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                  )
-                  ( IfThenElse
-                    ( Prim
-                      ( Eq
-                        ( Lit ( Integer 4 ) )
-                        ( Ref
-                          ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                        )
-                      )
-                    )
-                    ( IfThenElse
-                      ( App
-                        ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) ( 0 ) )
-                        ( Ref
-                          ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                        )
-                      )
-                      ( Ref
-                        ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                      )
-                      ( Lit ( Integer 0 ) )
-                    )
-                    ( Lit ( Integer 0 ) )
-                  )
-                )
-                ( IfThenElse
-                  ( Prim
-                    ( Eq
-                      ( Lit ( Integer 4 ) )
-                      ( Ref
-                        ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                      )
-                    )
-                  )
-                  ( IfThenElse
-                    ( App
-                      ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) ( 0 ) )
-                      ( Ref
-                        ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                      )
-                    )
-                    ( Ref
-                      ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 )
-                    )
-                    ( Lit ( Integer 0 ) )
-                  )
-                  ( Lit ( Integer 0 ) )
-                )
-              )
-            )
-          ) :| []
-        )
-        ( IfThenElse
-          ( Prim
-            ( Eq
-              ( Lit ( Integer 1 ) )
-              ( Ref ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "a" ) ) ( 0 ) )
-            )
-          )
-          ( IfThenElse
-            ( Prim
-              ( Eq
-                ( Lit ( Char 'b' ) )
-                ( Ref ( Imported ( ModuleName "Golden.TestCaseStatements" ) ( Name "b" ) ) ( 0 ) )
-              )
-            )
-            ( IfThenElse
-              ( Prim
-                ( Eq
-                  ( Lit ( Boolean True ) )
-                  ( App
-                    ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) ( 0 ) )
-                    ( Lit ( Integer 2 ) )
-                  )
-                )
-              )
-              ( IfThenElse
-                ( Prim
-                  ( Eq
-                    ( Lit ( Boolean True ) )
-                    ( App
-                      ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) ( 0 ) )
-                      ( Lit ( Integer 1 ) )
-                    )
-                  )
-                )
-                ( Lit ( Integer 42 ) )
-                ( App ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
-              )
-              ( App ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
-            )
-            ( App ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
-          )
-          ( App ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( Lit ( Boolean True ) ) )
-        )
+        }, Abs ( Identity ParamUnused )
+        ( Identity ( LiteralBool True ) )
       )
     ], uberModuleForeigns = [], uberModuleExports =
     [
-      ( ModuleName "Golden.TestCaseStatements", Name "a" ),
-      ( ModuleName "Golden.TestCaseStatements", Name "b" ),
-      ( ModuleName "Golden.TestCaseStatements", Name "c" ),
-      ( ModuleName "Golden.TestCaseStatements", Name "J" ),
-      ( ModuleName "Golden.TestCaseStatements", Name "N" ),
-      ( ModuleName "Golden.TestCaseStatements", Name "d" ),
-      ( ModuleName "Golden.TestCaseStatements", Name "multipleGuards" )
+      ( Name "a", LiteralInt 1 ),
+      ( Name "b", LiteralChar 'b' ),
+      ( Name "c", Let
+        ( Standalone
+          ( Identity
+            ( Name "v" ), Identity
+            ( Abs ( Identity ParamUnused ) ( Identity ( LiteralInt 0 ) ) )
+          ) :| []
+        )
+        ( Identity
+          ( IfThenElse
+            ( Identity
+              ( Eq
+                ( Identity ( LiteralBool True ) )
+                ( Identity
+                  ( App
+                    ( Identity
+                      ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) 0 )
+                    )
+                    ( Identity ( LiteralInt 2 ) )
+                  )
+                )
+              )
+            )
+            ( Identity
+              ( IfThenElse
+                ( Identity
+                  ( Eq
+                    ( Identity ( LiteralBool True ) )
+                    ( Identity
+                      ( App
+                        ( Identity
+                          ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) 0 )
+                        )
+                        ( Identity ( LiteralInt 1 ) )
+                      )
+                    )
+                  )
+                )
+                ( Identity ( LiteralInt 42 ) )
+                ( Identity
+                  ( App
+                    ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                    ( Identity ( LiteralBool True ) )
+                  )
+                )
+              )
+            )
+            ( Identity
+              ( App
+                ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                ( Identity ( LiteralBool True ) )
+              )
+            )
+          )
+        )
+      ),
+      ( Name "J", Ctor SumType ( TyName "M" ) ( CtorName "J" ) [ FieldName "value0" ] ),
+      ( Name "N", Ctor SumType ( TyName "M" ) ( CtorName "N" ) [] ),
+      ( Name "d", Abs
+        ( Identity ( ParamNamed ( Name "m" ) ) )
+        ( Identity
+          ( Abs
+            ( Identity ( ParamNamed ( Name "n" ) ) )
+            ( Identity
+              ( Abs
+                ( Identity ( ParamNamed ( Name "x" ) ) )
+                ( Identity
+                  ( Let
+                    ( Standalone
+                      ( Identity
+                        ( Name "v" ), Identity
+                        ( Abs ( Identity ParamUnused )
+                          ( Identity
+                            ( IfThenElse
+                              ( Identity
+                                ( Eq
+                                  ( Identity ( LiteralChar 'y' ) )
+                                  ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
+                                )
+                              )
+                              ( Identity ( LiteralInt 0 ) )
+                              ( Identity ( LiteralInt 1 ) )
+                            )
+                          )
+                        )
+                      ) :| []
+                    )
+                    ( Identity
+                      ( IfThenElse
+                        ( Identity
+                          ( Eq
+                            ( Identity ( LiteralChar 'x' ) )
+                            ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
+                          )
+                        )
+                        ( Identity
+                          ( IfThenElse
+                            ( Identity
+                              ( Eq
+                                ( Identity ( LiteralString "Golden.TestCaseStatements.J" ) )
+                                ( Identity
+                                  ( ReflectCtor ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) ) )
+                                )
+                              )
+                            )
+                            ( Identity
+                              ( IfThenElse
+                                ( Identity
+                                  ( Eq
+                                    ( Identity ( LiteralString "Golden.TestCaseStatements.N" ) )
+                                    ( Identity
+                                      ( ReflectCtor ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) ) )
+                                    )
+                                  )
+                                )
+                                ( Identity
+                                  ( ArrayIndex ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) ) 0 )
+                                )
+                                ( Identity
+                                  ( App
+                                    ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                                    ( Identity ( LiteralBool True ) )
+                                  )
+                                )
+                              )
+                            )
+                            ( Identity
+                              ( App
+                                ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                                ( Identity ( LiteralBool True ) )
+                              )
+                            )
+                          )
+                        )
+                        ( Identity
+                          ( App
+                            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                            ( Identity ( LiteralBool True ) )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ),
+      ( Name "multipleGuards", LiteralInt 1 )
     ]
   }

@@ -1,149 +1,174 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching1", qnameName = Name "Zero"
-        }, Ctor ( SumType )
-        ( TyName "N" )
-        ( CtorName "Zero" ) ( [] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching1", qnameName = Name "Succ"
-        }, Ctor ( SumType )
-        ( TyName "N" )
-        ( CtorName "Succ" )
-        ( [ FieldName "value0" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching1", qnameName = Name "Num"
-        }, Ctor ( SumType )
-        ( TyName "E" )
-        ( CtorName "Num" )
-        ( [ FieldName "value0" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching1", qnameName = Name "Not"
-        }, Ctor ( SumType )
-        ( TyName "E" )
-        ( CtorName "Not" )
-        ( [ FieldName "value0" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching1", qnameName = Name "pat" }, Abs
-        ( ParamNamed ( Name "e" ) )
-        ( IfThenElse
-          ( Prim
-            ( Eq
-              ( Lit ( String "Golden.TestPatternMatching1.Not" ) )
-              ( Prim ( ReflectCtor ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ) )
-            )
-          )
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "Zero", Ctor SumType ( TyName "N" ) ( CtorName "Zero" ) [] ),
+      ( Name "Succ", Ctor SumType ( TyName "N" ) ( CtorName "Succ" ) [ FieldName "value0" ] ),
+      ( Name "Num", Ctor SumType ( TyName "E" ) ( CtorName "Num" ) [ FieldName "value0" ] ),
+      ( Name "Not", Ctor SumType ( TyName "E" ) ( CtorName "Not" ) [ FieldName "value0" ] ),
+      ( Name "pat", Abs
+        ( Identity ( ParamNamed ( Name "e" ) ) )
+        ( Identity
           ( IfThenElse
-            ( Prim
+            ( Identity
               ( Eq
-                ( Lit ( String "Golden.TestPatternMatching1.Num" ) )
-                ( Prim ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) ) )
+                ( Identity ( LiteralString "Golden.TestPatternMatching1.Not" ) )
+                ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) ) )
               )
             )
-            ( IfThenElse
-              ( Prim
-                ( Eq
-                  ( Lit ( String "Golden.TestPatternMatching1.Succ" ) )
-                  ( Prim
-                    ( ReflectCtor
-                      ( ArrayIndex ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) ( 0 ) )
-                    )
-                  )
-                )
-              )
-              ( Lit ( Integer 1 ) )
+            ( Identity
               ( IfThenElse
-                ( Prim
+                ( Identity
                   ( Eq
-                    ( Lit ( String "Golden.TestPatternMatching1.Zero" ) )
-                    ( Prim
+                    ( Identity ( LiteralString "Golden.TestPatternMatching1.Num" ) )
+                    ( Identity
                       ( ReflectCtor
-                        ( ArrayIndex
-                          ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) ( 0 )
-                        )
+                        ( Identity ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 ) )
                       )
                     )
                   )
                 )
-                ( Lit ( Integer 2 ) )
-                ( Lit ( Integer 6 ) )
-              )
-            )
-            ( IfThenElse
-              ( Prim
-                ( Eq
-                  ( Lit ( String "Golden.TestPatternMatching1.Not" ) )
-                  ( Prim ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) ) )
-                )
-              )
-              ( IfThenElse
-                ( Prim
-                  ( Eq
-                    ( Lit ( String "Golden.TestPatternMatching1.Num" ) )
-                    ( Prim
-                      ( ReflectCtor
-                        ( ArrayIndex
-                          ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) ( 0 )
-                        )
-                      )
-                    )
-                  )
-                )
-                ( IfThenElse
-                  ( Prim
-                    ( Eq
-                      ( Lit ( String "Golden.TestPatternMatching1.Succ" ) )
-                      ( Prim
-                        ( ReflectCtor
-                          ( ArrayIndex
-                            ( ArrayIndex
-                              ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) ( 0 )
-                            ) ( 0 )
+                ( Identity
+                  ( IfThenElse
+                    ( Identity
+                      ( Eq
+                        ( Identity ( LiteralString "Golden.TestPatternMatching1.Succ" ) )
+                        ( Identity
+                          ( ReflectCtor
+                            ( Identity
+                              ( ArrayIndex
+                                ( Identity
+                                  ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
+                                ) 0
+                              )
+                            )
                           )
                         )
                       )
                     )
+                    ( Identity ( LiteralInt 1 ) )
+                    ( Identity
+                      ( IfThenElse
+                        ( Identity
+                          ( Eq
+                            ( Identity ( LiteralString "Golden.TestPatternMatching1.Zero" ) )
+                            ( Identity
+                              ( ReflectCtor
+                                ( Identity
+                                  ( ArrayIndex
+                                    ( Identity
+                                      ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
+                                    ) 0
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                        ( Identity ( LiteralInt 2 ) )
+                        ( Identity ( LiteralInt 6 ) )
+                      )
+                    )
                   )
-                  ( Lit ( Integer 3 ) )
-                  ( Lit ( Integer 6 ) )
                 )
-                ( Lit ( Integer 6 ) )
-              )
-              ( Lit ( Integer 6 ) )
-            )
-          )
-          ( IfThenElse
-            ( Prim
-              ( Eq
-                ( Lit ( String "Golden.TestPatternMatching1.Num" ) )
-                ( Prim ( ReflectCtor ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ) )
-              )
-            )
-            ( IfThenElse
-              ( Prim
-                ( Eq
-                  ( Lit ( String "Golden.TestPatternMatching1.Succ" ) )
-                  ( Prim ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) ) )
+                ( Identity
+                  ( IfThenElse
+                    ( Identity
+                      ( Eq
+                        ( Identity ( LiteralString "Golden.TestPatternMatching1.Not" ) )
+                        ( Identity
+                          ( ReflectCtor
+                            ( Identity
+                              ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
+                            )
+                          )
+                        )
+                      )
+                    )
+                    ( Identity
+                      ( IfThenElse
+                        ( Identity
+                          ( Eq
+                            ( Identity ( LiteralString "Golden.TestPatternMatching1.Num" ) )
+                            ( Identity
+                              ( ReflectCtor
+                                ( Identity
+                                  ( ArrayIndex
+                                    ( Identity
+                                      ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
+                                    ) 0
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                        ( Identity
+                          ( IfThenElse
+                            ( Identity
+                              ( Eq
+                                ( Identity ( LiteralString "Golden.TestPatternMatching1.Succ" ) )
+                                ( Identity
+                                  ( ReflectCtor
+                                    ( Identity
+                                      ( ArrayIndex
+                                        ( Identity
+                                          ( ArrayIndex
+                                            ( Identity
+                                              ( ArrayIndex
+                                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0
+                                              )
+                                            ) 0
+                                          )
+                                        ) 0
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                            ( Identity ( LiteralInt 3 ) )
+                            ( Identity ( LiteralInt 6 ) )
+                          )
+                        )
+                        ( Identity ( LiteralInt 6 ) )
+                      )
+                    )
+                    ( Identity ( LiteralInt 6 ) )
+                  )
                 )
               )
-              ( Lit ( Integer 4 ) )
-              ( Lit ( Integer 5 ) )
             )
-            ( Lit ( Integer 6 ) )
+            ( Identity
+              ( IfThenElse
+                ( Identity
+                  ( Eq
+                    ( Identity ( LiteralString "Golden.TestPatternMatching1.Num" ) )
+                    ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) ) )
+                  )
+                )
+                ( Identity
+                  ( IfThenElse
+                    ( Identity
+                      ( Eq
+                        ( Identity ( LiteralString "Golden.TestPatternMatching1.Succ" ) )
+                        ( Identity
+                          ( ReflectCtor
+                            ( Identity
+                              ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
+                            )
+                          )
+                        )
+                      )
+                    )
+                    ( Identity ( LiteralInt 4 ) )
+                    ( Identity ( LiteralInt 5 ) )
+                  )
+                )
+                ( Identity ( LiteralInt 6 ) )
+              )
+            )
           )
         )
       )
-    ], uberModuleForeigns = [], uberModuleExports =
-    [
-      ( ModuleName "Golden.TestPatternMatching1", Name "Zero" ),
-      ( ModuleName "Golden.TestPatternMatching1", Name "Succ" ),
-      ( ModuleName "Golden.TestPatternMatching1", Name "Num" ),
-      ( ModuleName "Golden.TestPatternMatching1", Name "Not" ),
-      ( ModuleName "Golden.TestPatternMatching1", Name "pat" )
     ]
   }

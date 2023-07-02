@@ -82,7 +82,7 @@ data Bind a
   deriving stock (Eq, Ord, Show, Functor)
 
 {- |
-A guard is just a boolean-valued expression
+A guard is just a literalBool-valued expression
 that appears alongside a set of binders
 -}
 type Guard a = Expr a
@@ -121,7 +121,7 @@ data Literal a
     -- A character literal
     CharLiteral Char
   | -- |
-    -- A boolean literal
+    -- A literalBool literal
     BooleanLiteral Bool
   | -- |
     -- An array literal

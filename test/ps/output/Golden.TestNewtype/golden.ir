@@ -3,22 +3,16 @@ UberModule
     [ Standalone
       ( QName
         { qnameModuleName = ModuleName "Golden.TestNewtype", qnameName = Name "NT" }, Abs
-        ( ParamNamed ( Name "x" ) )
-        ( Ref ( Local ( Name "x" ) ) ( 0 ) )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestNewtype", qnameName = Name "g" }, Ref
-        ( Imported ( ModuleName "Golden.TestNewtype" ) ( Name "NT" ) ) ( 0 )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestNewtype", qnameName = Name "f" }, Abs
-        ( ParamNamed ( Name "v" ) )
-        ( ObjectProp ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ( PropName "foo" ) )
+        ( Identity ( ParamNamed ( Name "x" ) ) )
+        ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
       )
     ], uberModuleForeigns = [], uberModuleExports =
     [
-      ( ModuleName "Golden.TestNewtype", Name "NT" ),
-      ( ModuleName "Golden.TestNewtype", Name "f" ),
-      ( ModuleName "Golden.TestNewtype", Name "g" )
+      ( Name "NT", Ref ( Imported ( ModuleName "Golden.TestNewtype" ) ( Name "NT" ) ) 0 ),
+      ( Name "f", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "foo" ) ) )
+      ),
+      ( Name "g", Ref ( Imported ( ModuleName "Golden.TestNewtype" ) ( Name "NT" ) ) 0 )
     ]
   }

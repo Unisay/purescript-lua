@@ -3,3 +3,4 @@ local Golden_TestForeign_I_foreign = (function()
   return { foo = fooBar }
 end)()
 local Golden_TestForeign_I_foo = Golden_TestForeign_I_foreign.foo
+return { foo = Golden_TestForeign_I_foo }

@@ -1,25 +1,4 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.Reexport.Exports", qnameName = Name "binding1"
-        }, Lit
-        ( Integer 1 )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.Reexport.ReExports", qnameName = Name "binding2"
-        }, Lit
-        ( Integer 2 )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestReexport", qnameName = Name "binding3" }, Lit
-        ( Array
-          [ Ref
-            ( Imported ( ModuleName "Golden.Reexport.Exports" ) ( Name "binding1" ) ) ( 0 ), Ref
-            ( Imported ( ModuleName "Golden.Reexport.ReExports" ) ( Name "binding2" ) ) ( 0 )
-          ]
-        )
-      )
-    ], uberModuleForeigns = [], uberModuleExports =
-    [ ( ModuleName "Golden.TestReexport", Name "binding3" ) ]
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [ ( Name "binding3", LiteralArray [ Identity ( LiteralInt 1 ), Identity ( LiteralInt 2 ) ] ) ]
   }

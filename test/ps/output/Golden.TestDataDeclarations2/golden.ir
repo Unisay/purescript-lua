@@ -1,42 +1,40 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations2", qnameName = Name "CtorSameName"
-        }, Ctor ( ProductType )
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "CtorSameName", Ctor ProductType
         ( TyName "TySameName" )
-        ( CtorName "CtorSameName" ) ( [] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations2", qnameName = Name "test"
-        }, Abs
-        ( ParamNamed ( Name "v" ) )
-        ( Abs
-          ( ParamNamed ( Name "v1" ) )
-          ( IfThenElse
-            ( Prim
-              ( Eq
-                ( Lit ( String "Golden.TestDataDeclarations1.CtorSameName" ) )
-                ( Prim ( ReflectCtor ( Ref ( Local ( Name "v" ) ) ( 0 ) ) ) )
-              )
-            )
-            ( IfThenElse
-              ( Prim
-                ( Eq
-                  ( Lit ( String "Golden.TestDataDeclarations2.CtorSameName" ) )
-                  ( Prim ( ReflectCtor ( Ref ( Local ( Name "v1" ) ) ( 0 ) ) ) )
+        ( CtorName "CtorSameName" ) []
+      ),
+      ( Name "test", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity
+          ( Abs
+            ( Identity ( ParamNamed ( Name "v1" ) ) )
+            ( Identity
+              ( IfThenElse
+                ( Identity
+                  ( Eq
+                    ( Identity ( LiteralString "Golden.TestDataDeclarations1.CtorSameName" ) )
+                    ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ) )
+                  )
                 )
+                ( Identity
+                  ( IfThenElse
+                    ( Identity
+                      ( Eq
+                        ( Identity ( LiteralString "Golden.TestDataDeclarations2.CtorSameName" ) )
+                        ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v1" ) ) 0 ) ) ) )
+                      )
+                    )
+                    ( Identity ( LiteralBool True ) )
+                    ( Identity ( Exception "No patterns matched" ) )
+                  )
+                )
+                ( Identity ( Exception "No patterns matched" ) )
               )
-              ( Lit ( Boolean True ) )
-              ( Exception ( "No patterns matched" ) )
             )
-            ( Exception ( "No patterns matched" ) )
           )
         )
       )
-    ], uberModuleForeigns = [], uberModuleExports =
-    [
-      ( ModuleName "Golden.TestDataDeclarations2", Name "CtorSameName" ),
-      ( ModuleName "Golden.TestDataDeclarations2", Name "test" )
     ]
   }

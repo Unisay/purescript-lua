@@ -1,113 +1,132 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "Zero"
-        }, Ctor ( SumType )
-        ( TyName "N" )
-        ( CtorName "Zero" ) ( [] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "Succ"
-        }, Ctor ( SumType )
-        ( TyName "N" )
-        ( CtorName "Succ" )
-        ( [ FieldName "value0" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "Add"
-        }, Ctor ( SumType )
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "Zero", Ctor SumType ( TyName "N" ) ( CtorName "Zero" ) [] ),
+      ( Name "Succ", Ctor SumType ( TyName "N" ) ( CtorName "Succ" ) [ FieldName "value0" ] ),
+      ( Name "Add", Ctor SumType
         ( TyName "N" )
         ( CtorName "Add" )
-        ( [ FieldName "value0", FieldName "value1" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "Mul"
-        }, Ctor ( SumType )
+        [ FieldName "value0", FieldName "value1" ]
+      ),
+      ( Name "Mul", Ctor SumType
         ( TyName "N" )
         ( CtorName "Mul" )
-        ( [ FieldName "value0", FieldName "value1" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "pat" }, Abs
-        ( ParamNamed ( Name "e" ) )
-        ( IfThenElse
-          ( Prim
-            ( Eq
-              ( Lit ( String "Golden.TestPatternMatching2.Add" ) )
-              ( Prim ( ReflectCtor ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ) )
-            )
-          )
+        [ FieldName "value0", FieldName "value1" ]
+      ),
+      ( Name "pat", Abs
+        ( Identity ( ParamNamed ( Name "e" ) ) )
+        ( Identity
           ( IfThenElse
-            ( Prim
+            ( Identity
               ( Eq
-                ( Lit ( String "Golden.TestPatternMatching2.Zero" ) )
-                ( Prim ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 1 ) ) ) )
+                ( Identity ( LiteralString "Golden.TestPatternMatching2.Add" ) )
+                ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) ) )
               )
             )
-            ( IfThenElse
-              ( Prim
-                ( Eq
-                  ( Lit ( String "Golden.TestPatternMatching2.Add" ) )
-                  ( Prim ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) ) )
-                )
-              )
-              ( Lit ( Integer 1 ) )
+            ( Identity
               ( IfThenElse
-                ( Prim
+                ( Identity
                   ( Eq
-                    ( Lit ( String "Golden.TestPatternMatching2.Mul" ) )
-                    ( Prim
-                      ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 0 ) ) )
-                    )
-                  )
-                )
-                ( Lit ( Integer 2 ) )
-                ( Lit ( Integer 5 ) )
-              )
-            )
-            ( IfThenElse
-              ( Prim
-                ( Eq
-                  ( Lit ( String "Golden.TestPatternMatching2.Mul" ) )
-                  ( Prim ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 1 ) ) ) )
-                )
-              )
-              ( Lit ( Integer 3 ) )
-              ( IfThenElse
-                ( Prim
-                  ( Eq
-                    ( Lit ( String "Golden.TestPatternMatching2.Add" ) )
-                    ( Prim
-                      ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 1 ) ) )
-                    )
-                  )
-                )
-                ( Lit ( Integer 4 ) )
-                ( IfThenElse
-                  ( Prim
-                    ( Eq
-                      ( Lit ( String "Golden.TestPatternMatching2.Zero" ) )
-                      ( Prim
-                        ( ReflectCtor ( ArrayIndex ( Ref ( Local ( Name "e" ) ) ( 0 ) ) ( 1 ) ) )
+                    ( Identity ( LiteralString "Golden.TestPatternMatching2.Zero" ) )
+                    ( Identity
+                      ( ReflectCtor
+                        ( Identity ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 1 ) )
                       )
                     )
                   )
-                  ( Lit ( Integer 5 ) )
-                  ( Lit ( Integer 6 ) )
+                )
+                ( Identity
+                  ( IfThenElse
+                    ( Identity
+                      ( Eq
+                        ( Identity ( LiteralString "Golden.TestPatternMatching2.Add" ) )
+                        ( Identity
+                          ( ReflectCtor
+                            ( Identity
+                              ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
+                            )
+                          )
+                        )
+                      )
+                    )
+                    ( Identity ( LiteralInt 1 ) )
+                    ( Identity
+                      ( IfThenElse
+                        ( Identity
+                          ( Eq
+                            ( Identity ( LiteralString "Golden.TestPatternMatching2.Mul" ) )
+                            ( Identity
+                              ( ReflectCtor
+                                ( Identity
+                                  ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
+                                )
+                              )
+                            )
+                          )
+                        )
+                        ( Identity ( LiteralInt 2 ) )
+                        ( Identity ( LiteralInt 5 ) )
+                      )
+                    )
+                  )
+                )
+                ( Identity
+                  ( IfThenElse
+                    ( Identity
+                      ( Eq
+                        ( Identity ( LiteralString "Golden.TestPatternMatching2.Mul" ) )
+                        ( Identity
+                          ( ReflectCtor
+                            ( Identity
+                              ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 1 )
+                            )
+                          )
+                        )
+                      )
+                    )
+                    ( Identity ( LiteralInt 3 ) )
+                    ( Identity
+                      ( IfThenElse
+                        ( Identity
+                          ( Eq
+                            ( Identity ( LiteralString "Golden.TestPatternMatching2.Add" ) )
+                            ( Identity
+                              ( ReflectCtor
+                                ( Identity
+                                  ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 1 )
+                                )
+                              )
+                            )
+                          )
+                        )
+                        ( Identity ( LiteralInt 4 ) )
+                        ( Identity
+                          ( IfThenElse
+                            ( Identity
+                              ( Eq
+                                ( Identity ( LiteralString "Golden.TestPatternMatching2.Zero" ) )
+                                ( Identity
+                                  ( ReflectCtor
+                                    ( Identity
+                                      ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 1 )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                            ( Identity ( LiteralInt 5 ) )
+                            ( Identity ( LiteralInt 6 ) )
+                          )
+                        )
+                      )
+                    )
+                  )
                 )
               )
             )
+            ( Identity ( LiteralInt 6 ) )
           )
-          ( Lit ( Integer 6 ) )
         )
       )
-    ], uberModuleForeigns = [], uberModuleExports =
-    [
-      ( ModuleName "Golden.TestPatternMatching2", Name "Zero" ),
-      ( ModuleName "Golden.TestPatternMatching2", Name "Succ" ),
-      ( ModuleName "Golden.TestPatternMatching2", Name "Add" ),
-      ( ModuleName "Golden.TestPatternMatching2", Name "Mul" ),
-      ( ModuleName "Golden.TestPatternMatching2", Name "pat" )
     ]
   }

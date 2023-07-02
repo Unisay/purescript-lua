@@ -2,99 +2,190 @@ UberModule
   { uberModuleBindings =
     [ Standalone
       ( QName
-        { qnameModuleName = ModuleName "Control.Apply", qnameName = Name "apply" }, Abs
-        ( ParamNamed ( Name "dict" ) )
-        ( ObjectProp ( Ref ( Local ( Name "dict" ) ) ( 0 ) ) ( PropName "apply" ) )
-      ), Standalone
-      ( QName
         { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "pure" }, Abs
-        ( ParamNamed ( Name "dict" ) )
-        ( ObjectProp ( Ref ( Local ( Name "dict" ) ) ( 0 ) ) ( PropName "pure" ) )
+        ( Identity ( ParamNamed ( Name "dict" ) ) )
+        ( Identity
+          ( ObjectProp ( Identity ( Ref ( Local ( Name "dict" ) ) 0 ) ) ( PropName "pure" ) )
+        )
       ), Standalone
       ( QName
         { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "liftA1" }, Abs
-        ( ParamNamed ( Name "dictApplicative" ) )
-        ( Abs
-          ( ParamNamed ( Name "f" ) )
+        ( Identity ( ParamNamed ( Name "dictApplicative" ) ) )
+        ( Identity
           ( Abs
-            ( ParamNamed ( Name "a" ) )
-            ( App
-              ( App
-                ( App
-                  ( Ref ( Imported ( ModuleName "Control.Apply" ) ( Name "apply" ) ) ( 0 ) )
+            ( Identity ( ParamNamed ( Name "f" ) ) )
+            ( Identity
+              ( Abs
+                ( Identity ( ParamNamed ( Name "a" ) ) )
+                ( Identity
                   ( App
-                    ( ObjectProp
-                      ( Ref ( Local ( Name "dictApplicative" ) ) ( 0 ) )
-                      ( PropName "Apply0" )
+                    ( Identity
+                      ( App
+                        ( Identity
+                          ( App
+                            ( Identity
+                              ( Abs
+                                ( Identity ( ParamNamed ( Name "dict" ) ) )
+                                ( Identity
+                                  ( ObjectProp
+                                    ( Identity ( Ref ( Local ( Name "dict" ) ) 0 ) )
+                                    ( PropName "apply" )
+                                  )
+                                )
+                              )
+                            )
+                            ( Identity
+                              ( App
+                                ( Identity
+                                  ( ObjectProp
+                                    ( Identity ( Ref ( Local ( Name "dictApplicative" ) ) 0 ) )
+                                    ( PropName "Apply0" )
+                                  )
+                                )
+                                ( Identity
+                                  ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
+                                )
+                              )
+                            )
+                          )
+                        )
+                        ( Identity
+                          ( App
+                            ( Identity
+                              ( App
+                                ( Identity
+                                  ( Ref
+                                    ( Imported
+                                      ( ModuleName "Control.Applicative" )
+                                      ( Name "pure" )
+                                    ) 0
+                                  )
+                                )
+                                ( Identity ( Ref ( Local ( Name "dictApplicative" ) ) 0 ) )
+                              )
+                            )
+                            ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
+                          )
+                        )
+                      )
                     )
-                    ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) ( 0 ) )
+                    ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
                   )
-                )
-                ( App
-                  ( App
-                    ( Ref ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) ( 0 ) )
-                    ( Ref ( Local ( Name "dictApplicative" ) ) ( 0 ) )
-                  )
-                  ( Ref ( Local ( Name "f" ) ) ( 0 ) )
                 )
               )
-              ( Ref ( Local ( Name "a" ) ) ( 0 ) )
             )
           )
         )
       ), Standalone
       ( QName
-        { qnameModuleName = ModuleName "Control.Bind", qnameName = Name "bind" }, Abs
-        ( ParamNamed ( Name "dict" ) )
-        ( ObjectProp ( Ref ( Local ( Name "dict" ) ) ( 0 ) ) ( PropName "bind" ) )
-      ), Standalone
-      ( QName
         { qnameModuleName = ModuleName "Control.Monad", qnameName = Name "ap" }, Abs
-        ( ParamNamed ( Name "dictMonad" ) )
-        ( Let
-          ( Standalone
-            ( Name "bind", App
-              ( Ref ( Imported ( ModuleName "Control.Bind" ) ( Name "bind" ) ) ( 0 ) )
-              ( App
-                ( ObjectProp ( Ref ( Local ( Name "dictMonad" ) ) ( 0 ) ) ( PropName "Bind1" ) )
-                ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) ( 0 ) )
-              )
-            ) :| []
-          )
-          ( Abs
-            ( ParamNamed ( Name "f" ) )
-            ( Abs
-              ( ParamNamed ( Name "a" ) )
-              ( App
+        ( Identity ( ParamNamed ( Name "dictMonad" ) ) )
+        ( Identity
+          ( Let
+            ( Standalone
+              ( Identity
+                ( Name "bind" ), Identity
                 ( App
-                  ( Ref ( Local ( Name "bind" ) ) ( 0 ) )
-                  ( Ref ( Local ( Name "f" ) ) ( 0 ) )
-                )
-                ( Abs
-                  ( ParamNamed ( Name "f'" ) )
-                  ( App
-                    ( App
-                      ( Ref ( Local ( Name "bind" ) ) ( 0 ) )
-                      ( Ref ( Local ( Name "a" ) ) ( 0 ) )
-                    )
+                  ( Identity
                     ( Abs
-                      ( ParamNamed ( Name "a'" ) )
+                      ( Identity ( ParamNamed ( Name "dict" ) ) )
+                      ( Identity
+                        ( ObjectProp
+                          ( Identity ( Ref ( Local ( Name "dict" ) ) 0 ) )
+                          ( PropName "bind" )
+                        )
+                      )
+                    )
+                  )
+                  ( Identity
+                    ( App
+                      ( Identity
+                        ( ObjectProp
+                          ( Identity ( Ref ( Local ( Name "dictMonad" ) ) 0 ) )
+                          ( PropName "Bind1" )
+                        )
+                      )
+                      ( Identity ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 ) )
+                    )
+                  )
+                )
+              ) :| []
+            )
+            ( Identity
+              ( Abs
+                ( Identity ( ParamNamed ( Name "f" ) ) )
+                ( Identity
+                  ( Abs
+                    ( Identity ( ParamNamed ( Name "a" ) ) )
+                    ( Identity
                       ( App
-                        ( App
-                          ( Ref
-                            ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) ( 0 )
-                          )
+                        ( Identity
                           ( App
-                            ( ObjectProp
-                              ( Ref ( Local ( Name "dictMonad" ) ) ( 0 ) )
-                              ( PropName "Applicative0" )
-                            )
-                            ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) ( 0 ) )
+                            ( Identity ( Ref ( Local ( Name "bind" ) ) 0 ) )
+                            ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
                           )
                         )
-                        ( App
-                          ( Ref ( Local ( Name "f'" ) ) ( 0 ) )
-                          ( Ref ( Local ( Name "a'" ) ) ( 0 ) )
+                        ( Identity
+                          ( Abs
+                            ( Identity ( ParamNamed ( Name "f'" ) ) )
+                            ( Identity
+                              ( App
+                                ( Identity
+                                  ( App
+                                    ( Identity ( Ref ( Local ( Name "bind" ) ) 0 ) )
+                                    ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
+                                  )
+                                )
+                                ( Identity
+                                  ( Abs
+                                    ( Identity ( ParamNamed ( Name "a'" ) ) )
+                                    ( Identity
+                                      ( App
+                                        ( Identity
+                                          ( App
+                                            ( Identity
+                                              ( Ref
+                                                ( Imported
+                                                  ( ModuleName "Control.Applicative" )
+                                                  ( Name "pure" )
+                                                ) 0
+                                              )
+                                            )
+                                            ( Identity
+                                              ( App
+                                                ( Identity
+                                                  ( ObjectProp
+                                                    ( Identity
+                                                      ( Ref ( Local ( Name "dictMonad" ) ) 0 )
+                                                    )
+                                                    ( PropName "Applicative0" )
+                                                  )
+                                                )
+                                                ( Identity
+                                                  ( Ref
+                                                    ( Imported
+                                                      ( ModuleName "Prim" )
+                                                      ( Name "undefined" )
+                                                    ) 0
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
+                                        ( Identity
+                                          ( App
+                                            ( Identity ( Ref ( Local ( Name "f'" ) ) 0 ) )
+                                            ( Identity ( Ref ( Local ( Name "a'" ) ) 0 ) )
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
                         )
                       )
                     )
@@ -103,148 +194,224 @@ UberModule
               )
             )
           )
-        )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Prelude", qnameName = Name "pass" }, Abs
-        ( ParamNamed ( Name "dictApplicative" ) )
-        ( App
-          ( App
-            ( Ref ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) ( 0 ) )
-            ( Ref ( Local ( Name "dictApplicative" ) ) ( 0 ) )
-          )
-          ( Ref ( Imported ( ModuleName "Data.Unit" ) ( Name "unit" ) ) ( 0 ) )
         )
       ), RecursiveGroup
       (
         ( QName
-          { qnameModuleName = ModuleName "Effect", qnameName = Name "monadEffect" }, Lit
-          ( Object
-            [
-              ( PropName "Applicative0", Abs ( ParamUnused )
-                ( Ref ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) ( 0 ) )
-              ),
-              ( PropName "Bind1", Abs ( ParamUnused )
-                ( Ref ( Imported ( ModuleName "Effect" ) ( Name "bindEffect" ) ) ( 0 ) )
+          { qnameModuleName = ModuleName "Effect", qnameName = Name "monadEffect" }, LiteralObject
+          [
+            ( PropName "Applicative0", Identity
+              ( Abs ( Identity ParamUnused )
+                ( Identity
+                  ( Ref ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0 )
+                )
               )
-            ]
-          )
+            ),
+            ( PropName "Bind1", Identity
+              ( Abs ( Identity ParamUnused )
+                ( Identity ( Ref ( Imported ( ModuleName "Effect" ) ( Name "bindEffect" ) ) 0 ) )
+              )
+            )
+          ]
         ) :|
         [
           ( QName
-            { qnameModuleName = ModuleName "Effect", qnameName = Name "bindEffect" }, Lit
-            ( Object
-              [
-                ( PropName "bind", Ref
-                  ( Imported ( ModuleName "Effect" ) ( Name "bindE" ) ) ( 0 )
-                ),
-                ( PropName "Apply0", Abs ( ParamUnused )
-                  ( App
-                    ( Ref
-                      ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) ( 0 )
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "bindEffect" }, LiteralObject
+            [
+              ( PropName "bind", Identity
+                ( Ref ( Imported ( ModuleName "Effect" ) ( Name "bindE" ) ) 0 )
+              ),
+              ( PropName "Apply0", Identity
+                ( Abs ( Identity ParamUnused )
+                  ( Identity
+                    ( App
+                      ( Identity
+                        ( Ref
+                          ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) 0
+                        )
+                      )
+                      ( Identity ( LiteralInt 0 ) )
                     )
-                    ( Lit ( Integer 0 ) )
                   )
                 )
-              ]
-            )
+              )
+            ]
           ),
           ( QName
-            { qnameModuleName = ModuleName "Effect", qnameName = Name "applicativeEffect" }, Lit
-            ( Object
-              [
-                ( PropName "pure", Ref
-                  ( Imported ( ModuleName "Effect" ) ( Name "pureE" ) ) ( 0 )
-                ),
-                ( PropName "Apply0", Abs ( ParamUnused )
-                  ( App
-                    ( Ref
-                      ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) ( 0 )
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "applicativeEffect"
+            }, LiteralObject
+            [
+              ( PropName "pure", Identity
+                ( Ref ( Imported ( ModuleName "Effect" ) ( Name "pureE" ) ) 0 )
+              ),
+              ( PropName "Apply0", Identity
+                ( Abs ( Identity ParamUnused )
+                  ( Identity
+                    ( App
+                      ( Identity
+                        ( Ref
+                          ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) 0
+                        )
+                      )
+                      ( Identity ( LiteralInt 0 ) )
                     )
-                    ( Lit ( Integer 0 ) )
                   )
                 )
-              ]
-            )
+              )
+            ]
           ),
           ( QName
             { qnameModuleName = ModuleName "Effect", qnameName = Name "$__lazy_functorEffect"
             }, App
-            ( App
-              ( Ref ( Local ( Name "$__runtime_lazy" ) ) ( 0 ) )
-              ( Lit ( String "functorEffect" ) )
+            ( Identity
+              ( App
+                ( Identity ( Ref ( Local ( Name "$__runtime_lazy" ) ) 0 ) )
+                ( Identity ( LiteralString "functorEffect" ) )
+              )
             )
-            ( Abs ( ParamUnused )
-              ( Lit
-                ( Object
-                  [
-                    ( PropName "map", App
-                      ( Ref
-                        ( Imported ( ModuleName "Control.Applicative" ) ( Name "liftA1" ) ) ( 0 )
+            ( Identity
+              ( Abs ( Identity ParamUnused )
+                ( Identity
+                  ( LiteralObject
+                    [
+                      ( PropName "map", Identity
+                        ( App
+                          ( Identity
+                            ( Ref
+                              ( Imported ( ModuleName "Control.Applicative" ) ( Name "liftA1" ) ) 0
+                            )
+                          )
+                          ( Identity
+                            ( Ref
+                              ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
+                            )
+                          )
+                        )
                       )
-                      ( Ref
-                        ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) ( 0 )
-                      )
-                    )
-                  ]
+                    ]
+                  )
                 )
               )
             )
           ),
           ( QName
             { qnameModuleName = ModuleName "Effect", qnameName = Name "$__lazy_applyEffect" }, App
-            ( App
-              ( Ref ( Local ( Name "$__runtime_lazy" ) ) ( 0 ) )
-              ( Lit ( String "applyEffect" ) )
+            ( Identity
+              ( App
+                ( Identity ( Ref ( Local ( Name "$__runtime_lazy" ) ) 0 ) )
+                ( Identity ( LiteralString "applyEffect" ) )
+              )
             )
-            ( Abs ( ParamUnused )
-              ( Lit
-                ( Object
-                  [
-                    ( PropName "apply", App
-                      ( Ref ( Imported ( ModuleName "Control.Monad" ) ( Name "ap" ) ) ( 0 ) )
-                      ( Ref ( Imported ( ModuleName "Effect" ) ( Name "monadEffect" ) ) ( 0 ) )
-                    ),
-                    ( PropName "Functor0", Abs ( ParamUnused )
-                      ( App
-                        ( Ref
-                          ( Imported
-                            ( ModuleName "Effect" )
-                            ( Name "$__lazy_functorEffect" )
-                          ) ( 0 )
+            ( Identity
+              ( Abs ( Identity ParamUnused )
+                ( Identity
+                  ( LiteralObject
+                    [
+                      ( PropName "apply", Identity
+                        ( App
+                          ( Identity
+                            ( Ref ( Imported ( ModuleName "Control.Monad" ) ( Name "ap" ) ) 0 )
+                          )
+                          ( Identity
+                            ( Ref ( Imported ( ModuleName "Effect" ) ( Name "monadEffect" ) ) 0 )
+                          )
                         )
-                        ( Lit ( Integer 0 ) )
+                      ),
+                      ( PropName "Functor0", Identity
+                        ( Abs ( Identity ParamUnused )
+                          ( Identity
+                            ( App
+                              ( Identity
+                                ( Ref
+                                  ( Imported
+                                    ( ModuleName "Effect" )
+                                    ( Name "$__lazy_functorEffect" )
+                                  ) 0
+                                )
+                              )
+                              ( Identity ( LiteralInt 0 ) )
+                            )
+                          )
+                        )
                       )
-                    )
-                  ]
+                    ]
+                  )
                 )
               )
             )
-          ),
-          ( QName
-            { qnameModuleName = ModuleName "Effect", qnameName = Name "functorEffect" }, App
-            ( Ref ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_functorEffect" ) ) ( 0 ) )
-            ( Lit ( Integer 0 ) )
-          ),
-          ( QName
-            { qnameModuleName = ModuleName "Effect", qnameName = Name "applyEffect" }, App
-            ( Ref ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) ( 0 ) )
-            ( Lit ( Integer 0 ) )
           )
         ]
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestHelloPrelude", qnameName = Name "main" }, App
-        ( Ref ( Imported ( ModuleName "Prelude" ) ( Name "pass" ) ) ( 0 ) )
-        ( Ref ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) ( 0 ) )
       )
     ], uberModuleForeigns =
     [
+      ( ModuleName "Data.Symbol", ".spago/lua-prelude/v6.0.2/src/Data/Symbol.purs", Name "unsafeCoerce" :| []
+      ),
       ( ModuleName "Data.Unit", ".spago/lua-prelude/v6.0.2/src/Data/Unit.purs", Name "unit" :| []
       ),
-      ( ModuleName "Effect", ".spago/lua-effect/v4.0.0/src/Effect.purs", Name "bindE" :|
-        [ Name "pureE" ]
+      ( ModuleName "Record.Unsafe", ".spago/lua-prelude/v6.0.2/src/Record/Unsafe.purs", Name "unsafeHas" :|
+        [ Name "unsafeGet", Name "unsafeSet", Name "unsafeDelete" ]
+      ),
+      ( ModuleName "Data.HeytingAlgebra", ".spago/lua-prelude/v6.0.2/src/Data/HeytingAlgebra.purs", Name "boolConj" :|
+        [ Name "boolDisj", Name "boolNot" ]
+      ),
+      ( ModuleName "Data.Eq", ".spago/lua-prelude/v6.0.2/src/Data/Eq.purs", Name "eqBooleanImpl" :|
+        [ Name "eqIntImpl", Name "eqNumberImpl", Name "eqCharImpl", Name "eqStringImpl", Name "eqArrayImpl"
+        ]
+      ),
+      ( ModuleName "Data.Semigroup", ".spago/lua-prelude/v6.0.2/src/Data/Semigroup.purs", Name "concatString" :|
+        [ Name "concatArray" ]
+      ),
+      ( ModuleName "Data.Show", ".spago/lua-prelude/v6.0.2/src/Data/Show.purs", Name "showIntImpl" :|
+        [ Name "showNumberImpl", Name "showCharImpl", Name "showStringImpl", Name "showArrayImpl" ]
+      ),
+      ( ModuleName "Data.Semiring", ".spago/lua-prelude/v6.0.2/src/Data/Semiring.purs", Name "intAdd" :|
+        [ Name "intMul", Name "numAdd", Name "numMul" ]
+      ),
+      ( ModuleName "Data.Ring", ".spago/lua-prelude/v6.0.2/src/Data/Ring.purs", Name "intSub" :|
+        [ Name "numSub" ]
+      ),
+      ( ModuleName "Data.Ord", ".spago/lua-prelude/v6.0.2/src/Data/Ord.purs", Name "ordBooleanImpl" :|
+        [ Name "ordIntImpl", Name "ordNumberImpl", Name "ordStringImpl", Name "ordCharImpl", Name "ordArrayImpl"
+        ]
+      ),
+      ( ModuleName "Data.Functor", ".spago/lua-prelude/v6.0.2/src/Data/Functor.purs", Name "arrayMap" :| []
+      ),
+      ( ModuleName "Control.Apply", ".spago/lua-prelude/v6.0.2/src/Control/Apply.purs", Name "arrayApply" :| []
+      ),
+      ( ModuleName "Control.Bind", ".spago/lua-prelude/v6.0.2/src/Control/Bind.purs", Name "arrayBind" :| []
+      ),
+      ( ModuleName "Data.Bounded", ".spago/lua-prelude/v6.0.2/src/Data/Bounded.purs", Name "topInt" :|
+        [ Name "bottomInt", Name "topChar", Name "bottomChar", Name "topNumber", Name "bottomNumber"
+        ]
+      ),
+      ( ModuleName "Data.EuclideanRing", ".spago/lua-prelude/v6.0.2/src/Data/EuclideanRing.purs", Name "intDegree" :|
+        [ Name "intDiv", Name "intMod", Name "numDiv" ]
+      ),
+      ( ModuleName "Effect", ".spago/lua-effect/v4.0.0/src/Effect.purs", Name "pureE" :|
+        [ Name "bindE", Name "untilE", Name "whileE", Name "forE", Name "foreachE" ]
       )
     ], uberModuleExports =
-    [ ( ModuleName "Golden.TestHelloPrelude", Name "main" ) ]
+    [
+      ( Name "main", App
+        ( Identity
+          ( Abs
+            ( Identity ( ParamNamed ( Name "dictApplicative" ) ) )
+            ( Identity
+              ( App
+                ( Identity
+                  ( App
+                    ( Identity
+                      ( Ref ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0 )
+                    )
+                    ( Identity ( Ref ( Local ( Name "dictApplicative" ) ) 0 ) )
+                  )
+                )
+                ( Identity ( Ref ( Imported ( ModuleName "Data.Unit" ) ( Name "unit" ) ) 0 ) )
+              )
+            )
+          )
+        )
+        ( Identity ( Ref ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0 ) )
+      )
+    ]
   }

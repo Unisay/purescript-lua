@@ -1,10 +1,9 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestInline", qnameName = Name "main" }, Lit
-        ( Integer 1 )
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "main", App
+        ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralInt 1 ) ) ) )
+        ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralInt 2 ) ) ) )
       )
-    ], uberModuleForeigns = [], uberModuleExports =
-    [ ( ModuleName "Golden.TestInline", Name "main" ) ]
+    ]
   }

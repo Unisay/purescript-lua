@@ -1,11 +1,4 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.Reexport.ReExports", qnameName = Name "binding2"
-        }, Lit
-        ( Integer 2 )
-      )
-    ], uberModuleForeigns = [], uberModuleExports =
-    [ ( ModuleName "Golden.Reexport.ReExports", Name "binding2" ) ]
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [ ( Name "binding2", LiteralInt 2 ) ]
   }

@@ -3,36 +3,34 @@ UberModule
     [ Standalone
       ( QName
         { qnameModuleName = ModuleName "Golden.TestUnbinding", qnameName = Name "f"
-        }, Abs ( ParamUnused )
-        ( Abs ( ParamUnused ) ( Lit ( Integer 3 ) ) )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestUnbinding", qnameName = Name "b" }, Lit
-        ( Integer 2 )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestUnbinding", qnameName = Name "a" }, Lit
-        ( Integer 1 )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestUnbinding", qnameName = Name "c" }, App
-        ( App
-          ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) ( 0 ) )
-          ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "a" ) ) ( 0 ) )
-        )
-        ( App
-          ( App
-            ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) ( 0 ) )
-            ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "b" ) ) ( 0 ) )
-          )
-          ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "a" ) ) ( 0 ) )
-        )
+        }, Abs ( Identity ParamUnused )
+        ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralInt 3 ) ) ) )
       )
     ], uberModuleForeigns = [], uberModuleExports =
     [
-      ( ModuleName "Golden.TestUnbinding", Name "a" ),
-      ( ModuleName "Golden.TestUnbinding", Name "b" ),
-      ( ModuleName "Golden.TestUnbinding", Name "f" ),
-      ( ModuleName "Golden.TestUnbinding", Name "c" )
+      ( Name "a", LiteralInt 1 ),
+      ( Name "b", LiteralInt 2 ),
+      ( Name "f", Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 ),
+      ( Name "c", App
+        ( Identity
+          ( App
+            ( Identity ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 ) )
+            ( Identity ( LiteralInt 1 ) )
+          )
+        )
+        ( Identity
+          ( App
+            ( Identity
+              ( App
+                ( Identity
+                  ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 )
+                )
+                ( Identity ( LiteralInt 2 ) )
+              )
+            )
+            ( Identity ( LiteralInt 1 ) )
+          )
+        )
+      )
     ]
   }

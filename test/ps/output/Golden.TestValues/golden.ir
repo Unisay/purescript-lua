@@ -1,48 +1,19 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestValues", qnameName = Name "i" }, Lit
-        ( Integer 1 )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestValues", qnameName = Name "f"
-        }, Abs ( ParamUnused )
-        ( Lit ( Boolean True ) )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestValues", qnameName = Name "c" }, Lit
-        ( Char 'c' )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestValues", qnameName = Name "b"
-        }, Lit ( Boolean True )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestValues", qnameName = Name "o" }, Lit
-        ( Object
-          [
-            ( PropName "i", Ref
-              ( Imported ( ModuleName "Golden.TestValues" ) ( Name "i" ) ) ( 0 )
-            ),
-            ( PropName "b", Ref
-              ( Imported ( ModuleName "Golden.TestValues" ) ( Name "b" ) ) ( 0 )
-            ),
-            ( PropName "c", Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "c" ) ) ( 0 ) )
-          ]
-        )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestValues", qnameName = Name "a" }, Lit
-        ( Array [ Lit ( Integer 1 ), Lit ( Integer 2 ), Lit ( Integer 3 ) ] )
-      )
-    ], uberModuleForeigns = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
     [
-      ( ModuleName "Golden.TestValues", Name "i" ),
-      ( ModuleName "Golden.TestValues", Name "b" ),
-      ( ModuleName "Golden.TestValues", Name "c" ),
-      ( ModuleName "Golden.TestValues", Name "a" ),
-      ( ModuleName "Golden.TestValues", Name "o" ),
-      ( ModuleName "Golden.TestValues", Name "f" )
+      ( Name "i", LiteralInt 1 ),
+      ( Name "b", LiteralBool True ),
+      ( Name "c", LiteralChar 'c' ),
+      ( Name "a", LiteralArray
+        [ Identity ( LiteralInt 1 ), Identity ( LiteralInt 2 ), Identity ( LiteralInt 3 ) ]
+      ),
+      ( Name "o", LiteralObject
+        [
+          ( PropName "i", Identity ( LiteralInt 1 ) ),
+          ( PropName "b", Identity ( LiteralBool True ) ),
+          ( PropName "c", Identity ( LiteralChar 'c' ) )
+        ]
+      ),
+      ( Name "f", Abs ( Identity ParamUnused ) ( Identity ( LiteralBool True ) ) )
     ]
   }

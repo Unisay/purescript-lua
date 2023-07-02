@@ -10,21 +10,16 @@ import Data.String qualified as String
 import Data.Tagged (Tagged (..))
 import Data.Text qualified as Text
 import Language.PureScript.Backend.IR qualified as IR
-import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Linker (LinkMode (..))
 import Language.PureScript.Backend.IR.Linker qualified as IR
 import Language.PureScript.Backend.IR.Linker qualified as Linker
-import Language.PureScript.Backend.IR.Optimizer (optimizeUberModule)
-import Language.PureScript.Backend.IR.Query qualified as Query
+import Language.PureScript.Backend.IR.Optimizer (optimizedUberModule)
 import Language.PureScript.Backend.Lua qualified as Lua
-import Language.PureScript.Backend.Lua.DeadCodeEliminator
-  ( DceMode (PreserveTopLevel)
-  , eliminateDeadCode
-  )
-import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
+import Language.PureScript.Backend.Types (AppOrModule (..))
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
+import Language.PureScript.Names (ModuleName)
 import Language.PureScript.Names qualified as PS
 import Path
   ( Abs
@@ -76,12 +71,12 @@ import Text.Pretty.Simple
   , pShowOpt
   )
 
-spec :: Spec
+spec ∷ Spec
 spec = do
   describe "Goldens: *.purs -> *.lua" do
     let compilePs = do
           putText "Comipling PureScript sources"
-          exitCode <-
+          exitCode ←
             runProcess . setWorkingDir "test/ps" . shell $
               String.unwords ["spago", "build", "-u", "'-g corefn'"]
           exitCode `shouldBe` ExitSuccess
@@ -89,9 +84,9 @@ spec = do
 
     describe "compiles corefn files to lua" $ beforeAll_ compilePs do
       runIO $ ensureDir psOutputPath
-      corefns <- runIO $ collectGoldenCorefns psOutputPath
+      corefns ← runIO $ collectGoldenCorefns psOutputPath
       it "Finds some corefn files" $ corefns `shouldNotBe` mempty
-      for_ corefns \corefn -> do
+      for_ corefns \corefn → do
         let moduleName =
               parent corefn
                 & dirname
@@ -102,11 +97,11 @@ spec = do
         -- IR golden
         let irGolden = modulePath </> $(mkRelFile "golden.ir")
         let irActual = modulePath </> $(mkRelFile "actual.ir")
-        irTestName <- runIO do
+        irTestName ← runIO do
           toFilePath <$> makeRelativeToCurrentDir irGolden
         it irTestName do
           defaultGolden irGolden (Just irActual) do
-            uberModule <- compileCorefn (Tagged (Rel psOutputPath)) moduleName
+            uberModule ← compileCorefn (Tagged (Rel psOutputPath)) moduleName
             pure . toStrict $
               pShowOpt
                 defaultOutputOptionsNoColor
@@ -118,17 +113,17 @@ spec = do
         -- lua golden
         let luaGolden = modulePath </> $(mkRelFile "golden.lua")
         let luaActual = modulePath </> $(mkRelFile "actual.lua")
-        luaTestName <- runIO do
+        luaTestName ← runIO do
           toFilePath <$> makeRelativeToCurrentDir luaGolden
         it luaTestName do
           defaultGolden luaGolden (Just luaActual) do
-            uberModule <- compileCorefn (Tagged (Rel psOutputPath)) moduleName
-            compileIr uberModule
+            uberModule ← compileCorefn (Tagged (Rel psOutputPath)) moduleName
+            compileIr moduleName uberModule
 
     describe "golden files should typecheck" do
-      luas <- runIO do collectLuas psOutputPath
-      for_ luas \lua -> do
-        luaFileName <- runIO do makeRelativeToCurrentDir lua
+      luas ← runIO do collectLuas psOutputPath
+      for_ luas \lua → do
+        luaFileName ← runIO do makeRelativeToCurrentDir lua
         it (toFilePath luaFileName) do
           let process =
                 fromString . List.unwords $
@@ -141,7 +136,7 @@ spec = do
                   , "--formatter plain"
                   , toFilePath lua
                   ]
-          (exitCode, out) <- readProcessInterleaved process
+          (exitCode, out) ← readProcessInterleaved process
           let niceOut =
                 decodeUtf8 out
                   & lines
@@ -151,68 +146,55 @@ spec = do
                   & toString
           exitCode `shouldBe` ExitSuccess `annotatingWith` niceOut
 
-collectGoldenCorefns :: MonadIO m => Path Rel Dir -> m [Path Abs File]
+collectGoldenCorefns ∷ MonadIO m ⇒ Path Rel Dir → m [Path Abs File]
 collectGoldenCorefns = walkDirAccum
   Nothing -- Descend into every directory
-  \dir _subdirs files ->
+  \dir _subdirs files →
     pure
       [ file
-      | file <- files
+      | file ← files
       , toFilePath (filename file) == "corefn.json"
       , "Golden." `isPrefixOf` toFilePath (dirname dir)
       ]
 
-collectLuas :: MonadIO m => Path Rel Dir -> m [Path Abs File]
+collectLuas ∷ MonadIO m ⇒ Path Rel Dir → m [Path Abs File]
 collectLuas = walkDirAccum
   Nothing -- Descend into every directory
-  \_dir _subdirs files ->
-    pure [file | file <- files, toFilePath (filename file) == "golden.lua"]
+  \_dir _subdirs files →
+    pure [file | file ← files, toFilePath (filename file) == "golden.lua"]
 
 compileCorefn
-  :: forall m
+  ∷ ∀ m
    . (MonadIO m, MonadFail m)
-  => Tagged "output" (SomeBase Dir)
-  -> PS.ModuleName
-  -> m IR.UberModule
-compileCorefn outputDir moduleName = do
-  cfnModules <-
-    CoreFn.readModuleRecursively outputDir moduleName
+  ⇒ Tagged "output" (SomeBase Dir)
+  → PS.ModuleName
+  → m IR.UberModule
+compileCorefn outputDir uberModuleName = do
+  cfnModules ←
+    CoreFn.readModuleRecursively outputDir uberModuleName
       & handleModuleNotFoundError
       & handleModuleDecodingError
       & Oops.runOops
       & liftIO
 
-  let uberModuleName = IR.mkModuleName moduleName
-  modules <-
+  modules ←
     forM (toList cfnModules) $
       either (fail . show) (pure . snd) . IR.mkModule
   let uberModule = Linker.makeUberModule (LinkAsModule uberModuleName) modules
-  pure $ optimizeUberModule (DCE.EntryPoint uberModuleName []) uberModule
+  pure $ optimizedUberModule uberModule
 
-compileIr :: (MonadIO m, MonadMask m) => IR.UberModule -> m Text
-compileIr uberModule = withCurrentDir [reldir|test/ps|] do
-  let addPrim =
-        if Query.usesPrimModuleUber uberModule
-          then (Fixture.prim :)
-          else identity
-  let addRuntimeLazy =
-        if Query.usesRuntimeLazyUber uberModule
-          then (Fixture.runtimeLazy :)
-          else identity
-
-  foreignPath <- Tagged <$> makeAbsolute [reldir|foreign|]
-  luaChunk <-
-    Lua.fromUberModule foreignPath uberModule
+compileIr ∷ (MonadIO m, MonadMask m) ⇒ ModuleName → IR.UberModule → m Text
+compileIr modname uberModule = withCurrentDir [reldir|test/ps|] do
+  foreignPath ← Tagged <$> makeAbsolute [reldir|foreign|]
+  luaChunk ←
+    Lua.fromUberModule foreignPath (Tagged True) (AsModule modname) uberModule
       & handleLuaError
       & Oops.runOops
       & liftIO
 
   let doc =
         luaChunk
-          & addPrim
-          & addRuntimeLazy
           & optimizeChunk
-          & eliminateDeadCode PreserveTopLevel
           & Printer.printLuaChunk
   let addTrailingLf = (<> "\n")
   pure $ addTrailingLf $ renderStrict $ layoutPretty defaultLayoutOptions doc
@@ -221,22 +203,22 @@ compileIr uberModule = withCurrentDir [reldir|test/ps|] do
 -- Error handlers --------------------------------------------------------------
 
 handleModuleNotFoundError
-  :: ExceptT (Oops.Variant (CoreFn.ModuleNotFound ': e)) IO a
-  -> ExceptT (Oops.Variant e) IO a
-handleModuleNotFoundError = Oops.catch \(CoreFn.ModuleNotFound p) ->
+  ∷ ExceptT (Oops.Variant (CoreFn.ModuleNotFound ': e)) IO a
+  → ExceptT (Oops.Variant e) IO a
+handleModuleNotFoundError = Oops.catch \(CoreFn.ModuleNotFound p) →
   die . toString . unlines $
     [ "Can't find CoreFn module file: " <> toText (toFilePath p)
     , "Please make sure you did run purs with the `-g corefn` arg."
     ]
 
 handleModuleDecodingError
-  :: ExceptT (Oops.Variant (CoreFn.ModuleDecodingErr ': e)) IO a
-  -> ExceptT (Oops.Variant e) IO a
-handleModuleDecodingError = Oops.catch \(CoreFn.ModuleDecodingErr p e) ->
+  ∷ ExceptT (Oops.Variant (CoreFn.ModuleDecodingErr ': e)) IO a
+  → ExceptT (Oops.Variant e) IO a
+handleModuleDecodingError = Oops.catch \(CoreFn.ModuleDecodingErr p e) →
   die . toString . unlines $
     ["Can't parse CoreFn module file: " <> toText (toFilePath p), toText e]
 
 handleLuaError
-  :: ExceptT (Oops.Variant (Lua.Error ': e)) IO a
-  -> ExceptT (Oops.Variant e) IO a
-handleLuaError = Oops.catch \(e :: Lua.Error) -> die $ show e
+  ∷ ExceptT (Oops.Variant (Lua.Error ': e)) IO a
+  → ExceptT (Oops.Variant e) IO a
+handleLuaError = Oops.catch \(e ∷ Lua.Error) → die $ show e

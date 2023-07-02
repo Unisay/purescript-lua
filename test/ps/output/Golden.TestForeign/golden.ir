@@ -3,5 +3,5 @@ UberModule
     [
       ( ModuleName "Golden.TestForeign", "golden/Golden/TestForeign.purs", Name "foo" :| [] )
     ], uberModuleExports =
-    [ ( ModuleName "Golden.TestForeign", Name "foo" ) ]
+    [ ( Name "foo", Ref ( Imported ( ModuleName "Golden.TestForeign" ) ( Name "foo" ) ) 0 ) ]
   }

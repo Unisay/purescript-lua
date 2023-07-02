@@ -1,75 +1,29 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "U"
-        }, Ctor ( ProductType )
-        ( TyName "Unit" )
-        ( CtorName "U" ) ( [] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "CtorSameName"
-        }, Ctor ( ProductType )
-        ( TyName "TySameName" )
-        ( CtorName "CtorSameName" ) ( [] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "S0"
-        }, Ctor ( SumType )
-        ( TyName "TSum" )
-        ( CtorName "S0" ) ( [] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "S1"
-        }, Ctor ( SumType )
-        ( TyName "TSum" )
-        ( CtorName "S1" )
-        ( [ FieldName "value0" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "S2"
-        }, Ctor ( SumType )
-        ( TyName "TSum" )
-        ( CtorName "S2" )
-        ( [ FieldName "value0", FieldName "value1" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "PF"
-        }, Ctor ( ProductType )
-        ( TyName "TProductWithFields" )
-        ( CtorName "PF" )
-        ( [ FieldName "value0" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "P3"
-        }, Ctor ( ProductType )
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "U", Ctor ProductType ( TyName "Unit" ) ( CtorName "U" ) [] ),
+      ( Name "P3", Ctor ProductType
         ( TyName "TProduct" )
         ( CtorName "P3" )
-        ( [ FieldName "value0", FieldName "value1", FieldName "value2" ] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "Nop"
-        }, Ctor ( SumType )
-        ( TyName "Rec" )
-        ( CtorName "Nop" ) ( [] )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestDataDeclarations1", qnameName = Name "More"
-        }, Ctor ( SumType )
-        ( TyName "Rec" )
-        ( CtorName "More" )
-        ( [ FieldName "value0" ] )
+        [ FieldName "value0", FieldName "value1", FieldName "value2" ]
+      ),
+      ( Name "PF", Ctor ProductType
+        ( TyName "TProductWithFields" )
+        ( CtorName "PF" )
+        [ FieldName "value0" ]
+      ),
+      ( Name "S0", Ctor SumType ( TyName "TSum" ) ( CtorName "S0" ) [] ),
+      ( Name "S1", Ctor SumType ( TyName "TSum" ) ( CtorName "S1" ) [ FieldName "value0" ] ),
+      ( Name "S2", Ctor SumType
+        ( TyName "TSum" )
+        ( CtorName "S2" )
+        [ FieldName "value0", FieldName "value1" ]
+      ),
+      ( Name "Nop", Ctor SumType ( TyName "Rec" ) ( CtorName "Nop" ) [] ),
+      ( Name "More", Ctor SumType ( TyName "Rec" ) ( CtorName "More" ) [ FieldName "value0" ] ),
+      ( Name "CtorSameName", Ctor ProductType
+        ( TyName "TySameName" )
+        ( CtorName "CtorSameName" ) []
       )
-    ], uberModuleForeigns = [], uberModuleExports =
-    [
-      ( ModuleName "Golden.TestDataDeclarations1", Name "U" ),
-      ( ModuleName "Golden.TestDataDeclarations1", Name "P3" ),
-      ( ModuleName "Golden.TestDataDeclarations1", Name "PF" ),
-      ( ModuleName "Golden.TestDataDeclarations1", Name "S0" ),
-      ( ModuleName "Golden.TestDataDeclarations1", Name "S1" ),
-      ( ModuleName "Golden.TestDataDeclarations1", Name "S2" ),
-      ( ModuleName "Golden.TestDataDeclarations1", Name "Nop" ),
-      ( ModuleName "Golden.TestDataDeclarations1", Name "More" ),
-      ( ModuleName "Golden.TestDataDeclarations1", Name "CtorSameName" )
     ]
   }

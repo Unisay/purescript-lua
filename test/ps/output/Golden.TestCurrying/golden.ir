@@ -1,24 +1,30 @@
 UberModule
-  { uberModuleBindings =
-    [ Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestCurrying", qnameName = Name "f"
-        }, Abs ( ParamUnused )
-        ( Abs ( ParamUnused )
-          ( Abs ( ParamUnused ) ( Abs ( ParamUnused ) ( Lit ( String "ok" ) ) ) )
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "apply", Abs
+        ( Identity ( ParamNamed ( Name "f1" ) ) )
+        ( Identity
+          ( Abs
+            ( Identity ( ParamNamed ( Name "x" ) ) )
+            ( Identity
+              ( App
+                ( Identity ( Ref ( Local ( Name "f1" ) ) 0 ) )
+                ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
+              )
+            )
+          )
         )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Golden.TestCurrying", qnameName = Name "apply" }, Abs
-        ( ParamNamed ( Name "f1" ) )
-        ( Abs
-          ( ParamNamed ( Name "x" ) )
-          ( App ( Ref ( Local ( Name "f1" ) ) ( 0 ) ) ( Ref ( Local ( Name "x" ) ) ( 0 ) ) )
+      ),
+      ( Name "f", Abs ( Identity ParamUnused )
+        ( Identity
+          ( Abs ( Identity ParamUnused )
+            ( Identity
+              ( Abs ( Identity ParamUnused )
+                ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralString "ok" ) ) ) )
+              )
+            )
+          )
         )
       )
-    ], uberModuleForeigns = [], uberModuleExports =
-    [
-      ( ModuleName "Golden.TestCurrying", Name "apply" ),
-      ( ModuleName "Golden.TestCurrying", Name "f" )
     ]
   }

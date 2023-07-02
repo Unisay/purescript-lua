@@ -4,44 +4,36 @@ import Data.Map qualified as Map
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Types
   ( Exp
-  , Info (..)
-  , Module (..)
-  , ModuleName (..)
   , Name (..)
   , Qualified (..)
-  , bindingExprs
-  , expInfo
+  , countFreeRef
+  , countFreeRefs
   , listGrouping
   )
+import Language.PureScript.Names (runModuleName)
 
-usesRuntimeLazy :: Module -> Bool
-usesRuntimeLazy Module {moduleBindings = bs} =
-  getAny $ foldMap (foldMap (Any . findRuntimeLazyInExpr) . bindingExprs) bs
-
-usesRuntimeLazyUber :: UberModule -> Bool
-usesRuntimeLazyUber UberModule {uberModuleBindings = bs} =
+usesRuntimeLazy :: UberModule -> Bool
+usesRuntimeLazy UberModule {uberModuleBindings, uberModuleExports} =
   getAny $
     foldMap
       (foldMap (\(_qname, e) -> Any (findRuntimeLazyInExpr e)) . listGrouping)
-      bs
+      uberModuleBindings
+      <> foldMap (Any . findRuntimeLazyInExpr . snd) uberModuleExports
 
 findRuntimeLazyInExpr :: Exp -> Bool
 findRuntimeLazyInExpr expr =
-  Local (Name "$__runtime_lazy") `Map.member` refsFree (expInfo expr)
+  countFreeRef (Local (Name "$__runtime_lazy")) expr > 0
 
-usesPrimModule :: Module -> Bool
-usesPrimModule Module {moduleBindings = bs} =
-  getAny $ foldMap (foldMap (Any . findPrimModuleInExpr) . bindingExprs) bs
-
-usesPrimModuleUber :: UberModule -> Bool
-usesPrimModuleUber UberModule {uberModuleBindings = bs} =
+usesPrimModule :: UberModule -> Bool
+usesPrimModule UberModule {uberModuleBindings, uberModuleExports} =
   getAny $
     foldMap
       (foldMap (\(_qname, e) -> Any (findPrimModuleInExpr e)) . listGrouping)
-      bs
+      uberModuleBindings
+      <> foldMap (Any . findPrimModuleInExpr . snd) uberModuleExports
 
 findPrimModuleInExpr :: Exp -> Bool
 findPrimModuleInExpr expr =
-  Map.keys (refsFree (expInfo expr)) & any \case
+  Map.keys (countFreeRefs expr) & any \case
     Local _name -> False
-    Imported (ModuleName moduleName) _name -> moduleName == "Prim"
+    Imported moduleName _name -> runModuleName moduleName == "Prim"

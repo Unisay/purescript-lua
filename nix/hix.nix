@@ -6,7 +6,7 @@
   #     ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [ p.musl64 ]);
 
   shell = {
-    tools = let index-state = "2023-06-06T00:00:00Z";
+    tools = let index-state = "2023-06-29T00:00:00Z";
     in {
       cabal = {
         inherit index-state;

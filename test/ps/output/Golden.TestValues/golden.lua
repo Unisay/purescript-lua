@@ -1,10 +1,8 @@
-local Golden_TestValues_I_i = 1
-local Golden_TestValues_I_f = function() return true end
-local Golden_TestValues_I_c = "c"
-local Golden_TestValues_I_b = true
-local Golden_TestValues_I_o = {
-  i = Golden_TestValues_I_i,
-  b = Golden_TestValues_I_b,
-  c = Golden_TestValues_I_c
+return {
+  i = 1,
+  b = true,
+  c = "c",
+  a = { [1] = 1, [2] = 2, [3] = 3 },
+  o = { i = 1, b = true, c = "c" },
+  f = function(unused0) return true end
 }
-local Golden_TestValues_I_a = { [1] = 1, [2] = 2, [3] = 3 }
