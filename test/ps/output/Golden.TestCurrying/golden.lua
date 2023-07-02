@@ -1,8 +1,8 @@
-local Golden_TestCurrying_I_f = function(i0)
-  return function(b1)
-    return function(c2) return function(d3) return "ok" end end
+return {
+  apply = function(f1) return function(x) return f1(x) end end,
+  f = function(unused3)
+    return function(unused2)
+      return function(unused1) return function(unused0) return "ok" end end
+    end
   end
-end
-local Golden_TestCurrying_I_apply = function(f14)
-  return function(x5) return f14(x5) end
-end
+}

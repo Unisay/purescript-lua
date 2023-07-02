@@ -1,9 +1,30 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestCurrying", moduleBindings =
-    [ Standalone
-      ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "i" ) ) Abs ( AbsBinding ( ArgNamed ( Name "b" ) ) Abs ( AbsBinding ( ArgNamed ( Name "c" ) ) Abs ( AbsBinding ( ArgNamed ( Name "d" ) ) Lit ( String "ok" ) ) ) ) ) ), Standalone
-      ( Name "apply", Abs ( AbsBinding ( ArgNamed ( Name "f1" ) ) Abs ( AbsBinding ( ArgNamed ( Name "x" ) ) App RefBound ( Index { level = 1, offset = 0 } ) RefBound ( Index { level = 0, offset = 0 } ) ) ) )
-    ], moduleImports = [], moduleExports =
-    [ Name "apply", Name "f" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestCurrying.purs", dataTypes = fromList []
+UberModule
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "apply", Abs
+        ( Identity ( ParamNamed ( Name "f1" ) ) )
+        ( Identity
+          ( Abs
+            ( Identity ( ParamNamed ( Name "x" ) ) )
+            ( Identity
+              ( App
+                ( Identity ( Ref ( Local ( Name "f1" ) ) 0 ) )
+                ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
+              )
+            )
+          )
+        )
+      ),
+      ( Name "f", Abs ( Identity ParamUnused )
+        ( Identity
+          ( Abs ( Identity ParamUnused )
+            ( Identity
+              ( Abs ( Identity ParamUnused )
+                ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralString "ok" ) ) ) )
+              )
+            )
+          )
+        )
+      )
+    ]
   }
-]

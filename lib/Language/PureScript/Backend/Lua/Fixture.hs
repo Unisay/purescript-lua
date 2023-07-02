@@ -15,7 +15,7 @@ prim = local1 (Name.join2 [name|Prim|] [name|undefined|]) Nil
 runtimeLazy :: Statement
 runtimeLazy = local1 [name|_S___runtime_lazy|] do
   let fun :: Name -> [Statement] -> Exp
-      fun n = Function [n] . fmap ann
+      fun n = Function [((), ParamNamed n)] . fmap ann
       var :: Name -> Var
       var = VarName
       ret :: Exp -> Statement
@@ -23,7 +23,7 @@ runtimeLazy = local1 [name|_S___runtime_lazy|] do
   fun [name|name|] . pure . ret . fun [name|init|] $
     [ local1 [name|state|] (Integer 0)
     , local1 [name|val|] Nil
-    , ret . fun [name|lineNumber|] $
+    , ret . functionDef [] $
         [ ifThenElse
             (varName [name|state|] `equalTo` Integer 2)
             [ret (varName [name|val|])]

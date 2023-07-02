@@ -1,19 +1,40 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestDataDeclarations2", moduleBindings =
-    [ Standalone
-      ( Name "CtorSameName", Ctor ProductType ( TyName "TySameName" ) ( CtorName "CtorSameName" ) [] ), Standalone
+UberModule
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "CtorSameName", Ctor ProductType
+        ( TyName "TySameName" )
+        ( CtorName "CtorSameName" ) []
+      ),
       ( Name "test", Abs
-        ( AbsBinding
-          ( ArgNamed ( Name "v" ) ) Abs
-          ( AbsBinding
-            ( ArgNamed ( Name "v1" ) ) IfThenElse Prim
-            ( Eq Lit ( String "Golden.TestDataDeclarations1.CtorSameName" ) Prim ( ReflectCtor RefBound ( Index { level = 1, offset = 0 } ) ) ) IfThenElse Prim
-            ( Eq Lit ( String "Golden.TestDataDeclarations2.CtorSameName" ) Prim ( ReflectCtor RefBound ( Index { level = 0, offset = 0 } ) ) ) Lit ( Boolean True ) Exception "No patterns matched" Exception "No patterns matched"
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity
+          ( Abs
+            ( Identity ( ParamNamed ( Name "v1" ) ) )
+            ( Identity
+              ( IfThenElse
+                ( Identity
+                  ( Eq
+                    ( Identity ( LiteralString "Golden.TestDataDeclarations1.CtorSameName" ) )
+                    ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ) )
+                  )
+                )
+                ( Identity
+                  ( IfThenElse
+                    ( Identity
+                      ( Eq
+                        ( Identity ( LiteralString "Golden.TestDataDeclarations2.CtorSameName" ) )
+                        ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v1" ) ) 0 ) ) ) )
+                      )
+                    )
+                    ( Identity ( LiteralBool True ) )
+                    ( Identity ( Exception "No patterns matched" ) )
+                  )
+                )
+                ( Identity ( Exception "No patterns matched" ) )
+              )
+            )
           )
         )
       )
-    ], moduleImports = [], moduleExports =
-    [ Name "CtorSameName", Name "test" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestDataDeclarations2.purs", dataTypes = fromList
-    [ ( TyName "TySameName", ( ProductType, fromList [ ( CtorName "CtorSameName", [] ) ] ) ) ]
+    ]
   }
-]

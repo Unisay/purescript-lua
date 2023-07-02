@@ -1,104 +1,128 @@
 module Language.PureScript.Backend.IR.OptimizerSpec where
 
+import Data.Map qualified as Map
 import Hedgehog (annotateShow, forAll, (===))
+import Hedgehog.Gen qualified as Gen
 import Language.PureScript.Backend.IR.Gen qualified as Gen
-import Language.PureScript.Backend.IR.Optimizer (optimizeExpression)
-import Language.PureScript.Backend.IR.Types
-  ( Exp (..)
-  , ExpF (..)
-  , Grouping (Standalone)
-  , Literal (..)
-  , Name
-  , application
-  , boolean
-  , ifThenElse
-  , lets
-  , refFreeLocal
+import Language.PureScript.Backend.IR.Linker (LinkMode (..))
+import Language.PureScript.Backend.IR.Linker qualified as Linker
+import Language.PureScript.Backend.IR.Optimizer
+  ( optimizedExpression
+  , optimizedUberModule
   )
+import Language.PureScript.Backend.IR.Types
+  ( Exp
+  , Grouping (Standalone)
+  , Module (..)
+  , Name (..)
+  , RawExp (..)
+  , application
+  , eq
+  , ifThenElse
+  , isLiteral
+  , lets
+  , literalBool
+  , literalInt
+  , refLocal0
+  )
+import Language.PureScript.Names (moduleNameFromString)
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
 
-spec :: Spec
+spec ∷ Spec
 spec = describe "IR Optimizer" do
   describe "optimizes expressions" do
     test "removes redundant else branch" do
-      thenBranch <- forAll Gen.exp
-      elseBranch <- forAll Gen.exp
-      let ifThenElseStatement = ifThenElse (boolean True) thenBranch elseBranch
+      thenBranch ← forAll Gen.exp
+      elseBranch ← forAll Gen.exp
+      let ifThenElseStatement = ifThenElse (literalBool True) thenBranch elseBranch
       annotateShow ifThenElseStatement
-      thenBranch === optimize ifThenElseStatement
+      thenBranch === optimizedExpression ifThenElseStatement
 
     test "removes redundant then branch" do
-      thenBranch <- forAll Gen.exp
-      elseBranch <- forAll Gen.exp
-      let ifThenElseStatement = ifThenElse (boolean False) thenBranch elseBranch
+      thenBranch ← forAll Gen.exp
+      elseBranch ← forAll Gen.exp
+      let ifThenElseStatement = ifThenElse (literalBool False) thenBranch elseBranch
       annotateShow ifThenElseStatement
-      elseBranch === optimize ifThenElseStatement
+      elseBranch === optimizedExpression ifThenElseStatement
 
   describe "inlines expressions" do
     test "inlines literals" do
-      name <- forAll Gen.name
-      inlinee <- forAll Gen.scalarExp
-      let original = let1 name inlinee (refFreeLocal name)
+      name ← forAll Gen.name
+      inlinee ← forAll Gen.scalarExp
+      let original = let1 name inlinee (refLocal0 name)
           expected = let1 name inlinee inlinee
-      optimize original === expected
+      optimizedExpression original === expected
 
     test "inlines references" do
-      name <- forAll Gen.name
-      inlinee <- forAll Gen.refFreeLocal
-      let original = let1 name inlinee (refFreeLocal name)
+      name ← forAll Gen.name
+      inlinee ← forAll Gen.refLocal
+      let original = let1 name inlinee (refLocal0 name)
           expected = let1 name inlinee inlinee
-      optimize original === expected
+      optimizedExpression original === expected
 
     test "inlines expressions referenced once" do
-      name <- forAll Gen.name
-      inlinee <-
-        forAll $ mfilter (\e -> not (isRefFree e || isLiteral e)) Gen.exp
-      let body = refFreeLocal name
+      name ← forAll Gen.name
+      inlinee ←
+        forAll $ mfilter (\e → not (isRef e || isLiteral e)) Gen.exp
+      let body = refLocal0 name
           original = let1 name inlinee body
           expected = let1 name inlinee inlinee
       annotateShow body
-      optimize original === expected
+      optimizedExpression original === expected
 
     test "doesn't inline expressions referenced more than once" do
-      name <- forAll Gen.name
-      inlinee <-
-        forAll $ mfilter (\e -> not (isRefFree e || isLiteral e)) Gen.exp
-      let body = application (refFreeLocal name) (refFreeLocal name)
-          original = let1 name inlinee body
+      name ← forAll Gen.name
+      inlinee ← forAll $ Gen.choice [Gen.exception, Gen.ctor]
+      let original =
+            let1 name inlinee $
+              application (refLocal0 name) (refLocal0 name)
       annotateShow original
-      optimize original === original
+      optimizedExpression original === original
+
+  describe "inliner unlocks more optimizations" do
+    test "constant folding after inlining" do
+      name ← forAll Gen.name
+      let uberName = moduleNameFromString "Main"
+          linkMode = LinkAsModule uberName
+          mkUber = Linker.makeUberModule linkMode . pure . wrapInModule
+      let original =
+            mkUber $
+              let1 name (literalInt 42) $
+                ifThenElse
+                  (eq (refLocal0 name) (literalInt 42))
+                  (literalInt 1)
+                  (literalInt 2)
+          expected =
+            Linker.UberModule
+              { uberModuleBindings = []
+              , uberModuleForeigns = []
+              , uberModuleExports = [(Name "main", literalInt 1)]
+              }
+      annotateShow original
+      annotateShow expected
+      optimizedUberModule original === expected
 
 --------------------------------------------------------------------------------
 -- Helpers ---------------------------------------------------------------------
 
-optimize :: Exp -> Exp
-optimize = flip evalState (0 :: Natural) . optimizeExpression
+wrapInModule ∷ Exp → Module
+wrapInModule e =
+  Module
+    { moduleName = moduleNameFromString "Main"
+    , moduleBindings = [Standalone (Name "main", e)]
+    , moduleImports = []
+    , moduleExports = [Name "main"]
+    , moduleReExports = Map.empty
+    , moduleForeigns = []
+    , modulePath = "Main.purs"
+    , dataTypes = Map.empty
+    }
 
-let1 :: Name -> Exp -> Exp -> Exp
+let1 ∷ Name → Exp → Exp → Exp
 let1 n e = lets (Standalone (n, e) :| [])
 
-isRefFree :: Exp -> Bool
-isRefFree =
-  unExp >>> \case
-    RefFree {} -> True
-    _ -> False
-
-isLiteral :: Exp -> Bool
-isLiteral =
-  unExp >>> \case
-    Lit {} -> True
-    _ -> False
-
-isScalar :: Exp -> Bool
-isScalar =
-  unExp >>> \case
-    Lit l ->
-      case l of
-        Integer {} -> True
-        Floating {} -> True
-        String {} -> True
-        Char {} -> True
-        Boolean {} -> True
-        _ -> False
-    _ -> False
+isRef ∷ Exp → Bool
+isRef = \case
+  Ref {} → True
+  _ → False

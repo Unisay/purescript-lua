@@ -7,11 +7,7 @@ import Data.List.NonEmpty qualified as NE
 import Data.Tagged (Tagged (..))
 import Data.Text (splitOn)
 import Data.Text qualified as Text
-import Language.PureScript.Backend
-  ( AppEntryPoint (..)
-  , AppOrModule (..)
-  , ModuleEntryPoint (..)
-  )
+import Language.PureScript.Backend.Types (AppOrModule (..))
 import Language.PureScript.Names qualified as PS
 import Options.Applicative
   ( Parser
@@ -29,21 +25,24 @@ import Options.Applicative
   , short
   , value
   )
-import Options.Applicative.Help.Pretty
 import Path (reldir, relfile)
 import Path.Posix (Dir, File, SomeBase (..), parseSomeDir, parseSomeFile)
+import Prettyprinter (Doc, annotate, flatAlt, indent, line, vsep, (<+>))
+import Prettyprinter qualified as PP
+import Prettyprinter.Render.Terminal (AnsiStyle, Color (..))
+import Prettyprinter.Render.Terminal qualified as PT
 
 data Args = Args
-  { foreignPath :: Tagged "foreign" (SomeBase Dir)
-  , psOutputPath :: Tagged "output" (SomeBase Dir)
-  , luaOutputFile :: Tagged "output-lua" (SomeBase File)
-  , appOrModule :: AppOrModule
+  { foreignPath ∷ Tagged "foreign" (SomeBase Dir)
+  , psOutputPath ∷ Tagged "output" (SomeBase Dir)
+  , luaOutputFile ∷ Tagged "output-lua" (SomeBase File)
+  , appOrModule ∷ AppOrModule
   }
   deriving stock (Show)
 
-options :: Parser Args
+options ∷ Parser Args
 options = do
-  foreignPath <-
+  foreignPath ←
     option
       (eitherReader (bimap displayException Tagged . parseSomeDir))
       ( fold
@@ -52,10 +51,11 @@ options = do
           , value $ Tagged $ Rel [reldir|foreign|]
           , helpDoc . Just $
               "Path to a directory containing foreign files."
-                <$$> bold "Default: foreign"
+                <> linebreak
+                <> bold "Default: foreign"
           ]
       )
-  psOutputPath <-
+  psOutputPath ←
     option
       (eitherReader (bimap displayException Tagged . parseSomeDir))
       ( fold
@@ -64,10 +64,11 @@ options = do
           , value $ Tagged $ Rel [reldir|output|]
           , helpDoc . Just $
               "Path to purs output directory."
-                <$$> bold "Default: output"
+                <> linebreak
+                <> bold "Default: output"
           ]
       )
-  luaOutputFile <-
+  luaOutputFile ←
     option
       (eitherReader (bimap displayException Tagged . parseSomeFile))
       ( fold
@@ -76,20 +77,21 @@ options = do
           , value $ Tagged $ Rel [relfile|main.lua|]
           , helpDoc . Just $
               "Path to write compiled Lua file to."
-                <$$> bold "Default: main.lua"
+                <> linebreak
+                <> bold "Default: main.lua"
           ]
       )
-  appOrModule <-
+  appOrModule ←
     option (eitherReader parseAppOrModule) . fold $
       [ metavar "ENTRY"
       , short 'e'
       , long "entry"
-      , value . AsApplication $
-          AppEntryPoint (PS.ModuleName "Main") (PS.Ident "main")
+      , value $ AsApplication (PS.ModuleName "Main") (PS.Ident "main")
       , helpDoc . Just $
           vsep
             [ "Where to start compilation."
-                <//> "Could be one of the following formats:"
+                <> softbreak
+                <> "Could be one of the following formats:"
             , "- Application format:" <+> magenta "<Module>.<binding>"
             , green $ indent 2 "Example: Acme.App.main"
             , "- Module format:" <+> magenta "<Module>"
@@ -99,27 +101,22 @@ options = do
       ]
   pure Args {..}
 
-parseAppOrModule :: String -> Either String AppOrModule
+parseAppOrModule ∷ String → Either String AppOrModule
 parseAppOrModule s = case splitOn "." (toText s) of
-  [] -> Left "Invalid entry point format"
-  [name]
-    | isModule name ->
-        pure . AsModule . ModuleEntryPoint $ PS.ModuleName name
-  segments -> do
+  [] → Left "Invalid entry point format"
+  [name] | isModule name → pure . AsModule $ PS.ModuleName name
+  segments → do
     let name = last (NE.fromList segments)
     pure
       if isModule name
-        then
-          AsModule . ModuleEntryPoint . PS.ModuleName $
-            Text.intercalate "." segments
+        then AsModule . PS.ModuleName $ Text.intercalate "." segments
         else
-          AsApplication $
-            let modname = Text.intercalate "." (init (NE.fromList segments))
-             in AppEntryPoint (PS.ModuleName modname) (PS.Ident name)
+          let modname = Text.intercalate "." (init (NE.fromList segments))
+           in AsApplication (PS.ModuleName modname) (PS.Ident name)
  where
   isModule = Char.isAsciiUpper . Text.head
 
-parseArguments :: IO Args
+parseArguments ∷ IO Args
 parseArguments =
   execParser $
     info
@@ -128,3 +125,21 @@ parseArguments =
           <> progDesc "Compile PureScript's CoreFn to Lua"
           <> header "pslua - a PureScript backend for Lua"
       )
+
+--------------------------------------------------------------------------------
+-- Helpers for pretty-printing -------------------------------------------------
+
+linebreak ∷ Doc AnsiStyle
+linebreak = flatAlt line mempty
+
+softbreak ∷ Doc AnsiStyle
+softbreak = PP.group linebreak
+
+green ∷ Doc AnsiStyle → Doc AnsiStyle
+green = annotate (PT.color Green)
+
+magenta ∷ Doc AnsiStyle → Doc AnsiStyle
+magenta = annotate (PT.color Magenta)
+
+bold ∷ Doc AnsiStyle → Doc AnsiStyle
+bold = annotate PT.bold

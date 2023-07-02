@@ -1,16 +1,49 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestRecDataDefs", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "A", Ctor SumType ( TyName "A" ) ( CtorName "A" ) [] ), Standalone
-      ( Name "AB", Ctor SumType ( TyName "A" ) ( CtorName "AB" ) [ FieldName "value0" ] ), Standalone
-      ( Name "B", Ctor SumType ( TyName "B" ) ( CtorName "B" ) [] ), Standalone
-      ( Name "BA", Ctor SumType ( TyName "B" ) ( CtorName "BA" ) [ FieldName "value0" ] ), Standalone
-      ( Name "b", RefFree ( Local ( Name "B" ) ) ), Standalone
-      ( Name "ab", App RefFree ( Local ( Name "AB" ) ) RefFree ( Local ( Name "b" ) ) ), Standalone
-      ( Name "ba", App RefFree ( Local ( Name "BA" ) ) RefFree ( Local ( Name "ab" ) ) ), Standalone
-      ( Name "a", RefFree ( Local ( Name "A" ) ) )
-    ], moduleImports = [], moduleExports =
-    [ Name "A", Name "AB", Name "B", Name "BA", Name "a", Name "b", Name "ab", Name "ba" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestRecDataDefs.purs", dataTypes = fromList
-    [ ( TyName "A", ( SumType, fromList [ ( CtorName "A", [] ), ( CtorName "AB", [ FieldName "value0" ] ) ] ) ), ( TyName "B", ( SumType, fromList [ ( CtorName "B", [] ), ( CtorName "BA", [ FieldName "value0" ] ) ] ) ) ]
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecDataDefs", qnameName = Name "A"
+        }, Ctor SumType
+        ( TyName "A" )
+        ( CtorName "A" ) []
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecDataDefs", qnameName = Name "AB"
+        }, Ctor SumType
+        ( TyName "A" )
+        ( CtorName "AB" )
+        [ FieldName "value0" ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecDataDefs", qnameName = Name "B"
+        }, Ctor SumType
+        ( TyName "B" )
+        ( CtorName "B" ) []
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecDataDefs", qnameName = Name "BA"
+        }, Ctor SumType
+        ( TyName "B" )
+        ( CtorName "BA" )
+        [ FieldName "value0" ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecDataDefs", qnameName = Name "ab" }, App
+        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "AB" ) ) 0 ) )
+        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "B" ) ) 0 ) )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "A", Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "A" ) ) 0 ),
+      ( Name "AB", Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "AB" ) ) 0 ),
+      ( Name "B", Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "B" ) ) 0 ),
+      ( Name "BA", Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "BA" ) ) 0 ),
+      ( Name "a", Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "A" ) ) 0 ),
+      ( Name "b", Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "B" ) ) 0 ),
+      ( Name "ab", Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "ab" ) ) 0 ),
+      ( Name "ba", App
+        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "BA" ) ) 0 ) )
+        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "ab" ) ) 0 ) )
+      )
+    ]
   }
-]

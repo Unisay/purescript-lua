@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-missing-local-signatures #-}
+
 module Language.PureScript.Backend.IRSpec where
 
 import Data.List.NonEmpty qualified as NE
@@ -9,7 +11,7 @@ import Language.PureScript.Names qualified as PS
 import Language.PureScript.PSString qualified as PS
 import Test.Hspec (Spec, describe, it, shouldBe)
 
-spec :: Spec
+spec ∷ Spec
 spec = describe "IR representation" do
   describe "case expressions" do
     describe "singular" do
@@ -21,7 +23,7 @@ spec = describe "IR representation" do
               , caseAlternativeResult = Right $ cfnInt 1
               }
           ]
-          >>= (`shouldBe` integer 1)
+          >>= (`shouldBe` literalInt 1)
 
       let defaultAlternative =
             Cfn.CaseAlternative
@@ -29,7 +31,7 @@ spec = describe "IR representation" do
               , caseAlternativeResult = Right $ cfnInt 0
               }
 
-      it "integer literal binder" do
+      it "literalInt literal binder" do
         representedCase
           [cfnInt 3]
           [ Cfn.CaseAlternative
@@ -40,10 +42,10 @@ spec = describe "IR representation" do
           , defaultAlternative
           ]
           >>= ( `shouldBe`
-                  ifThenElse (integer 9 `eq` integer 3) (integer 1) (integer 0)
+                  ifThenElse (literalInt 9 `eq` literalInt 3) (literalInt 1) (literalInt 0)
               )
 
-      it "float literal binder" do
+      it "literalFloat literal binder" do
         representedCase
           [cfnFloat 3.0]
           [ Cfn.CaseAlternative
@@ -55,9 +57,9 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (float 9.0 `eq` float 3.0)
-                    (integer 1)
-                    (integer 0)
+                    (literalFloat 9.0 `eq` literalFloat 3.0)
+                    (literalInt 1)
+                    (literalInt 0)
               )
 
       it "char literal binder" do
@@ -71,38 +73,38 @@ spec = describe "IR representation" do
           , defaultAlternative
           ]
           >>= ( `shouldBe`
-                  ifThenElse (char 'c' `eq` char 'x') (integer 1) (integer 0)
+                  ifThenElse (literalChar 'c' `eq` literalChar 'x') (literalInt 1) (literalInt 0)
               )
 
       it "array literal binder" do
-        let x = refFreeLocal (Name "x")
+        let x = refLocal (Name "x") 0
             expectedResult =
               ifThenElse
-                (integer 3 `eq` arrayLength x)
+                (literalInt 3 `eq` arrayLength x)
                 ( ifThenElse
-                    (char 'a' `eq` arrayIndex x 0)
+                    (literalChar 'a' `eq` arrayIndex x 0)
                     ( ifThenElse
-                        (char 'b' `eq` arrayIndex x 1)
+                        (literalChar 'b' `eq` arrayIndex x 1)
                         ( ifThenElse
-                            (integer 2 `eq` arrayLength (arrayIndex x 2))
+                            (literalInt 2 `eq` arrayLength (arrayIndex x 2))
                             ( ifThenElse
-                                (char 'c' `eq` arrayIndex (arrayIndex x 2) 0)
+                                (literalChar 'c' `eq` arrayIndex (arrayIndex x 2) 0)
                                 ( ifThenElse
-                                    ( char 'd'
+                                    ( literalChar 'd'
                                         `eq` arrayIndex (arrayIndex x 2) 1
                                     )
-                                    (integer 1)
-                                    (integer 0)
+                                    (literalInt 1)
+                                    (literalInt 0)
                                 )
-                                (integer 0)
+                                (literalInt 0)
                             )
-                            (integer 0)
+                            (literalInt 0)
                         )
-                        (integer 0)
+                        (literalInt 0)
                     )
-                    (integer 0)
+                    (literalInt 0)
                 )
-                (integer 0)
+                (literalInt 0)
 
         representedCase
           [cfnRef "x"]
@@ -156,19 +158,19 @@ spec = describe "IR representation" do
           , defaultAlternative
           ]
           >>= ( `shouldBe`
-                  let x = refFreeLocal (Name "x")
+                  let x = refLocal (Name "x") 0
                    in ifThenElse
-                        (char 'a' `eq` objectProp x (PropName "foo"))
+                        (literalChar 'a' `eq` objectProp x (PropName "foo"))
                         ( ifThenElse
-                            ( char 'b'
+                            ( literalChar 'b'
                                 `eq` objectProp
                                   (objectProp x (PropName "bar"))
                                   (PropName "baz")
                             )
-                            (integer 1)
-                            (integer 0)
+                            (literalInt 1)
+                            (literalInt 0)
                         )
-                        (integer 0)
+                        (literalInt 0)
               )
 
       it "local reference is not created for literal int expression" do
@@ -181,12 +183,12 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (integer 2 `eq` integer 1)
-                    (integer 1)
+                    (literalInt 2 `eq` literalInt 1)
+                    (literalInt 1)
                     (exception "No patterns matched")
               )
 
-      it "local reference is not created for literal float expression" do
+      it "local reference is not created for literal literalFloat expression" do
         representedCase
           [cfnFloat 1.0]
           [ Cfn.CaseAlternative
@@ -197,12 +199,12 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (float 2.0 `eq` float 1.0)
-                    (integer 1)
+                    (literalFloat 2.0 `eq` literalFloat 1.0)
+                    (literalInt 1)
                     (exception "No patterns matched")
               )
 
-      it "local reference is not created for literal char expression" do
+      it "local reference is not created for literal literalChar expression" do
         representedCase
           [cfnCharE 'x']
           [ Cfn.CaseAlternative
@@ -212,8 +214,8 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (char 'a' `eq` char 'x')
-                    (integer 1)
+                    (literalChar 'a' `eq` literalChar 'x')
+                    (literalInt 1)
                     (exception "No patterns matched")
               )
 
@@ -227,8 +229,8 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (boolean False `eq` boolean True)
-                    (integer 1)
+                    (literalBool False `eq` literalBool True)
+                    (literalInt 1)
                     (exception "No patterns matched")
               )
 
@@ -243,10 +245,10 @@ spec = describe "IR representation" do
           >>= ( `shouldBe`
                   let1
                     (Name "e0")
-                    (array [])
+                    (literalArray [])
                     ( ifThenElse
-                        (boolean False `eq` refFreeLocal (Name "e0"))
-                        (integer 1)
+                        (literalBool False `eq` refLocal (Name "e0") 0)
+                        (literalInt 1)
                         (exception "No patterns matched")
                     )
               )
@@ -268,14 +270,14 @@ spec = describe "IR representation" do
           >>= ( `shouldBe`
                   let1
                     (Name "e0")
-                    (object [(PropName "a", integer 1)])
+                    (literalObject [(PropName "a", literalInt 1)])
                     ( ifThenElse
-                        ( integer 2
+                        ( literalInt 2
                             `eq` objectProp
-                              (refFreeLocal (Name "e0"))
+                              (refLocal (Name "e0") 0)
                               (PropName "a")
                         )
-                        (integer 1)
+                        (literalInt 1)
                         (exception "No patterns matched")
                     )
               )
@@ -290,8 +292,8 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (boolean False `eq` refFreeLocal (Name "r"))
-                    (integer 1)
+                    (literalBool False `eq` refLocal (Name "r") 0)
+                    (literalInt 1)
                     (exception "No patterns matched")
               )
 
@@ -333,19 +335,19 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (char 'a' `eq` char 'x')
+                    (literalChar 'a' `eq` literalChar 'x')
                     ( ifThenElse
-                        (char 'b' `eq` char 'y')
-                        (integer 1)
+                        (literalChar 'b' `eq` literalChar 'y')
+                        (literalInt 1)
                         ( ifThenElse
-                            (char 'e' `eq` char 'x')
-                            (integer 0)
+                            (literalChar 'e' `eq` literalChar 'x')
+                            (literalInt 0)
                             (exception "No patterns matched")
                         )
                     )
                     ( ifThenElse
-                        (char 'e' `eq` char 'x')
-                        (integer 0)
+                        (literalChar 'e' `eq` literalChar 'x')
+                        (literalInt 0)
                         (exception "No patterns matched")
                     )
               )
@@ -377,12 +379,12 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (char 'a' `eq` char 'z')
-                    (let1 (Name "x") (char 't') (refFreeLocal (Name "x")))
+                    (literalChar 'a' `eq` literalChar 'z')
+                    (let1 (Name "x") (literalChar 't') (refLocal (Name "x") 0))
                     ( ifThenElse
-                        (char 'b' `eq` char 't')
-                        (let1 (Name "y") (char 'z') (refFreeLocal (Name "y")))
-                        (integer 3)
+                        (literalChar 'b' `eq` literalChar 't')
+                        (let1 (Name "y") (literalChar 'z') (refLocal (Name "y") 0))
+                        (literalInt 3)
                     )
               )
 
@@ -399,10 +401,10 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   lets
-                    ( Standalone (Name "z", char 'y')
-                        :| [Standalone (Name "v", char 'x')]
+                    ( Standalone (Name "z", literalChar 'y')
+                        :| [Standalone (Name "v", literalChar 'x')]
                     )
-                    (refFreeLocal (Name "z"))
+                    (refLocal (Name "z") 0)
               )
 
       it "named binders compile to a let bindings" do
@@ -427,35 +429,35 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   ifThenElse
-                    (char 'a' `eq` char 'x')
+                    (literalChar 'a' `eq` literalChar 'x')
                     ( ifThenElse
-                        (char 'b' `eq` char 'y')
+                        (literalChar 'b' `eq` literalChar 'y')
                         ( lets
-                            ( IR.Standalone (Name "b", char 'y')
-                                :| [IR.Standalone (Name "a", char 'x')]
+                            ( IR.Standalone (Name "b", literalChar 'y')
+                                :| [IR.Standalone (Name "a", literalChar 'x')]
                             )
                             ( application
-                                (refBound (Index 0 1))
-                                (refBound (Index 0 0))
+                                (refLocal (Name "a") 0)
+                                (refLocal (Name "b") 0)
                             )
                         )
                         ( lets
-                            ( IR.Standalone (Name "o2", char 'y')
-                                :| [IR.Standalone (Name "o1", char 'x')]
+                            ( IR.Standalone (Name "o2", literalChar 'y')
+                                :| [IR.Standalone (Name "o1", literalChar 'x')]
                             )
                             ( application
-                                (refBound (Index 0 0))
-                                (refBound (Index 0 1))
+                                (refLocal (Name "o2") 0)
+                                (refLocal (Name "o1") 0)
                             )
                         )
                     )
                     ( lets
-                        ( IR.Standalone (Name "o2", char 'y')
-                            :| [IR.Standalone (Name "o1", char 'x')]
+                        ( IR.Standalone (Name "o2", literalChar 'y')
+                            :| [IR.Standalone (Name "o1", literalChar 'x')]
                         )
                         ( application
-                            (refBound (Index 0 0))
-                            (refBound (Index 0 1))
+                            (refLocal (Name "o2") 0)
+                            (refLocal (Name "o1") 0)
                         )
                     )
               )
@@ -464,13 +466,13 @@ spec = describe "IR representation" do
 -- Helper functions ------------------------------------------------------------
 
 representedCase
-  :: MonadFail m
-  => [Cfn.Expr Cfn.Ann]
-  -> [Cfn.CaseAlternative Cfn.Ann]
-  -> m IR.Exp
+  ∷ MonadFail m
+  ⇒ [Cfn.Expr Cfn.Ann]
+  → [Cfn.CaseAlternative Cfn.Ann]
+  → m IR.Exp
 representedCase es alts = runRepresentM (mkCase es (NE.fromList alts))
 
-runRepresentM :: MonadFail m => RepM Exp -> m Exp
+runRepresentM ∷ MonadFail m ⇒ RepM Exp → m Exp
 runRepresentM rm =
   either
     (fail . show)
@@ -488,10 +490,10 @@ runRepresentM rm =
 --------------------------------------------------------------------------------
 -- Fixture ---------------------------------------------------------------------
 
-ann :: Cfn.Ann
+ann ∷ Cfn.Ann
 ann = Nothing
 
-cfnModule :: forall {a}. Cfn.Module a
+cfnModule ∷ ∀ {a}. Cfn.Module a
 cfnModule =
   Cfn.Module
     { moduleName = PS.ModuleName "M"
@@ -503,50 +505,50 @@ cfnModule =
     , moduleBindings = mempty
     }
 
-cfnQualifyModule :: a -> PS.Qualified a
+cfnQualifyModule ∷ a → PS.Qualified a
 cfnQualifyModule = PS.Qualified (PS.ByModuleName (PS.ModuleName "ModuleName"))
 
-cfnLocalIdent :: Text -> PS.Qualified PS.Ident
+cfnLocalIdent ∷ Text → PS.Qualified PS.Ident
 cfnLocalIdent = PS.Qualified (PS.BySourcePos (PS.SourcePos 0 0)) . PS.Ident
 
-cfnRef :: Text -> Cfn.Expr Cfn.Ann
+cfnRef ∷ Text → Cfn.Expr Cfn.Ann
 cfnRef = Cfn.Var ann . cfnLocalIdent
 
-cfnBool :: Bool -> Cfn.Expr Cfn.Ann
+cfnBool ∷ Bool → Cfn.Expr Cfn.Ann
 cfnBool b = Cfn.Literal ann (Cfn.BooleanLiteral b)
 
-cfnInt :: Integer -> Cfn.Expr Cfn.Ann
+cfnInt ∷ Integer → Cfn.Expr Cfn.Ann
 cfnInt i = Cfn.Literal ann (Cfn.NumericLiteral (Left i))
 
-cfnFloat :: Double -> Cfn.Expr Cfn.Ann
+cfnFloat ∷ Double → Cfn.Expr Cfn.Ann
 cfnFloat f = Cfn.Literal ann (Cfn.NumericLiteral (Right f))
 
-cfnCharE :: Char -> Cfn.Expr Cfn.Ann
+cfnCharE ∷ Char → Cfn.Expr Cfn.Ann
 cfnCharE = Cfn.Literal ann . cfnCharL
 
-cfnCharL :: Char -> Cfn.Literal a
+cfnCharL ∷ Char → Cfn.Literal a
 cfnCharL = Cfn.CharLiteral
 
-cfnArray :: [Cfn.Expr Cfn.Ann] -> Cfn.Expr Cfn.Ann
+cfnArray ∷ [Cfn.Expr Cfn.Ann] → Cfn.Expr Cfn.Ann
 cfnArray a = Cfn.Literal ann (Cfn.ArrayLiteral a)
 
-cfnObject :: [(Text, Cfn.Expr Cfn.Ann)] -> Cfn.Expr Cfn.Ann
+cfnObject ∷ [(Text, Cfn.Expr Cfn.Ann)] → Cfn.Expr Cfn.Ann
 cfnObject o = Cfn.Literal ann $ Cfn.ObjectLiteral (first PS.mkString <$> o)
 
-cfnLitB :: Cfn.Literal (Cfn.Binder Cfn.Ann) -> Cfn.Binder Cfn.Ann
+cfnLitB ∷ Cfn.Literal (Cfn.Binder Cfn.Ann) → Cfn.Binder Cfn.Ann
 cfnLitB = Cfn.LiteralBinder ann
 
-cfnVarB :: PS.Ident -> Cfn.Binder Cfn.Ann
+cfnVarB ∷ PS.Ident → Cfn.Binder Cfn.Ann
 cfnVarB = Cfn.VarBinder ann
 
-cfnNamB :: PS.Ident -> Cfn.Binder Cfn.Ann -> Cfn.Binder Cfn.Ann
+cfnNamB ∷ PS.Ident → Cfn.Binder Cfn.Ann → Cfn.Binder Cfn.Ann
 cfnNamB = Cfn.NamedBinder ann
 
-cfnNullB :: Cfn.Binder Cfn.Ann
+cfnNullB ∷ Cfn.Binder Cfn.Ann
 cfnNullB = Cfn.NullBinder ann
 
-cfnApp :: Cfn.Expr Cfn.Ann -> Cfn.Expr Cfn.Ann -> Cfn.Expr Cfn.Ann
+cfnApp ∷ Cfn.Expr Cfn.Ann → Cfn.Expr Cfn.Ann → Cfn.Expr Cfn.Ann
 cfnApp = Cfn.App ann
 
-let1 :: Name -> Exp -> Exp -> Exp
+let1 ∷ Name → Exp → Exp → Exp
 let1 n e = lets (pure (IR.Standalone (n, e)))

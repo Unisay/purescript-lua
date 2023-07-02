@@ -6,6 +6,7 @@ import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
 import Language.PureScript.Backend.Lua.Name (Name, unsafeName)
 import Language.PureScript.Backend.Lua.Printer (printStatement)
+import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
@@ -70,35 +71,38 @@ name = do
 expression :: Gen Lua.Exp
 expression = Gen.recursiveFrequency nonRecursiveExpressions recursiveExpressions
 
+nonRecursiveExpression :: Gen Lua.Exp
+nonRecursiveExpression = Gen.frequency nonRecursiveExpressions
+
 nonRecursiveExpressions :: [(Int, Gen Lua.Exp)]
 nonRecursiveExpressions =
   [ (2, nil)
-  , (1, boolean)
-  , (2, integer)
-  , (1, float)
-  , (2, string)
+  , (1, literalBool)
+  , (2, literalInt)
+  , (1, literalFloat)
+  , (2, literalString)
   , (3, Lua.var <$> nonRecursiveVar)
   ]
 
 nil :: Gen Lua.Exp
 nil = Gen.constant Lua.Nil
 
-boolean :: Gen Lua.Exp
-boolean = Lua.Boolean <$> Gen.bool
+literalBool :: Gen Lua.Exp
+literalBool = Lua.Boolean <$> Gen.bool
 
-integer :: Gen Lua.Exp
-integer = Lua.Integer <$> Gen.integral integerRange
+literalInt :: Gen Lua.Exp
+literalInt = Lua.Integer <$> Gen.integral integerRange
  where
   integerRange :: Range Integer
   integerRange = fromIntegral <$> (Range.exponentialBounded :: Range Int64)
 
-float :: Gen Lua.Exp
-float =
+literalFloat :: Gen Lua.Exp
+literalFloat =
   Lua.Float
     <$> Gen.double (Range.exponentialFloatFrom 0 (-1234567890.0) 1234567890)
 
-string :: Gen Lua.Exp
-string = Lua.String <$> Gen.text (Range.linear 1 16) Gen.unicode
+literalString :: Gen Lua.Exp
+literalString = Lua.String <$> Gen.text (Range.linear 1 16) Gen.unicode
 
 nonRecursiveVar :: Gen Lua.Var
 nonRecursiveVar = Gen.frequency [(1, Lua.VarName <$> name)]
@@ -114,7 +118,12 @@ recursiveExpressions =
   ]
 
 function :: Gen Lua.Exp
-function = Lua.functionDef <$> Gen.list (Range.linear 0 5) name <*> chunk
+function =
+  Lua.functionDef
+    <$> Gen.list
+      (Range.linear 0 5)
+      (maybe ParamUnused ParamNamed <$> Gen.maybe name)
+    <*> chunk
 
 unOp :: Gen Lua.Exp
 unOp = Lua.unOp <$> Gen.enumBounded <*> expression

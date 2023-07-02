@@ -128,26 +128,26 @@ in references to other bindings in the binding group, so the traversal only
 exposes `Var`s to the provided function.
 -}
 onVarsWithDelayAndForce
-  :: forall f
+  ∷ ∀ f
    . Applicative f
-  => ( Int
-       -> Maybe Int
-       -> Ann
-       -> Qualified Ident
-       -> f (Expr Ann)
-     )
-  -> Expr Ann
-  -> f (Expr Ann)
+  ⇒ ( Int
+      → Maybe Int
+      → Ann
+      → Qualified Ident
+      → f (Expr Ann)
+    )
+  → Expr Ann
+  → f (Expr Ann)
 onVarsWithDelayAndForce f = snd . go 0 $ Just 0
  where
-  go :: Int -> Maybe Int -> (Bind Ann -> f (Bind Ann), Expr Ann -> f (Expr Ann))
+  go ∷ Int → Maybe Int → (Bind Ann → f (Bind Ann), Expr Ann → f (Expr Ann))
   go delay force = (handleBind, handleExpr')
    where
     (handleBind, handleExpr, handleBinder, handleCaseAlternative) =
       traverseCoreFn handleBind handleExpr' handleBinder handleCaseAlternative
     handleExpr' = \case
-      Var a i -> f delay force a i
-      Abs a i e ->
+      Var a i → f delay force a i
+      Abs a i e →
         Abs a i
           <$> snd
             ( if force == Just 0
@@ -155,7 +155,7 @@ onVarsWithDelayAndForce f = snd . go 0 $ Just 0
                 else go delay $ fmap pred force
             )
             e
-      App a e1 e2 ->
+      App a e1 e2 →
         -- `handleApp` is just to handle the constructor application exception
         -- somewhat gracefully (i.e., without requiring a deep inspection of
         -- the function expression at every step). If we didn't care about
@@ -163,31 +163,31 @@ onVarsWithDelayAndForce f = snd . go 0 $ Just 0
         --   App a <$> snd (go delay (fmap succ force)) e1
         --         <*> snd (go delay Nothing) e2
         handleApp 1 [(a, e2)] e1
-      Case a vs alts ->
+      Case a vs alts →
         Case a
           <$> traverse (snd $ go delay Nothing) vs
           <*> traverse handleCaseAlternative alts
-      Let a ds e ->
+      Let a ds e →
         Let a <$> traverse (fst $ go delay Nothing) ds <*> handleExpr' e
-      other -> handleExpr other
+      other → handleExpr other
 
     handleApp len args = \case
-      App a e1 e2 -> handleApp (len + 1) ((a, e2) : args) e1
+      App a e1 e2 → handleApp (len + 1) ((a, e2) : args) e1
       Var a@(Just meta) i
-        | isConstructorLike meta ->
+        | isConstructorLike meta →
             foldl
-              (\e1 (a2, e2) -> App a2 <$> e1 <*> handleExpr' e2)
+              (\e1 (a2, e2) → App a2 <$> e1 <*> handleExpr' e2)
               (f delay force a i)
               args
-      e ->
+      e →
         foldl
-          (\e1 (a2, e2) -> App a2 <$> e1 <*> snd (go delay Nothing) e2)
+          (\e1 (a2, e2) → App a2 <$> e1 <*> snd (go delay Nothing) e2)
           (snd (go delay (fmap (+ len) force)) e)
           args
     isConstructorLike = \case
-      IsConstructor {} -> True
-      IsNewtype -> True
-      _ -> False
+      IsConstructor {} → True
+      IsNewtype → True
+      _ → False
 
 -- Once we assign a delay and force value to every `Var` in the binding group,
 -- we can consider how to order the bindings to allow them all to successfully
@@ -364,7 +364,7 @@ we want to resolve any key collisions in their MonoidalIntMaps with this
 semigroup:
 -}
 
-instance Ord a => Semigroup (MaxRoseNode m a) where
+instance Ord a ⇒ Semigroup (MaxRoseNode m a) where
   l@(MaxRoseNode l1 _) <> r@(MaxRoseNode r1 _) = if r1 > l1 then r else l
 
 -- And that's why this is called a MaxRoseTree.
@@ -372,13 +372,13 @@ instance Ord a => Semigroup (MaxRoseNode m a) where
 -- Traversing this tree to get a single MonoidalIntMap with the entire closure
 -- plus force information is fairly straightforward:
 mrtFlatten
-  :: (Monad m, Ord a)
-  => MaxRoseTree m a
-  -> m (IM.MonoidalIntMap (Max a))
+  ∷ (Monad m, Ord a)
+  ⇒ MaxRoseTree m a
+  → m (IM.MonoidalIntMap (Max a))
 mrtFlatten =
   ( getAp
       . IM.foldMapWithKey
-        ( \i (MaxRoseNode a inner) ->
+        ( \i (MaxRoseNode a inner) →
             Ap $ (IM.singleton i (Max a) <>) <$> mrtFlatten inner
         )
       =<<
@@ -403,11 +403,11 @@ indices reachable from the current index, to the maximum force applied to
 those indices.
 -}
 searchReachable
-  :: forall m force
+  ∷ ∀ m force
    . (Alternative m, Monad m, Enum force, Ord force)
-  => Int
-  -> ((Int, force) -> m (IM.MonoidalIntMap (Max force)))
-  -> A.Array Int (m (IM.MonoidalIntMap (Max force)))
+  ⇒ Int
+  → ((Int, force) → m (IM.MonoidalIntMap (Max force)))
+  → A.Array Int (m (IM.MonoidalIntMap (Max force)))
 searchReachable maxIdx lookupEdges = mrtFlatten . Unsafe.head <$> mem
  where
   -- This is a finite array of infinite lists, used to memoize all the search
@@ -415,15 +415,15 @@ searchReachable maxIdx lookupEdges = mrtFlatten . Unsafe.head <$> mem
   -- in the array--the one corresponding to zero force, which is what's needed
   -- to initialize the corresponding identifier. (`unsafeHead` is safe here, of
   -- course: infinite lists.)
-  mem :: A.Array Int [MaxRoseTree m force]
+  mem ∷ A.Array Int [MaxRoseTree m force]
   mem =
     A.listArray
       (0, maxIdx)
-      [ [cutLoops <*> fmap (IM.mapWithKey memoizedNode) . lookupEdges $ (i, f) | f <- [toEnum 0 ..]]
-      | i <- [0 .. maxIdx]
+      [ [cutLoops <*> fmap (IM.mapWithKey memoizedNode) . lookupEdges $ (i, f) | f ← [toEnum 0 ..]]
+      | i ← [0 .. maxIdx]
       ]
 
-  memoizedNode :: Int -> Max force -> MaxRoseNode m force
+  memoizedNode ∷ Int → Max force → MaxRoseNode m force
   memoizedNode i (Max force) = MaxRoseNode force $ mem A.! i !! fromEnum force
 
   -- And this is the function that prevents the search from actually being
@@ -438,10 +438,10 @@ searchReachable maxIdx lookupEdges = mrtFlatten . Unsafe.head <$> mem
   -- there are a finite number of indices in our universe, this guarantees that
   -- the analysis terminates, because no single search path can have length
   -- greater than `maxIdx`.
-  cutLoops :: (Int, force) -> MaxRoseTree m force -> MaxRoseTree m force
+  cutLoops ∷ (Int, force) → MaxRoseTree m force → MaxRoseTree m force
   cutLoops (i, force) = go
    where
-    go = (=<<) . IM.traverseWithKey $ \i' (MaxRoseNode force' inner) ->
+    go = (=<<) . IM.traverseWithKey $ \i' (MaxRoseNode force' inner) →
       MaxRoseNode force'
         <$> if i == i'
           then
@@ -468,21 +468,21 @@ correct initialization order can be statically determined, and rewriting
 bindings and references to be lazy otherwise.
 -}
 applyLazinessTransform
-  :: ModuleName
-  -> [((Ann, Ident), Expr Ann)]
-  -> ([((Ann, Ident), Expr Ann)], Any)
+  ∷ ModuleName
+  → [((Ann, Ident), Expr Ann)]
+  → ([((Ann, Ident), Expr Ann)], Any)
 applyLazinessTransform mn rawItems =
   let
     -- Establish the mapping from names to ints.
-    rawItemsByName :: M.MonoidalMap Ident (Ann, Expr Ann)
+    rawItemsByName ∷ M.MonoidalMap Ident (Ann, Expr Ann)
     rawItemsByName = M.fromList $ (snd . fst &&& first fst) <$> rawItems
 
     maxIdx = M.size rawItemsByName - 1
 
-    rawItemsByIndex :: A.Array Int (Ann, Expr Ann)
+    rawItemsByIndex ∷ A.Array Int (Ann, Expr Ann)
     rawItemsByIndex = A.listArray (0, maxIdx) $ M.elems rawItemsByName
 
-    names :: S.Set Ident
+    names ∷ S.Set Ident
     names = M.keysSet rawItemsByName
 
     -- Now do the first delay/force traversal of all the bindings to find
@@ -495,15 +495,15 @@ applyLazinessTransform mn rawItems =
     -- where A, B, C, and D are as below:
     --                A           B (keys)           C (keys)           D
     findReferences
-      :: Expr Ann
-      -> IM.MonoidalIntMap (IM.MonoidalIntMap (Ap Maybe (Max Int)))
+      ∷ Expr Ann
+      → IM.MonoidalIntMap (IM.MonoidalIntMap (Ap Maybe (Max Int)))
     findReferences = (getConst .) . onVarsWithDelayAndForce $
-      \delay force _ -> \case
+      \delay force _ → \case
         Qualified qb ident
           | all (== mn) (toMaybeModuleName qb)
-          , Just i <- ident `S.lookupIndex` names ->
+          , Just i ← ident `S.lookupIndex` names →
               Const . IM.singleton delay . IM.singleton i $ coerceForce force
-        _ -> Const IM.empty
+        _ → Const IM.empty
 
     -- The parts of this type mean:
     -- D is the maximum force (or Nothing if unknown) with which the identifier C
@@ -512,7 +512,7 @@ applyLazinessTransform mn rawItems =
     -- where A, B, C, and D are as below:
     --                     A    B (keys)           C (keys)           D
     refsByIndex
-      :: A.Array
+      ∷ A.Array
           Int
           (IM.MonoidalIntMap (IM.MonoidalIntMap (Ap Maybe (Max Int))))
     refsByIndex = findReferences . snd <$> rawItemsByIndex
@@ -528,10 +528,10 @@ applyLazinessTransform mn rawItems =
     --
     -- where A, B, C, and D are as below:
     --                           A    B      C (keys)           D
-    reachablesByIndex :: A.Array Int (Maybe (IM.MonoidalIntMap (Max Int)))
-    reachablesByIndex = searchReachable maxIdx $ \(i, force) ->
-      getAp . flip IM.foldMapWithKey (dropKeysAbove force $ refsByIndex A.! i) $ \delay ->
-        IM.foldMapWithKey $ \i' force' ->
+    reachablesByIndex ∷ A.Array Int (Maybe (IM.MonoidalIntMap (Max Int)))
+    reachablesByIndex = searchReachable maxIdx $ \(i, force) →
+      getAp . flip IM.foldMapWithKey (dropKeysAbove force $ refsByIndex A.! i) $ \delay →
+        IM.foldMapWithKey $ \i' force' →
           Ap $ IM.singleton i' . Max . (force - delay +) <$> uncoerceForce force'
 
     -- If `reachablesByIndex` is a sort of labeled relation, this function
@@ -545,12 +545,12 @@ applyLazinessTransform mn rawItems =
     -- where A, B, and C are as below:
     --                      (B)    A                  B (singleton key)  C
     reverseReachablesFor
-      :: Int
-      -> IM.MonoidalIntMap (IM.MonoidalIntMap (Ap Maybe (Max Int)))
+      ∷ Int
+      → IM.MonoidalIntMap (IM.MonoidalIntMap (Ap Maybe (Max Int)))
     reverseReachablesFor i = case reachablesByIndex A.! i of
-      Nothing ->
+      Nothing →
         IM.fromAscList $ (,IM.singleton i $ Ap Nothing) <$> [0 .. maxIdx]
-      Just im -> IM.singleton i . Ap . Just <$> im
+      Just im → IM.singleton i . Ap . Just <$> im
 
     -- We can use `reachablesByIndex` to build a finite graph and topsort it;
     -- in the process, we'll pack the nodes of the graph with data we'll want
@@ -558,7 +558,7 @@ applyLazinessTransform mn rawItems =
     -- assume that every other identifier is reachable from that one--hence the
     -- `maybe [0..maxIdx]`.
     sccs = stronglyConnComp $ do
-      (i, mbReachable) <- A.assocs reachablesByIndex
+      (i, mbReachable) ← A.assocs reachablesByIndex
       pure
         ( (reverseReachablesFor i, (S.elemAt i names, rawItemsByIndex A.! i))
         , i
@@ -567,7 +567,7 @@ applyLazinessTransform mn rawItems =
 
     (replacements, items) = flip foldMap sccs $ \case
       -- The easy case: this binding doesn't need to be made lazy after all!
-      AcyclicSCC (_, (ident, (a, e))) -> pure [(ident, EagerBinding a e)]
+      AcyclicSCC (_, (ident, (a, e))) → pure [(ident, EagerBinding a e)]
       -- The tough case: we have a loop.
       -- We need to do two things here:
       --   * Collect the reversed reachables relation for each vertex in this
@@ -576,7 +576,7 @@ applyLazinessTransform mn rawItems =
       --     a list of lazy bindings
       -- Both of these results are monoidal, so the outer `foldMap` will
       -- concatenate them pairwise.
-      CyclicSCC vertices ->
+      CyclicSCC vertices →
         ( foldMap fst vertices
         , map (fmap (LazyDefinition . snd) . snd) vertices
             <> map (fmap (LazyBinding . fst) . snd) vertices
@@ -585,7 +585,7 @@ applyLazinessTransform mn rawItems =
     -- We have `replacements` expressed in terms of indices; we want to map it
     -- back to names before traversing the bindings again.
     replacementsByName
-      :: M.MonoidalMap
+      ∷ M.MonoidalMap
           Ident
           (M.MonoidalMap Ident (Ap Maybe (Max Int)))
     replacementsByName =
@@ -606,21 +606,21 @@ applyLazinessTransform mn rawItems =
     -- that can safely continue to use the original reference, since it won't be
     -- needed until after the referenced binding is done initializing.
     replaceReferencesWithForceCall
-      :: (Ident, RecursiveGroupItem (Expr Ann))
-      -> (Ident, RecursiveGroupItem (Expr Ann))
+      ∷ (Ident, RecursiveGroupItem (Expr Ann))
+      → (Ident, RecursiveGroupItem (Expr Ann))
     replaceReferencesWithForceCall pair@(ident, item) =
       case ident `M.lookup` replacementsByName of
-        Nothing -> pair
-        Just m ->
+        Nothing → pair
+        Just m →
           let
             rewriteExpr = (runIdentity .) . onVarsWithDelayAndForce $
-              \delay _ ann ->
+              \delay _ ann →
                 pure . \case
                   Qualified qb ident'
                     | all (== mn) (toMaybeModuleName qb)
-                    , any (all (>= Max delay) . getAp) $ ident' `M.lookup` m ->
+                    , any (all (>= Max delay) . getAp) $ ident' `M.lookup` m →
                         makeForceCall ann ident'
-                  q -> Var ann q
+                  q → Var ann q
            in
             (ident, rewriteExpr <$> item)
    in
@@ -635,10 +635,10 @@ applyLazinessTransform mn rawItems =
  where
   nullAnn = Nothing
   lazifyIdent = \case
-    Ident txt -> InternalIdent $ Lazy txt
-    _ -> internalError "Unexpected argument to lazifyIdent"
+    Ident txt → InternalIdent $ Lazy txt
+    _ → internalError "Unexpected argument to lazifyIdent"
 
-  makeForceCall :: Ann -> Ident -> Expr Ann
+  makeForceCall ∷ Ann → Ident → Expr Ann
   makeForceCall _ ident =
     -- We expect the functions produced by `runtimeLazy` to accept one
     -- argument: the line number on which this reference is made. The runtime
@@ -649,14 +649,14 @@ applyLazinessTransform mn rawItems =
       . NumericLiteral
       $ Left 0
 
-  fromRGI :: Ident -> RecursiveGroupItem (Expr Ann) -> ((Ann, Ident), Expr Ann)
+  fromRGI ∷ Ident → RecursiveGroupItem (Expr Ann) → ((Ann, Ident), Expr Ann)
   fromRGI i = \case
-    EagerBinding a e -> ((a, i), e)
-    LazyBinding a -> ((a, i), makeForceCall a i)
+    EagerBinding a e → ((a, i), e)
+    LazyBinding a → ((a, i), makeForceCall a i)
     -- We expect the `runtimeLazy` factory to accept three arguments: the
     -- identifier being initialized, the name of the module, and of course a
     -- thunk that actually contains the initialization code.
-    LazyDefinition e ->
+    LazyDefinition e →
       ( (nullAnn, lazifyIdent i)
       , app (app runtimeLazy (strLit (runIdent i))) (thunk e)
       )
@@ -668,15 +668,15 @@ applyLazinessTransform mn rawItems =
         Var nullAnn . Qualified ByNullSourcePos $
           InternalIdent RuntimeLazyFactory
 
-  dropKeysAbove :: Int -> IM.MonoidalIntMap a -> IM.MonoidalIntMap a
+  dropKeysAbove ∷ Int → IM.MonoidalIntMap a → IM.MonoidalIntMap a
   dropKeysAbove n = fst . IM.split (n + 1)
 
-  coerceForce :: Maybe Int -> Ap Maybe (Max Int)
+  coerceForce ∷ Maybe Int → Ap Maybe (Max Int)
   coerceForce = coerce
 
-  uncoerceForce :: Ap Maybe (Max Int) -> Maybe Int
+  uncoerceForce ∷ Ap Maybe (Max Int) → Maybe Int
   uncoerceForce = coerce
 
 -- | Exit with an error message and a crash report link.
-internalError :: HasCallStack => Text -> a
+internalError ∷ HasCallStack ⇒ Text → a
 internalError = error . ("An internal error occurred during compilation: " <>)

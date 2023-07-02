@@ -1,88 +1,275 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestRecursiveBindings", moduleBindings =
-    [ Standalone
-      ( Name "whereRec", Let
-        ( LetBinding
-          ( RecursiveGroup
-            (
-              ( Name "yes", Abs
-                ( AbsBinding
-                  ( ArgNamed ( Name "v" ) ) IfThenElse Prim
-                  ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean False ) IfThenElse Prim
-                  ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean True ) Exception "No patterns matched"
-                )
-              ) :|
-              [
-                ( Name "no", Abs
-                  ( AbsBinding
-                    ( ArgNamed ( Name "v" ) ) IfThenElse Prim
-                    ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean False ) IfThenElse Prim
-                    ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean True ) Exception "No patterns matched"
-                  )
-                )
-              ]
-            ) :| []
-          ) App RefBound
-          ( Index { level = 0, offset = 1 } ) Lit ( Boolean False )
-        )
-      ), Standalone
-      ( Name "letRecMixed", Let
-        ( LetBinding
-          ( Standalone
-            ( Name "z", Lit ( Integer 1 ) ) :|
-            [ RecursiveGroup
-              (
-                ( Name "b", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) App RefBound ( Index { level = 1, offset = 2 } ) RefBound ( Index { level = 1, offset = 0 } ) ) ) :|
-                [ ( Name "a", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) App RefBound ( Index { level = 1, offset = 1 } ) RefBound ( Index { level = 1, offset = 0 } ) ) ) ]
-              ), Standalone
-              ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) Abs ( AbsBinding ( ArgNamed ( Name "k" ) ) App RefBound ( Index { level = 2, offset = 2 } ) RefBound ( Index { level = 0, offset = 0 } ) ) ) ), Standalone
-              ( Name "y", App App RefBound ( Index { level = 0, offset = 3 } ) RefBound ( Index { level = 0, offset = 0 } ) RefBound ( Index { level = 0, offset = 0 } ) ), Standalone
-              ( Name "x", App App RefBound ( Index { level = 0, offset = 3 } ) RefBound ( Index { level = 0, offset = 4 } ) RefBound ( Index { level = 0, offset = 4 } ) )
-            ]
-          ) App App RefBound
-          ( Index { level = 0, offset = 3 } ) App App RefBound
-          ( Index { level = 0, offset = 3 } ) RefBound
-          ( Index { level = 0, offset = 4 } ) RefBound
-          ( Index { level = 0, offset = 4 } ) App App RefBound
-          ( Index { level = 0, offset = 3 } ) RefBound
-          ( Index { level = 0, offset = 4 } ) Lit
-          ( Integer 0 )
-        )
-      ), Standalone
+UberModule
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [
       ( Name "letRec", Let
-        ( LetBinding
-          ( RecursiveGroup
+        ( RecursiveGroup
+          (
+            ( Identity
+              ( Name "yes" ), Identity
+              ( Abs
+                ( Identity ( ParamNamed ( Name "v" ) ) )
+                ( Identity
+                  ( IfThenElse
+                    ( Identity
+                      ( Eq
+                        ( Identity ( LiteralBool True ) )
+                        ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                      )
+                    )
+                    ( Identity
+                      ( App
+                        ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
+                        ( Identity ( LiteralBool False ) )
+                      )
+                    )
+                    ( Identity
+                      ( IfThenElse
+                        ( Identity
+                          ( Eq
+                            ( Identity ( LiteralBool False ) )
+                            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                          )
+                        )
+                        ( Identity
+                          ( App
+                            ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
+                            ( Identity ( LiteralBool True ) )
+                          )
+                        )
+                        ( Identity ( Exception "No patterns matched" ) )
+                      )
+                    )
+                  )
+                )
+              )
+            ) :|
+            [
+              ( Identity
+                ( Name "no" ), Identity
+                ( Abs
+                  ( Identity ( ParamNamed ( Name "v" ) ) )
+                  ( Identity
+                    ( IfThenElse
+                      ( Identity
+                        ( Eq
+                          ( Identity ( LiteralBool True ) )
+                          ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                        )
+                      )
+                      ( Identity
+                        ( App
+                          ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
+                          ( Identity ( LiteralBool False ) )
+                        )
+                      )
+                      ( Identity
+                        ( IfThenElse
+                          ( Identity
+                            ( Eq
+                              ( Identity ( LiteralBool False ) )
+                              ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                            )
+                          )
+                          ( Identity
+                            ( App
+                              ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
+                              ( Identity ( LiteralBool True ) )
+                            )
+                          )
+                          ( Identity ( Exception "No patterns matched" ) )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            ]
+          ) :| []
+        )
+        ( Identity
+          ( App ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) ) ( Identity ( LiteralBool False ) ) )
+        )
+      ),
+      ( Name "whereRec", Let
+        ( RecursiveGroup
+          (
+            ( Identity
+              ( Name "yes" ), Identity
+              ( Abs
+                ( Identity ( ParamNamed ( Name "v" ) ) )
+                ( Identity
+                  ( IfThenElse
+                    ( Identity
+                      ( Eq
+                        ( Identity ( LiteralBool True ) )
+                        ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                      )
+                    )
+                    ( Identity
+                      ( App
+                        ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
+                        ( Identity ( LiteralBool False ) )
+                      )
+                    )
+                    ( Identity
+                      ( IfThenElse
+                        ( Identity
+                          ( Eq
+                            ( Identity ( LiteralBool False ) )
+                            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                          )
+                        )
+                        ( Identity
+                          ( App
+                            ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
+                            ( Identity ( LiteralBool True ) )
+                          )
+                        )
+                        ( Identity ( Exception "No patterns matched" ) )
+                      )
+                    )
+                  )
+                )
+              )
+            ) :|
+            [
+              ( Identity
+                ( Name "no" ), Identity
+                ( Abs
+                  ( Identity ( ParamNamed ( Name "v" ) ) )
+                  ( Identity
+                    ( IfThenElse
+                      ( Identity
+                        ( Eq
+                          ( Identity ( LiteralBool True ) )
+                          ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                        )
+                      )
+                      ( Identity
+                        ( App
+                          ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
+                          ( Identity ( LiteralBool False ) )
+                        )
+                      )
+                      ( Identity
+                        ( IfThenElse
+                          ( Identity
+                            ( Eq
+                              ( Identity ( LiteralBool False ) )
+                              ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                            )
+                          )
+                          ( Identity
+                            ( App
+                              ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
+                              ( Identity ( LiteralBool True ) )
+                            )
+                          )
+                          ( Identity ( Exception "No patterns matched" ) )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            ]
+          ) :| []
+        )
+        ( Identity
+          ( App ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) ) ( Identity ( LiteralBool False ) ) )
+        )
+      ),
+      ( Name "letRecMixed", Let
+        ( Standalone
+          ( Identity ( Name "z" ), Identity ( LiteralInt 1 ) ) :|
+          [ RecursiveGroup
             (
-              ( Name "yes", Abs
-                ( AbsBinding
-                  ( ArgNamed ( Name "v" ) ) IfThenElse Prim
-                  ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean False ) IfThenElse Prim
-                  ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                  ( Index { level = 1, offset = 1 } ) Lit ( Boolean True ) Exception "No patterns matched"
+              ( Identity
+                ( Name "b" ), Identity
+                ( Abs ( Identity ParamUnused )
+                  ( Identity
+                    ( App
+                      ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
+                      ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
+                    )
+                  )
                 )
               ) :|
               [
-                ( Name "no", Abs
-                  ( AbsBinding
-                    ( ArgNamed ( Name "v" ) ) IfThenElse Prim
-                    ( Eq Lit ( Boolean True ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean False ) IfThenElse Prim
-                    ( Eq Lit ( Boolean False ) RefBound ( Index { level = 0, offset = 0 } ) ) App RefBound
-                    ( Index { level = 1, offset = 0 } ) Lit ( Boolean True ) Exception "No patterns matched"
+                ( Identity
+                  ( Name "a" ), Identity
+                  ( Abs ( Identity ParamUnused )
+                    ( Identity
+                      ( App
+                        ( Identity ( Ref ( Local ( Name "b" ) ) 0 ) )
+                        ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
+                      )
+                    )
                   )
                 )
               ]
-            ) :| []
-          ) App RefBound
-          ( Index { level = 0, offset = 1 } ) Lit ( Boolean False )
+            ), Standalone
+            ( Identity
+              ( Name "f" ), Identity
+              ( Abs ( Identity ParamUnused )
+                ( Identity
+                  ( Abs
+                    ( Identity ( ParamNamed ( Name "k" ) ) )
+                    ( Identity
+                      ( App
+                        ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
+                        ( Identity ( Ref ( Local ( Name "k" ) ) 0 ) )
+                      )
+                    )
+                  )
+                )
+              )
+            ), Standalone
+            ( Identity
+              ( Name "y" ), Identity
+              ( App
+                ( Identity
+                  ( App
+                    ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
+                    ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
+                  )
+                )
+                ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
+              )
+            )
+          ]
+        )
+        ( Identity
+          ( App
+            ( Identity
+              ( App
+                ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
+                ( Identity
+                  ( App
+                    ( Identity
+                      ( App
+                        ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
+                        ( Identity ( Ref ( Local ( Name "y" ) ) 0 ) )
+                      )
+                    )
+                    ( Identity ( Ref ( Local ( Name "y" ) ) 0 ) )
+                  )
+                )
+              )
+            )
+            ( Identity
+              ( App
+                ( Identity
+                  ( App
+                    ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
+                    ( Identity ( Ref ( Local ( Name "y" ) ) 0 ) )
+                  )
+                )
+                ( Identity ( LiteralInt 0 ) )
+              )
+            )
+          )
         )
       )
-    ], moduleImports = [], moduleExports =
-    [ Name "letRec", Name "whereRec", Name "letRecMixed" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestRecursiveBindings.purs", dataTypes = fromList []
+    ]
   }
-]

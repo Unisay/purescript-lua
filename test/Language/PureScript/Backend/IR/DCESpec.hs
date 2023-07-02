@@ -1,87 +1,72 @@
 module Language.PureScript.Backend.IR.DCESpec where
 
-import Data.List.NonEmpty qualified as NE
-import Hedgehog (forAll, (===))
-import Language.PureScript.Backend.IR
-import Language.PureScript.Backend.IR.DCE (Strategy (..), eliminateDeadCode)
+import Data.Map qualified as Map
+import Hedgehog (Gen, annotate, forAll, (===))
+import Hedgehog.Gen qualified as Gen
+import Hedgehog.Range qualified as Range
+import Language.PureScript.Backend.IR.DCE
+  ( EntryPoint (..)
+  , eliminateDeadCode
+  )
 import Language.PureScript.Backend.IR.Gen qualified as Gen
-import Test.Hspec (Spec, describe)
-import Test.Hspec.Hedgehog.Extended (test)
+import Language.PureScript.Backend.IR.Linker (UberModule (..))
+import Language.PureScript.Backend.IR.Types
+  ( Exp
+  , Grouping (..)
+  , Name (Name)
+  , Parameter (ParamNamed, ParamUnused)
+  , QName (QName)
+  , Qualified (..)
+  , abstraction
+  , application
+  , countFreeRefs
+  , exception
+  , lets
+  , refImported
+  , refLocal0
+  )
+import Language.PureScript.Names (ModuleName, moduleNameFromString)
+import Shower (shower)
+import Test.Hspec (Spec, describe, it)
+import Test.Hspec.Hedgehog.Extended (hedgehog, test)
 
-spec :: Spec
+spec ∷ Spec
 spec = describe "IR Dead Code Elimination" do
-  test "test not eliminate a module with an exported entry point" do
-    let strategy = EntryPoints $ NE.singleton mainEntryPoint
-    [entryPointModule] === eliminateDeadCode strategy [entryPointModule]
+  let singletonModule ∷ Gen UberModule
+      singletonModule = do
+        name ← Gen.name
+        moduleName ← Gen.moduleName
+        expr ← Gen.nonRecursiveExp
+        pure
+          emptyModule
+            { uberModuleBindings = [Standalone (QName moduleName name, expr)]
+            , uberModuleExports = [(name, refImported moduleName name 0)]
+            }
+
+  test "doesn't eliminate an exported entry point" do
+    optimalModule ← forAll singletonModule
+    optimalModule === eliminateDeadCode optimalModule
 
   test "eliminates unused non-exported binding" do
-    let entryModule =
-          entryPointModule
-            { moduleBindings =
-                binding_ "unused" : moduleBindings entryPointModule
+    expected@UberModule {uberModuleBindings} ← forAll singletonModule
+    let unoptimized =
+          expected
+            { uberModuleBindings = topBinding_ "unused" : uberModuleBindings
             }
-        strategy = EntryPoints $ NE.singleton mainEntryPoint
-    [entryModule {moduleBindings = [binding_ "main"]}]
-      === eliminateDeadCode strategy [entryModule]
+    annotate $ shower unoptimized
+    expected === eliminateDeadCode unoptimized
 
-  test "doesn't eliminate binding used from other module" do
-    b@(Standalone (name, _expr)) <- forAll Gen.standaloneBinding
-    modname <- forAll Gen.moduleName
-    let
-      entryModule =
-        entryPointModule
-          { moduleImports = [modname]
-          , moduleBindings =
-              [binding "main" $ refFreeImported modname name]
-          }
-      otherModule =
-        emptyModule
-          { moduleName = modname
-          , moduleBindings = [b]
-          , moduleExports = [name]
-          }
-      strategy = EntryPoints $ NE.singleton mainEntryPoint
+  test "detects named parameter unused by an abs-bindings" do
+    body ← forAll Gen.exp
+    let names = [name | Local name ← Map.keys (countFreeRefs body)]
+    name ← forAll $ mfilter (`notElem` names) Gen.name
+    dceExpression (abstraction (ParamNamed name) body)
+      === abstraction ParamUnused body
 
-    [entryModule, otherModule]
-      === eliminateDeadCode strategy [entryModule, otherModule]
-
-  test "eliminates binding not used from other module" do
-    modname <- forAll Gen.moduleName
-    let entryModule =
-          entryPointModule
-            { moduleImports = [modname]
-            , moduleBindings =
-                [binding "main" $ refFreeImported modname (Name "bar")]
-            }
-        otherModule =
-          emptyModule
-            { moduleName = modname
-            , moduleBindings = [binding_ "foo"]
-            , moduleExports = [Name "foo"]
-            }
-        strategy = EntryPoints $ NE.singleton mainEntryPoint
-    [entryModule]
-      === eliminateDeadCode strategy [entryModule, otherModule]
-
-{-
-  test "detects named argument unused by an abs-bindings" do
-    body <- forAll Gen.exp
-    name <- forAll Gen.name
-    dceExpr (abstraction (ArgNamed name) body) === abstraction ArgUnused body
-
-  modifyMaxShrinks (const 0) $
-    it "doesn't eliminate named argument used by an abs-bindings" $ hedgehog do
-      body@(Exp {expInfo = Info {refsFree}}) <-
-        forAll $ flip Gen.filter Gen.exp \Exp {expInfo = Info {refsFree}} ->
-          or [True | Local _ <- toList refsFree]
-      name <- forAll $ Gen.element [name | Local name <- toList refsFree]
-      let f = abstraction (ArgNamed name) body
-      dceExpr f === f
-
-  test "detects anonymous argument unused by an abs-bindings" do
-    body <- forAll Gen.literalNonRecursiveExp
-    dceExpr (wrapExpF $ Abs $ AbsBinding ArgAnonymous (LocallyNameless body))
-      === abstraction ArgUnused body
+  it "doesn't eliminate named parameter used by an abs-bindings" $ hedgehog do
+    name ← forAll Gen.name
+    let f = abstraction (ParamNamed name) (refLocal0 name)
+    dceExpression f === f
 
   test "eliminates unused non-recursive let-bindings" do
     {-
@@ -89,36 +74,36 @@ spec = describe "IR Dead Code Elimination" do
             a = 0
             b = 0
          in let unusedInner = exception "unusedInner"
-                c = b{1,2}
-             in c{0,1} a{1,1}
+                c = b
+             in c a
 
     should be transformed to:
 
         let a = 0
             b = 0
-         in let c = b{1,1}
-             in c{0,0} a{1,0}
+         in let c = b
+             in c a
     -}
-    [a, b, c] <- forAll $ toList <$> Gen.set (Range.singleton 3) Gen.name
-    bindA <- Standalone . (a,) <$> forAll Gen.literalNonRecursiveExp
-    bindB <- Standalone . (b,) <$> forAll Gen.literalNonRecursiveExp
-    let bindC = Standalone (c, refFreeLocal b)
+    [a, b, c] ← forAll $ toList <$> Gen.set (Range.singleton 3) Gen.name
+    bindA ← Standalone . (a,) <$> forAll Gen.literalNonRecursiveExp
+    bindB ← Standalone . (b,) <$> forAll Gen.literalNonRecursiveExp
+    let bindC = Standalone (c, refLocal0 b)
         expr =
           lets
             (binding_ "unusedOuter" :| [bindA, bindB])
             ( lets
                 (bindC :| [binding_ "unusedInner"])
-                (application (refFreeLocal c) (refFreeLocal a))
+                (application (refLocal0 c) (refLocal0 a))
             )
         expected =
           lets
             (bindA :| [bindB])
             ( lets
                 (pure bindC)
-                (application (refFreeLocal c) (refFreeLocal a))
+                (application (refLocal0 c) (refLocal0 a))
             )
     annotate $ shower expr
-    expected === dceExpr expr
+    expected === dceExpression expr
 
   test "eliminates unused recursive let-bindings" do
     {-
@@ -126,59 +111,49 @@ spec = describe "IR Dead Code Elimination" do
         b = a
      in c
     -}
-    [a, b, c] <- forAll $ toList <$> Gen.set (Range.singleton 3) Gen.name
+    [a, b, c] ← forAll $ toList <$> Gen.set (Range.singleton 3) Gen.name
     let expr =
           lets
-            ( RecursiveGroup ((a, refFreeLocal b) :| [(b, refFreeLocal a)])
-                :| []
-            )
-            (refFreeLocal c)
-        expected = refFreeLocal c
+            (RecursiveGroup ((a, refLocal0 b) :| [(b, refLocal0 a)]) :| [])
+            (refLocal0 c)
+        expected = refLocal0 c
     annotate $ shower expr
-    expected === dceExpr expr
+    expected === dceExpression expr
 
--}
+--------------------------------------------------------------------------------
+-- Helpers ---------------------------------------------------------------------
+
+dceExpression ∷ HasCallStack ⇒ Exp → Exp
+dceExpression e =
+  let res =
+        uberModuleExports $
+          eliminateDeadCode
+            emptyModule
+              { uberModuleExports = [(Name "main", e)]
+              }
+   in case res of
+        [(Name "main", e')] → e'
+        _ → error $ "dceExpression: unexpected result: " <> show res
+
 --------------------------------------------------------------------------------
 -- Fixture ---------------------------------------------------------------------
 
-mainEntryPoint :: (ModuleName, NonEmpty Name)
-mainEntryPoint = (ModuleName "Main", NE.singleton (Name "main"))
+mainModuleName ∷ ModuleName
+mainModuleName = moduleNameFromString "Main"
 
-emptyModule :: Module
+mainEntryPoint ∷ EntryPoint
+mainEntryPoint = EntryPoint mainModuleName [Name "main"]
+
+emptyModule ∷ UberModule
 emptyModule =
-  Module
-    { moduleName = ModuleName "m1"
-    , moduleBindings = []
-    , moduleImports = moduleImports1
-    , moduleExports = moduleExports1
-    , moduleReExports = moduleReExports1
-    , moduleForeigns = moduleForeigns1
-    , modulePath = "m1"
-    , dataTypes = mempty
+  UberModule
+    { uberModuleBindings = []
+    , uberModuleForeigns = []
+    , uberModuleExports = []
     }
 
-entryPointModule :: Module
-entryPointModule =
-  emptyModule
-    { moduleName = fst mainEntryPoint
-    , moduleExports = toList $ snd mainEntryPoint
-    , moduleBindings = [binding_ "main"]
-    }
+binding_ ∷ Text → Grouping (Name, Exp)
+binding_ n = Standalone (Name n, exception n)
 
-binding :: Text -> b -> Grouping (Name, b)
-binding n e = Standalone (Name n, e)
-
-binding_ :: Text -> Binding
-binding_ n = binding n (exception n)
-
-moduleImports1 :: [ModuleName]
-moduleImports1 = []
-
-moduleExports1 :: [Name]
-moduleExports1 = []
-
-moduleReExports1 :: Map ModuleName [Name]
-moduleReExports1 = mempty
-
-moduleForeigns1 :: [Name]
-moduleForeigns1 = []
+topBinding_ ∷ Text → Grouping (QName, Exp)
+topBinding_ n = Standalone (QName mainModuleName (Name n), exception n)

@@ -1,120 +1,169 @@
 module Language.PureScript.Backend.IR.Optimizer where
 
-import Data.Map.Strict qualified as Map
-import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.DCE qualified as DCE
+import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Types
-  ( Exp (..)
-  , ExpF (..)
-  , FreshNames
+  ( Annotated
+  , Exp
   , Grouping (..)
-  , Info (..)
-  , LetBinding (..)
-  , Literal (..)
-  , LocallyNameless (..)
-  , Module (moduleBindings, moduleImports)
-  , ModuleName (..)
   , Name
-  , bindingNames
-  , countBoundRefs
-  , everywhereTopDownExpM
-  , findOffset
-  , listGrouping
-  , qualified
-  , subst
-  , wrapExpF
+  , QName (..)
+  , Qualified (..)
+  , RawExp (..)
+  , RewriteMod (..)
+  , RewriteRule
+  , Rewritten (..)
+  , bindingExprs
+  , countFreeRef
+  , isNonRecursiveLiteral
+  , literalBool
+  , qualifiedQName
+  , rewriteExpTopDown
+  , substitute
+  , thenRewrite
+  , unAnn
   )
 
-optimizeAll :: FreshNames m => DCE.Strategy -> [Module] -> m [Module]
-optimizeAll dceStrategy modules =
-  DCE.eliminateDeadCode dceStrategy <$> traverse optimizeModule modules
+optimizedUberModule ∷ UberModule → UberModule
+optimizedUberModule = idempotently $ DCE.eliminateDeadCode . optimizeModule
 
-optimizeModule :: FreshNames m => Module -> m Module
-optimizeModule m = do
-  moduleBindings <- optimizeDecls (moduleBindings m)
-  pure m {moduleImports = moduleImports', moduleBindings}
+idempotently ∷ Eq a ⇒ (a → a) → a → a
+idempotently = fix $ \i f a →
+  let a' = f a
+   in if a' == a then a else i f a'
+
+--  in if a' == a
+--       then trace ("\n\nFIXPOINT\n" <> {- shower a' <> -} "\n") a
+--       else trace ("\n\nRETRYING\n" <> {- shower a' <> -} "\n") $ i f a'
+
+optimizeModule ∷ UberModule → UberModule
+optimizeModule UberModule {..} =
+  UberModule
+    { uberModuleBindings = uberModuleBindings'
+    , uberModuleExports = uberModuleExports'
+    , ..
+    }
  where
-  moduleImports' = moduleImports m
+  (uberModuleBindings', uberModuleExports') =
+    fmap optimizedExpression
+      <<$>> foldr withBinding ([], uberModuleExports) uberModuleBindings
 
-optimizeImports :: [ModuleName] -> [Grouping (name, Exp)] -> [ModuleName]
-optimizeImports imports bindings =
-  toList $ Set.intersection (Set.fromList imports) referencedModules
- where
-  referencedModules = foldMap collectImportedModules (groupingsExprs bindings)
+  withBinding
+    ∷ Grouping (QName, Exp)
+    → ([Grouping (QName, Exp)], [(Name, Exp)])
+    → ([Grouping (QName, Exp)], [(Name, Exp)])
+  withBinding binding (bindings, exports) =
+    case binding of
+      Standalone (qname, optimizedExpression → expr) →
+        if isInlinableExpr expr || isUsedOnce qname
+          then
+            ( substituteInBindings qname expr bindings
+            , substituteInExports qname expr exports
+            )
+          else (Standalone (qname, expr) : bindings, exports)
+       where
+        isUsedOnce name =
+          1
+            == sum
+              ( countFreeRef (qualifiedQName name)
+                  <$> ((bindingExprs =<< bindings) <> map snd exports)
+              )
+      RecursiveGroup recGroup →
+        ( RecursiveGroup (optimizedExpression <<$>> recGroup) : bindings
+        , exports
+        )
 
-groupingsExprs :: [Grouping (name, exp)] -> [exp]
-groupingsExprs groupings = [e | g <- groupings, (_name, e) <- listGrouping g]
+substituteInBindings
+  ∷ QName
+  -- ^ Substitute this qualified name
+  → Exp
+  -- ^ For this expression
+  → [Grouping (QName, Exp)]
+  -- ^ inside these bindings
+  → [Grouping (QName, Exp)]
+substituteInBindings qname inlinee = map \case
+  Standalone (qname', expr') →
+    Standalone (qname', substitute (qualifiedQName qname) 0 inlinee expr')
+  RecursiveGroup recGroup →
+    RecursiveGroup $ substitute (qualifiedQName qname) 0 inlinee <<$>> recGroup
 
-collectImportedModules :: Exp -> Set ModuleName
-collectImportedModules Exp {expInfo = Info {refsFree}} =
-  Map.keys refsFree
-    & foldMap (qualified mempty \modname _ -> Set.singleton modname)
+substituteInExports ∷ QName → Exp → [(Name, Exp)] → [(Name, Exp)]
+substituteInExports qname inlinee = map \case
+  (name, expr) → (name, substitute (qualifiedQName qname) 0 inlinee expr)
 
-optimizeDecls
-  :: FreshNames m => [Grouping (name, Exp)] -> m [Grouping (name, Exp)]
-optimizeDecls = (traverse . traverse . traverse) optimizeExpression
+optimizedExpression ∷ Exp → Exp
+optimizedExpression =
+  rewriteExpTopDown $
+    constantFolding
+      `thenRewrite` removeUnreachableThenBranch
+      `thenRewrite` removeUnreachableElseBranch
+      `thenRewrite` removeIfWithEqualBranches
+      `thenRewrite` inlineLocalBindings
 
-type RewriteRule m = Exp -> m Exp
+constantFolding ∷ RewriteRule
+constantFolding =
+  pure . \case
+    Eq (unAnn → LiteralBool a) (unAnn → LiteralBool b) →
+      Rewritten Stop $ literalBool $ a == b
+    Eq (unAnn → LiteralInt a) (unAnn → LiteralInt b) →
+      Rewritten Stop $ literalBool $ a == b
+    Eq (unAnn → LiteralFloat a) (unAnn → LiteralFloat b) →
+      Rewritten Stop $ literalBool $ a == b
+    Eq (unAnn → LiteralChar a) (unAnn → LiteralChar b) →
+      Rewritten Stop $ literalBool $ a == b
+    Eq (unAnn → LiteralString a) (unAnn → LiteralString b) →
+      Rewritten Stop $ literalBool $ a == b
+    _ → NoChange
 
-optimizeExpression :: FreshNames m => Exp -> m Exp
-optimizeExpression =
-  everywhereTopDownExpM $
-    inlineBindings
-      <=< removeUnreachableElseBranch
-      <=< removeUnreachableThenBranch
+removeIfWithEqualBranches ∷ RewriteRule
+removeIfWithEqualBranches e =
+  pure case e of
+    IfThenElse _cond thenBranch elseBranch
+      | thenBranch == elseBranch →
+          Rewritten Recurse (unAnn thenBranch)
+    _ → NoChange
 
-removeUnreachableThenBranch :: Applicative m => RewriteRule m
-removeUnreachableThenBranch e = pure case unExp e of
-  IfThenElse (Exp (Lit (Boolean False)) _info) _unreachable elseBranch ->
-    elseBranch
-  _ -> e
+removeUnreachableThenBranch ∷ RewriteRule
+removeUnreachableThenBranch e =
+  pure case e of
+    IfThenElse (unAnn → LiteralBool False) _unreachable elseBranch →
+      Rewritten Recurse (unAnn elseBranch)
+    _ → NoChange
 
-removeUnreachableElseBranch :: Applicative m => RewriteRule m
-removeUnreachableElseBranch e = pure case unExp e of
-  IfThenElse (Exp (Lit (Boolean True)) _info) thenBranch _unreachable ->
-    thenBranch
-  _ -> e
+removeUnreachableElseBranch ∷ RewriteRule
+removeUnreachableElseBranch e = pure case e of
+  IfThenElse (unAnn → LiteralBool True) thenBranch _unreachable →
+    Rewritten Recurse (unAnn thenBranch)
+  _ → NoChange
 
 -- Inlining is a tricky business:
 -- https://www.microsoft.com/en-us/research/wp-content/uploads/2002/07/inline.pdf
 
-inlineBindings :: FreshNames m => RewriteRule m
-inlineBindings e =
-  case unExp e of
-    Let (LetBinding groupings body) -> do
-      let names = toList groupings >>= bindingNames
-      pure . wrapExpF . Let . LetBinding groupings $
-        foldr (inlineBinding names) body groupings
-    _ -> pure e
+inlineLocalBindings ∷ RewriteRule
+inlineLocalBindings =
+  pure . \case
+    Let groupings body →
+      Rewritten Recurse . Let groupings $
+        foldr inlineLocalBinding body groupings
+    _ → NoChange
 
-inlineBinding
-  :: [Name]
-  -> Grouping (Name, LocallyNameless Exp)
-  -> LocallyNameless Exp
-  -> LocallyNameless Exp
-inlineBinding names grouping body =
+inlineLocalBinding
+  ∷ Grouping (Identity Name, Annotated Identity RawExp)
+  → Annotated Identity RawExp
+  → Annotated Identity RawExp
+inlineLocalBinding grouping body =
   case grouping of
-    Standalone (name, replacement@(LocallyNameless inlinee))
-      | Just offset <- names `findOffset` name
-      , isRef inlinee
-          || isNonRecursiveLiteral inlinee
-          || countBoundRefs body offset == 1 ->
-          subst body offset replacement
-    _ -> body
- where
-  isRef :: Exp -> Bool
-  isRef =
-    unExp >>> \case
-      RefFree {} -> True
-      RefBound {} -> True
-      _ -> False
+    RecursiveGroup _grp → body -- TODO: inline recursive bindings?
+    Standalone (unAnn → name, unAnn → inlinee) →
+      if isInlinableExpr inlinee
+        || sum (countFreeRef (Local name) <$> body) == 1
+        then substitute (Local name) 0 inlinee <$> body
+        else body
 
-  isNonRecursiveLiteral :: Exp -> Bool
-  isNonRecursiveLiteral =
-    unExp >>> \case
-      Lit Integer {} -> True
-      Lit Floating {} -> True
-      Lit String {} -> True
-      Lit Char {} -> True
-      Lit Boolean {} -> True
-      _ -> False
+isInlinableExpr ∷ Exp → Bool
+isInlinableExpr expr = isRef expr || isNonRecursiveLiteral expr
+ where
+  isRef ∷ Exp → Bool
+  isRef = \case
+    Ref {} → True
+    _ → False

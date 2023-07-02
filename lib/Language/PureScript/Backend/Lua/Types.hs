@@ -28,6 +28,16 @@ pattern Ann :: b -> (a, b)
 pattern Ann fa <- (_ann, fa)
 {-# COMPLETE Ann #-}
 
+data ParamF a
+  = ParamNamed Name
+  | ParamUnused
+
+type Param = ParamF ()
+
+deriving stock instance Eq a => Eq (ParamF a)
+deriving stock instance Ord a => Ord (ParamF a)
+deriving stock instance Show a => Show (ParamF a)
+
 data VarF a
   = VarName Name
   | VarIndex (Annotated a ExpF) (Annotated a ExpF)
@@ -177,7 +187,7 @@ data ExpF ann
   | Integer Integer
   | Float Double
   | String Text
-  | Function [Name] [Annotated ann StatementF]
+  | Function [Annotated ann ParamF] [Annotated ann StatementF]
   | TableCtor [Annotated ann TableRowF]
   | UnOp UnaryOp (Annotated ann ExpF)
   | BinOp BinaryOp (Annotated ann ExpF) (Annotated ann ExpF)
@@ -256,8 +266,8 @@ varIndex e1 e2 = Var (ann (VarIndex (ann e1) (ann e2)))
 varField :: Exp -> Name -> Exp
 varField e n = Var (ann (VarField (ann e) n))
 
-functionDef :: [Name] -> [Statement] -> Exp
-functionDef args body = Function args (ann <$> body)
+functionDef :: [Param] -> [Statement] -> Exp
+functionDef params body = Function (ann <$> params) (ann <$> body)
 
 functionCall :: Exp -> [Exp] -> Exp
 functionCall f args = FunctionCall (ann f) (ann <$> args)

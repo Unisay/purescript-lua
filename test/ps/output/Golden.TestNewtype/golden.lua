@@ -1,2 +1,6 @@
-local Golden_TestNewtype_I_g = function(x0) return x0 end
-local Golden_TestNewtype_I_f = function(v1) return v1.foo end
+local Golden_TestNewtype_I_NT = function(x) return x end
+return {
+  NT = Golden_TestNewtype_I_NT,
+  f = function(v) return v.foo end,
+  g = Golden_TestNewtype_I_NT
+}

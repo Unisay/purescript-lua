@@ -8,3 +8,4 @@ respectful: true
 haddock-style: multi-line
 newlines-between-decls: 1
 import-export-style: leading
+unicode: always

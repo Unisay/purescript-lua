@@ -24,7 +24,7 @@
             hixProject = final.haskell-nix.hix.project {
               src = ./.;
               evalSystem = "x86_64-linux";
-              index-state = "2023-03-18T00:00:00Z";
+              # index-state = "2023-06-28T00:00:00Z";
               modules = let prof = false;
               in [{
                 doHaddock = false;
@@ -39,7 +39,6 @@
       in flake // {
         legacyPackages = pkgs;
         packages.default = flake.packages."pslua:exe:pslua";
-
       });
 
   # --- Flake Local Nix Configuration ----------------------------

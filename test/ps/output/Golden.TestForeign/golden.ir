@@ -1,6 +1,7 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestForeign", moduleBindings = [], moduleImports = [], moduleExports =
-    [ Name "foo" ], moduleReExports = fromList [], moduleForeigns =
-    [ Name "foo" ], modulePath = "golden/Golden/TestForeign.purs", dataTypes = fromList []
+UberModule
+  { uberModuleBindings = [], uberModuleForeigns =
+    [
+      ( ModuleName "Golden.TestForeign", "golden/Golden/TestForeign.purs", Name "foo" :| [] )
+    ], uberModuleExports =
+    [ ( Name "foo", Ref ( Imported ( ModuleName "Golden.TestForeign" ) ( Name "foo" ) ) 0 ) ]
   }
-]

@@ -1,16 +1,32 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestRecordsAccess", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "test4", Abs
-        ( AbsBinding ( ArgNamed ( Name "v" ) ) Let ( LetBinding ( Standalone ( Name "x", ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) )
-      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "r"
+        }, LiteralObject
+        [
+          ( PropName "x", Identity ( LiteralInt 1 ) ),
+          ( PropName "y", Identity ( LiteralBool True ) )
+        ]
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "r", Ref ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) 0 ),
+      ( Name "test1", ObjectProp
+        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) 0 ) )
+        ( PropName "x" )
+      ),
+      ( Name "test2", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) ) )
+      ),
       ( Name "test3", Abs
-        ( AbsBinding ( ArgNamed ( Name "v" ) ) Let ( LetBinding ( Standalone ( Name "x", ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) :| [] ) ObjectProp RefBound ( Index { level = 1, offset = 0 } ) ( PropName "x" ) ) )
-      ), Standalone
-      ( Name "test2", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) ObjectProp RefBound ( Index { level = 0, offset = 0 } ) ( PropName "x" ) ) ), Standalone
-      ( Name "r", Lit ( Object [ ( PropName "x", Lit ( Integer 1 ) ), ( PropName "y", Lit ( Boolean True ) ) ] ) ), Standalone
-      ( Name "test1", ObjectProp RefFree ( Local ( Name "r" ) ) ( PropName "x" ) )
-    ], moduleImports = [], moduleExports =
-    [ Name "r", Name "test1", Name "test2", Name "test3", Name "test4" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestRecordsAccess.purs", dataTypes = fromList []
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) ) )
+      ),
+      ( Name "test4", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) ) )
+      )
+    ]
   }
-]

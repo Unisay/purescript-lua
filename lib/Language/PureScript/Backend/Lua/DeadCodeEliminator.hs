@@ -22,26 +22,25 @@ import Prelude hiding (exp)
 
 data DceMode = PreserveTopLevel | PreserveReturned
 
+type Label = Text
+type Key = Int
+
 eliminateDeadCode :: DceMode -> Lua.Chunk -> Lua.Chunk
-eliminateDeadCode dceMode chunk =
+eliminateDeadCode dceMode chunk = do
   unNodesStatement <$> dceChunk statementWithNodes
  where
-  statementWithNodes :: [Lua.Annotated Node Lua.StatementF]
+  statementWithNodes :: [ANode Lua.StatementF]
   statementWithNodes = makeNodesStatement chunk
 
   ( graph :: Graph
     , _nodeFromVertex :: Vertex -> (Label, Key, [Key])
     , keyToVertex :: Key -> Maybe Vertex
-    ) = graphFromEdges (adjacencyList statementWithNodes)
+    ) = graphFromEdges (DList.toList (adjacencyList statementWithNodes))
 
-  dceChunk
-    :: [Lua.Annotated Node Lua.StatementF]
-    -> [Lua.Annotated Node Lua.StatementF]
+  dceChunk :: [ANode Lua.StatementF] -> [ANode Lua.StatementF]
   dceChunk = foldMap $ toList . dceStatement
 
-  dceStatement
-    :: Lua.Annotated Node Lua.StatementF
-    -> Maybe (Lua.Annotated Node Lua.StatementF)
+  dceStatement :: ANode Lua.StatementF -> Maybe (ANode Lua.StatementF)
   dceStatement vstat@(Node key scopes, statement) =
     case statement of
       Lua.Local name value ->
@@ -63,7 +62,7 @@ eliminateDeadCode dceMode chunk =
       vertex <- keyToVertex key
       guard (Set.member vertex reachableVertices) $> preserved
 
-  dceExpression :: Lua.Annotated Node Lua.ExpF -> Lua.Annotated Node Lua.ExpF
+  dceExpression :: ANode Lua.ExpF -> ANode Lua.ExpF
   dceExpression indexedExp@(Node key scope, expr) =
     case expr of
       Lua.Nil -> indexedExp
@@ -71,8 +70,8 @@ eliminateDeadCode dceMode chunk =
       Lua.Integer _int -> indexedExp
       Lua.Float _double -> indexedExp
       Lua.String _text -> indexedExp
-      Lua.Function args body ->
-        dce (Lua.Function args (dceChunk body))
+      Lua.Function params body ->
+        dce (Lua.Function (dceParams params) (dceChunk body))
       Lua.TableCtor rows ->
         dce (Lua.TableCtor (dceTableRow <$> rows))
       Lua.UnOp op e ->
@@ -86,9 +85,18 @@ eliminateDeadCode dceMode chunk =
    where
     dce = (Node key scope,)
 
-  dceTableRow
-    :: Lua.Annotated Node Lua.TableRowF
-    -> Lua.Annotated Node Lua.TableRowF
+  dceParams :: [ANode Lua.ParamF] -> [ANode Lua.ParamF]
+  dceParams paramNodes = do
+    node@(Node key scopes, param) <- paramNodes
+    case param of
+      Lua.ParamUnused -> [node]
+      Lua.ParamNamed _ -> do
+        vertex <- maybeToList $ keyToVertex key
+        if Set.member vertex reachableVertices
+          then [node]
+          else [(Node key scopes, Lua.ParamUnused)]
+
+  dceTableRow :: ANode Lua.TableRowF -> ANode Lua.TableRowF
   dceTableRow (Node key scope, row) =
     case row of
       Lua.TableRowKV k v ->
@@ -98,7 +106,7 @@ eliminateDeadCode dceMode chunk =
    where
     dce = (Node key scope,)
 
-  dceVar :: Lua.Annotated Node Lua.VarF -> Lua.Annotated Node Lua.VarF
+  dceVar :: ANode Lua.VarF -> ANode Lua.VarF
   dceVar node@(Node key scope, variable) =
     case variable of
       Lua.VarName _qname ->
@@ -122,11 +130,14 @@ eliminateDeadCode dceMode chunk =
       PreserveTopLevel ->
         mapMaybe (keyToVertex . keyOf . nodeOf) statementWithNodes
 
-adjacencyList :: [Lua.Annotated Node Lua.StatementF] -> [(Label, Key, [Key])]
-adjacencyList = DList.toList . (`go` mempty)
+--------------------------------------------------------------------------------
+-- Building graph from adjacency list ------------------------------------------
+
+adjacencyList :: [ANode Lua.StatementF] -> DList (Label, Key, [Key])
+adjacencyList = (`go` mempty)
  where
   go
-    :: [Lua.Annotated Node Lua.StatementF]
+    :: [ANode Lua.StatementF]
     -> DList (Label, Key, [Key])
     -> DList (Label, Key, [Key])
   go [] acc = acc
@@ -161,34 +172,7 @@ adjacencyList = DList.toList . (`go` mempty)
           (expressionAdjacencyList e)
       _ -> mempty
 
-findReturns :: [Lua.Annotated Node Lua.StatementF] -> DList Key
-findReturns = (keyOf . nodeOf <$>) . findReturnStatements
-
-findReturnStatements
-  :: [Lua.Annotated Node Lua.StatementF]
-  -> DList (Lua.Annotated Node Lua.StatementF)
-findReturnStatements = foldMap \node@(_node, statement) ->
-  case statement of
-    Lua.Return _ -> DList.singleton node
-    Lua.IfThenElse _cond th el ->
-      DList.cons node (findReturnStatements th <> findReturnStatements el)
-    _ -> DList.empty
-
-findAssignments :: Name -> [Lua.Annotated Node Lua.StatementF] -> [Key]
-findAssignments name = foldMap do
-  toList
-    . (`execAccum` DList.empty)
-    . visitStatementM
-      makeVisitor
-        { beforeStat = \node@(Node key _scope, statement) ->
-            case statement of
-              Lua.Assign (Lua.Ann (Lua.VarName name')) _val
-                | name' == name -> add (DList.singleton key) $> node
-              _ -> pure node
-        }
-
-expressionAdjacencyList
-  :: Lua.Annotated Node Lua.ExpF -> DList (Label, Key, [Key])
+expressionAdjacencyList :: ANode Lua.ExpF -> DList (Label, Key, [Key])
 expressionAdjacencyList (Node key _scope, expr) =
   case expr of
     Lua.Nil -> pure ("Nil", key, [])
@@ -196,9 +180,10 @@ expressionAdjacencyList (Node key _scope, expr) =
     Lua.Integer _integer -> pure ("Integer", key, [])
     Lua.Float _double -> pure ("Float", key, [])
     Lua.String _text -> pure ("String", key, [])
-    Lua.Function _args body ->
-      DList.fromList $
-        ("Function", key, DList.toList (findReturns body)) : adjacencyList body
+    Lua.Function params body ->
+      DList.cons
+        ("Function", key, DList.toList (findReturns body))
+        (foldMap (paramsAdjacencyList key) params <> adjacencyList body)
     Lua.TableCtor rows ->
       DList.cons
         ("TableCtor", key, keyOf . nodeOf <$> rows)
@@ -218,7 +203,15 @@ expressionAdjacencyList (Node key _scope, expr) =
         ("FunctionCall", key, keyOf (nodeOf e) : map (keyOf . nodeOf) params)
         (expressionAdjacencyList e <> foldMap expressionAdjacencyList params)
 
-varAdjacencyList :: Lua.Annotated Node Lua.VarF -> DList (Label, Key, [Key])
+paramsAdjacencyList :: Key -> ANode Lua.ParamF -> DList (Label, Key, [Key])
+paramsAdjacencyList fnKey (Node key _scopes, param) =
+  case param of
+    Lua.ParamUnused ->
+      DList.empty
+    Lua.ParamNamed name ->
+      DList.singleton ("ParamNamed(" <> Name.toText name <> ")", key, [fnKey])
+
+varAdjacencyList :: ANode Lua.VarF -> DList (Label, Key, [Key])
 varAdjacencyList (Node key scopes, variable) =
   case variable of
     Lua.VarName name ->
@@ -236,9 +229,7 @@ varAdjacencyList (Node key scopes, variable) =
         ("VarField(" <> Name.toText name <> ")", key, [keyOf (nodeOf e)])
         (expressionAdjacencyList e)
 
-rowAdjacencyList
-  :: Lua.Annotated Node Lua.TableRowF
-  -> DList (Label, Key, [Key])
+rowAdjacencyList :: ANode Lua.TableRowF -> DList (Label, Key, [Key])
 rowAdjacencyList (Node key _scope, row) =
   case row of
     Lua.TableRowKV e1@(n1, _) e2@(n2, _) ->
@@ -250,15 +241,45 @@ rowAdjacencyList (Node key _scope, row) =
         ("Lua.TableRowNV", key, [keyOf n])
         (expressionAdjacencyList e)
 
-invariantViolation :: HasCallStack => Text -> a
-invariantViolation msg =
-  Prelude.error $
-    "The following internal invariant violation happened \
-    \while performing a dead-code elimination of the Lua code:\n"
-      <> msg
+--------------------------------------------------------------------------------
+-- Queries ---------------------------------------------------------------------
 
-type Label = Text
-type Key = Int
+findReturns :: [ANode Lua.StatementF] -> DList Key
+findReturns = (keyOf . nodeOf <$>) . findReturnStatements
+
+findReturnStatements :: [ANode Lua.StatementF] -> DList (ANode Lua.StatementF)
+findReturnStatements = foldMap \node@(_node, statement) ->
+  case statement of
+    Lua.Return _ -> DList.singleton node
+    Lua.IfThenElse _cond th el ->
+      DList.cons node (findReturnStatements th <> findReturnStatements el)
+    _ -> DList.empty
+
+findAssignments :: Name -> [ANode Lua.StatementF] -> [Key]
+findAssignments name =
+  toList . foldMap do
+    (`execAccum` DList.empty)
+      . visitStatementM
+        makeVisitor
+          { beforeStat = \node@(Node key _scope, statement) ->
+              case statement of
+                Lua.Assign (Lua.Ann (Lua.VarName name')) _val
+                  | name' == name -> add (DList.singleton key) $> node
+                _ -> pure node
+          }
+
+findVars :: Name -> [ANode Lua.StatementF] -> DList Key
+findVars name = foldMap do (`execAccum` DList.empty) . visitStatementM visitor
+ where
+  visitor =
+    makeVisitor
+      { beforeExp = \node@(Node key _scope, expr) ->
+          case expr of
+            Lua.Var (Lua.Ann (Lua.VarName name'))
+              | name' == name ->
+                  add (DList.singleton key) $> node
+            _ -> pure node
+      }
 
 --------------------------------------------------------------------------------
 -- Annotating statements with graph keys ---------------------------------------
@@ -276,18 +297,20 @@ flatten =
 data Node = Node Key [Scope]
   deriving stock (Eq, Show)
 
+type ANode f = Lua.Annotated Node f
+
 keyOf :: Node -> Key
 keyOf (Node key _scope) = key
 
-nodeOf :: Lua.Annotated Node f -> Node
+nodeOf :: ANode f -> Node
 nodeOf = fst
 
-makeNodesStatement :: [Lua.Statement] -> [Lua.Annotated Node Lua.StatementF]
+makeNodesStatement :: [Lua.Statement] -> [ANode Lua.StatementF]
 makeNodesStatement chunk =
   evalState (forM chunk assignKeys) 0 & \keyedChunk ->
     evalState @[Scope] (assignScopes keyedChunk) []
 
-assignKeys :: Lua.Statement -> State Key (Lua.Annotated Node Lua.StatementF)
+assignKeys :: Lua.Statement -> State Key (ANode Lua.StatementF)
 assignKeys =
   annotateStatementInsideOutM
     Annotator
@@ -296,17 +319,15 @@ assignKeys =
       , annotateExp = mkNodeWithKey
       , annotateRow = mkNodeWithKey
       , annotateVar = mkNodeWithKey
+      , annotateParam = mkNodeWithKey
       }
     . Lua.ann
  where
-  mkNodeWithKey :: f Node -> State Key (Lua.Annotated Node f)
+  mkNodeWithKey :: f Node -> State Key (ANode f)
   mkNodeWithKey f = state \key -> ((Node key mempty, f), key + 1)
 
 assignScopes
-  :: forall m
-   . MonadScopes m
-  => [Lua.Annotated Node Lua.StatementF]
-  -> m [Lua.Annotated Node Lua.StatementF]
+  :: forall m. MonadScopes m => [ANode Lua.StatementF] -> m [ANode Lua.StatementF]
 assignScopes = traverse do
   visitStatementM
     makeVisitor
@@ -317,9 +338,7 @@ assignScopes = traverse do
       , beforeRow = mkNodeWithScopes
       }
  where
-  beforeStat
-    :: Lua.Annotated Node Lua.StatementF
-    -> m (Lua.Annotated Node Lua.StatementF)
+  beforeStat :: ANode Lua.StatementF -> m (ANode Lua.StatementF)
   beforeStat node@(Node key _scopes, stat) =
     case stat of
       Lua.Local name _value -> do
@@ -337,17 +356,22 @@ assignScopes = traverse do
     stat@Lua.Return {} -> dropScope $> stat
     other -> pure other
 
-  beforeExp :: Lua.Annotated Node Lua.ExpF -> m (Lua.Annotated Node Lua.ExpF)
+  beforeExp :: ANode Lua.ExpF -> m (ANode Lua.ExpF)
   beforeExp node@(Node key _scopes, expr) =
     case expr of
-      Lua.Function _args _body ->
-        addScope <&> \scopes -> (Node key (toList scopes), expr)
+      Lua.Function argNodes _body -> do
+        _ <- addScope
+        for_ argNodes \(Node argKey _scopes, param) ->
+          case param of
+            Lua.ParamUnused -> pass
+            Lua.ParamNamed name -> void $ addName name argKey
+        getScopes <&> \scopes -> (Node key (toList scopes), expr)
       _ -> mkNodeWithScopes node
 
   mkNodeWithScopes :: (Node, t) -> m (Node, t)
   mkNodeWithScopes (Node key _scopes, t) = getScopes <&> ((,t) . Node key)
 
-unNodesStatement :: Lua.Annotated Node Lua.StatementF -> Lua.Statement
+unNodesStatement :: ANode Lua.StatementF -> Lua.Statement
 unNodesStatement = unAnnotateStatement Lua.unAnn
 
 class Monad m => MonadScopes m where

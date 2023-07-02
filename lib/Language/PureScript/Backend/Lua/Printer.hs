@@ -60,8 +60,12 @@ printExp = \case
   Lua.Float f -> (PrecAtom, pretty f)
   Lua.Integer i -> (PrecAtom, pretty i)
   Lua.String t -> (PrecAtom, dquotes (pretty t))
-  Lua.Function params body ->
-    (PrecFunction, printFunction params (unAnn <$> body))
+  Lua.Function args body ->
+    let argNames =
+          args >>= \case
+            Ann (ParamNamed n) -> [n]
+            Ann ParamUnused -> []
+     in (PrecFunction, printFunction argNames (unAnn <$> body))
   Lua.TableCtor rows -> (PrecTable, printTableCtor (unAnn <$> rows))
   Lua.UnOp op (Ann a) -> printUnaryOp op (printExp a)
   Lua.BinOp op (Ann l) (Ann r) -> printBinaryOp op (printExp l) (printExp r)

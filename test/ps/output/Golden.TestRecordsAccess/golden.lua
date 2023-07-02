@@ -1,4 +1,8 @@
-local Golden_TestRecordsAccess_I_test4 = function(v0) return v0.x end
-local Golden_TestRecordsAccess_I_test3 = function(v2) return v2.x end
-local Golden_TestRecordsAccess_I_test2 = function(v4) return v4.x end
-local Golden_TestRecordsAccess_I_test1 = ({ x = 1, y = true }).x
+local Golden_TestRecordsAccess_I_r = { x = 1, y = true }
+return {
+  r = Golden_TestRecordsAccess_I_r,
+  test1 = Golden_TestRecordsAccess_I_r.x,
+  test2 = function(v) return v.x end,
+  test3 = function(v) return v.x end,
+  test4 = function(v) return v.x end
+}

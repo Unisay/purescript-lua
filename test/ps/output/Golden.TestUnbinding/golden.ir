@@ -1,11 +1,36 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestUnbinding", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) Abs ( AbsBinding ( ArgNamed ( Name "v1" ) ) Lit ( Integer 3 ) ) ) ), Standalone
-      ( Name "b", Lit ( Integer 2 ) ), Standalone
-      ( Name "a", Lit ( Integer 1 ) ), Standalone
-      ( Name "c", App App RefFree ( Local ( Name "f" ) ) RefFree ( Local ( Name "a" ) ) App App RefFree ( Local ( Name "f" ) ) RefFree ( Local ( Name "b" ) ) RefFree ( Local ( Name "a" ) ) )
-    ], moduleImports = [], moduleExports =
-    [ Name "a", Name "b", Name "f", Name "c" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestUnbinding.purs", dataTypes = fromList []
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestUnbinding", qnameName = Name "f"
+        }, Abs ( Identity ParamUnused )
+        ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralInt 3 ) ) ) )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "a", LiteralInt 1 ),
+      ( Name "b", LiteralInt 2 ),
+      ( Name "f", Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 ),
+      ( Name "c", App
+        ( Identity
+          ( App
+            ( Identity ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 ) )
+            ( Identity ( LiteralInt 1 ) )
+          )
+        )
+        ( Identity
+          ( App
+            ( Identity
+              ( App
+                ( Identity
+                  ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 )
+                )
+                ( Identity ( LiteralInt 2 ) )
+              )
+            )
+            ( Identity ( LiteralInt 1 ) )
+          )
+        )
+      )
+    ]
   }
-]

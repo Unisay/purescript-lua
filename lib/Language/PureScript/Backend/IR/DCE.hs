@@ -1,244 +1,346 @@
 module Language.PureScript.Backend.IR.DCE where
 
+import Data.DList (DList)
+import Data.DList qualified as DL
 import Data.Graph (Graph, Vertex, graphFromEdges, reachable)
-import Data.List (groupBy)
-import Data.Map.Strict qualified as Map
+import Data.List.NonEmpty qualified as NE
+import Data.Map qualified as Map
 import Data.Set qualified as Set
+import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Types
-  ( Binding
-  , Exp (..)
+  ( Annotated
+  , Exp
   , Grouping (..)
-  , Info (..)
-  , Module (..)
-  , ModuleName
+  , Index
   , Name
-  , Qualified (Imported, Local)
+  , Parameter (..)
+  , QName (..)
+  , Qualified (..)
+  , RawExp (..)
+  , RewriteMod (..)
+  , Rewritten (..)
   , bindingNames
+  , listGrouping
+  , rewriteExpTopDown
   )
-import Relude.Unsafe qualified as Unsafe
+import Language.PureScript.Names (ModuleName)
 
-data Strategy
-  = EntryPoints (NonEmpty (ModuleName, NonEmpty Name))
-  | EntryPointsSomeModules (NonEmpty ModuleName)
-  | EntryPointsAllModules
+data EntryPoint = EntryPoint ModuleName [Name]
   deriving stock (Show)
 
-eliminateDeadCode :: Strategy -> [Module] -> [Module]
-eliminateDeadCode strategy modules = uncurry dceModule <$> reachableByModule
+eliminateDeadCode ∷ UberModule → UberModule
+eliminateDeadCode uber@UberModule {..} =
+  -- trace ("\n\nannotatedBindings:\n" <> shower annotatedBindings <> "\n") $
+  --   trace ("\nannotatedExports:\n" <> shower annotatedExports <> "\n") $
+  --     trace ("\nadjacencyList:\n" <> shower adjacencyList <> "\n") $
+  --       trace ("\nreachableIds:\n" <> shower reachableIds <> "\n\n") $
+  uber
+    { uberModuleForeigns = preservedForeigns
+    , uberModuleBindings = preserveBindings
+    , uberModuleExports = preservedExports
+    }
  where
-  reachableByModule :: [([(Node, QName, [QName])], Module)]
-  reachableByModule = do
-    m@Module {moduleName} <- modules
-    const m <<$>> filter (snd >>> (== moduleName)) reachableFromEntryPoints
+  preservedForeigns ∷ [(ModuleName, FilePath, NonEmpty Name)]
+  preservedForeigns = uberModuleForeigns
 
-  reachableFromEntryPoints :: [([(Node, QName, [QName])], ModuleName)]
-  reachableFromEntryPoints =
-    [ (adjacency, modname)
-    | (moduleName, names) <- entryPoints
-    , vertex <-
-        [v | name <- names, v <- maybeToList (keyToVertex (moduleName, name))]
-    , adjacency@(_, (modname, _), _) <- vertexToV <$> reachable graph vertex
+  preserveBindings ∷ [Grouping (QName, Exp)]
+  preserveBindings = do
+    grouping ← annotatedBindings
+    case grouping of
+      Standalone (nodeId, qname, expr) → do
+        guard $ nodeId `Set.member` reachableIds
+        [Standalone (qname, dceAnnotatedExp expr)]
+      RecursiveGroup recBinds →
+        case NE.nonEmpty (preservedRecBinds (toList recBinds)) of
+          Nothing → []
+          Just pb → [RecursiveGroup pb]
+   where
+    preservedRecBinds ∷ [(Id, QName, AExp)] → [(QName, Exp)]
+    preservedRecBinds recBinds = do
+      (nodeId, qname, expr) ← recBinds
+      guard $ nodeId `Set.member` reachableIds
+      pure (qname, dceAnnotatedExp expr)
+
+  preservedExports ∷ [(Name, Exp)]
+  preservedExports = do
+    (_id, name, annotatedExp) ← annotatedExports
+    pure (name, dceAnnotatedExp annotatedExp)
+
+  annotatedExports ∷ [(Id, Name, AExp)]
+  annotatedBindings ∷ [Grouping (Id, QName, AExp)]
+  (annotatedExports, annotatedBindings) = runAnnM do
+    annExports ← forM uberModuleExports \(name, expr) →
+      (,name,) <$> nextId <*> annotateExp expr
+    annBindings ← forM uberModuleBindings $ traverse \(qname, expr) →
+      (,qname,) <$> nextId <*> annotateExp expr
+    pure (annExports, annBindings)
+
+  dceAnnotatedExp ∷ AExp → Exp
+  dceAnnotatedExp =
+    deannotateExp <$> rewriteExpTopDown do
+      pure . \case
+        Abs (paramId, _param) b
+          | not (paramId `Set.member` reachableIds) →
+              Rewritten Recurse (Abs (paramId, ParamUnused) b)
+        Let binds body@(_bodyId, rawBody) →
+          Rewritten Recurse case NE.nonEmpty preservedBinds of
+            Nothing → rawBody
+            Just bs → Let bs body
+         where
+          preservedBinds =
+            toList binds >>= \case
+              Standalone (name, (expId, expr)) → do
+                guard $ expId `Set.member` reachableIds
+                [Standalone (name, (expId, expr))]
+              RecursiveGroup recBinds →
+                case NE.nonEmpty preservedRecBinds of
+                  Nothing → []
+                  Just pb → [RecursiveGroup pb]
+               where
+                preservedRecBinds =
+                  [ b
+                  | b@((nameId, _), _) ← toList recBinds
+                  , nameId `Set.member` reachableIds
+                  ]
+        _ → NoChange
+
+  reachableIds ∷ Set Id =
+    Set.fromList
+      [ nodeId
+      | entryVertex ← entryVertices
+      , reachableVertex ← reachable graph entryVertex
+      , let (_node, nodeId, _deps) = vertexToV reachableVertex
+      ]
+
+  entryVertices ∷ [Vertex] =
+    [ vtx
+    | (nodeId, _name, _exp) ← annotatedExports
+    , vtx ← maybeToList (keyToVertex nodeId)
     ]
-      & sortOn snd
-      & groupBy ((==) `on` snd)
-      & fmap (fmap Unsafe.head . unzip)
+
+  ------------------------------------------------------------------------------
+  -- Building a graph of nodes -------------------------------------------------
+
+  ( graph ∷ Graph
+    , vertexToV ∷ Vertex → ((), Id, [Id])
+    , keyToVertex ∷ Id → Maybe Vertex
+    ) = graphFromEdges adjacencyList
+
+  adjacencyList ∷ [((), Id, [Id])]
+  adjacencyList =
+    DL.toList $ adjacencyListFromExports <> adjacencyListFromBindings
+
+  adjacencyListFromBindings ∷ DList ((), Id, [Id])
+  adjacencyListFromBindings =
+    annotatedBindings & foldMap \case
+      Standalone (nodeId, _qname, expr) →
+        adjacencyListForExpr bindingsInScope (nodeId, expr)
+      RecursiveGroup recBinds →
+        recBinds & foldMap \(nodeId, _qname, expr) →
+          adjacencyListForExpr bindingsInScope (nodeId, expr)
+
+  adjacencyListFromExports ∷ DList ((), Id, [Id])
+  adjacencyListFromExports =
+    annotatedExports & foldMap \(nodeId, _name, expr) →
+      adjacencyListFromExport nodeId expr
+
+  bindingsInScope ∷ Map (Qualified Name, Index) Id
+  bindingsInScope =
+    Map.fromList
+      [ ((Imported m name, 0), bindId)
+      | grouping ← annotatedBindings
+      , (bindId, QName m name, _boundExpr) ← listGrouping grouping
+      ]
+
+  adjacencyListFromExport ∷ Id → AExp → DList ((), Id, [Id])
+  adjacencyListFromExport = curry (adjacencyListForExpr bindingsInScope)
+
+  adjacencyListForExpr
+    ∷ Map (Qualified Name, Index) Id
+    → (Id, AExp)
+    → DList ((), Id, [Id])
+  adjacencyListForExpr scope (nodeId, expr) =
+    ((), nodeId, expressionDependsOnIds scope expr)
+      `DL.cons` case expr of
+        LiteralInt {} → mempty
+        LiteralFloat {} → mempty
+        LiteralString {} → mempty
+        LiteralChar {} → mempty
+        LiteralBool {} → mempty
+        LiteralArray as → foldMap (adjacencyListForExpr scope) as
+        LiteralObject ps → foldMap (adjacencyListForExpr scope . snd) ps
+        Exception {} → mempty
+        Ctor {} → mempty
+        ReflectCtor a → adjacencyListForExpr scope a
+        Eq a b → adjacencyListForExpr scope a <> adjacencyListForExpr scope b
+        DataArgumentByIndex _index a → adjacencyListForExpr scope a
+        ArrayLength a → adjacencyListForExpr scope a
+        ArrayIndex a _index → adjacencyListForExpr scope a
+        ObjectProp a _prop → adjacencyListForExpr scope a
+        ObjectUpdate o patches →
+          adjacencyListForExpr scope o
+            <> foldMap (adjacencyListForExpr scope . snd) patches
+        IfThenElse i t e →
+          adjacencyListForExpr scope i
+            <> adjacencyListForExpr scope t
+            <> adjacencyListForExpr scope e
+        App a b →
+          adjacencyListForExpr scope a
+            <> adjacencyListForExpr scope b
+        Ref _qname _idx →
+          mempty
+        Abs (_paramId, ParamUnused) b →
+          adjacencyListForExpr scope b
+        Abs (paramId, ParamNamed param) b →
+          DL.cons
+            ((), paramId, [])
+            (adjacencyListForExpr (addLocalToScope paramId param 0 scope) b)
+        Let groupings body →
+          adjacencyListForExpr scope' body
+            <> snd (foldl' adjacencyListForGrouping (scope, mempty) groupings)
+         where
+          scope' = foldr addToScope scope (bindingNames =<< toList groupings)
+          addToScope (nameId, name) = addLocalToScope nameId name 0
    where
-    entryPoints :: [(ModuleName, [Name])]
-    entryPoints = case strategy of
-      EntryPoints points -> toList (toList <<$>> points)
-      EntryPointsAllModules -> moduleEntryPoints <$> modules
-      EntryPointsSomeModules modulesNames ->
-        moduleEntryPoints
-          <$> filter (moduleName >>> (`elem` modulesNames)) modules
-
-    moduleEntryPoints :: Module -> (ModuleName, [Name])
-    moduleEntryPoints Module {..} =
-      (moduleName, moduleForeigns <> (moduleBindings >>= bindingNames))
-
-  (graph, vertexToV, keyToVertex) = buildGraph modules
-
-  dceModule :: [(Node, QName, [QName])] -> Module -> Module
-  dceModule adjacencies Module {..} =
-    Module
-      { moduleName
-      , moduleBindings = preserveBindings
-      , moduleImports = preservedImports
-      , moduleExports = preservedExports
-      , moduleReExports = preservedReExports
-      , moduleForeigns = preservedForeigns
-      , modulePath
-      , dataTypes
-      }
-   where
-    preserveBindings :: [Binding]
-    preserveBindings =
-      filter (any (`Set.member` reachableNames) . bindingNames) moduleBindings
-    -- <&> dceBinding
-
-    preservedForeigns :: [Name] =
-      filter (`Set.member` reachableNames) moduleForeigns
-
-    preservedImports :: [ModuleName] =
-      filter (`Set.member` reachableImports) moduleImports
+    adjacencyListForGrouping
+      ∷ (Map (Qualified Name, Index) Id, DList ((), Id, [Id]))
+      → Grouping ((Id, Name), Annotated ((,) Id) RawExp)
+      → (Map (Qualified Name, Index) Id, DList ((), Id, [Id]))
+    adjacencyListForGrouping (groupingScope, adj) = \case
+      Standalone binding@((nameId, _name), (expId, boundExpr)) →
+        ( updateScope binding groupingScope
+        , DL.cons
+            ((), nameId, [expId])
+            (adjacencyListForExpr groupingScope (expId, boundExpr) <> adj)
+        )
+      RecursiveGroup recBinds →
+        ( scope'
+        , recBinds & foldMap \((nameId, _name), (exprId, boundExpr)) →
+            DL.cons
+              ((), nameId, [exprId])
+              (adjacencyListForExpr scope' (exprId, boundExpr) <> adj)
+        )
+       where
+        scope' = foldr updateScope groupingScope (toList recBinds)
      where
-      reachableImports :: Set ModuleName =
-        Set.fromList [m | (_, _, deps) <- adjacencies, (m, _) <- deps]
+      updateScope
+        ∷ ((Id, Name), Annotated ((,) Id) RawExp)
+        → Map (Qualified Name, Index) Id
+        → Map (Qualified Name, Index) Id
+      updateScope ((nameId, name), _) = addLocalToScope nameId name 0
 
-    preservedExports :: [Name]
-    preservedExports = filter (`Set.member` reachableExports) moduleExports
-     where
-      reachableExports :: Set Name =
-        Set.fromList $ preservedForeigns <> (bindingNames =<< preserveBindings)
+    expressionDependsOnIds ∷ Map (Qualified Name, Index) Id → AExp → [Id]
+    expressionDependsOnIds exprScope = \case
+      LiteralArray as → fst <$> as
+      LiteralObject ps → fst . snd <$> ps
+      LiteralInt {} → []
+      LiteralFloat {} → []
+      LiteralString {} → []
+      LiteralChar {} → []
+      LiteralBool {} → []
+      Exception {} → []
+      Ctor {} → []
+      ReflectCtor a → [fst a]
+      Eq a b → [fst a, fst b]
+      DataArgumentByIndex _idx a → [fst a]
+      ArrayLength as → [fst as]
+      ArrayIndex a _idx → [fst a]
+      ObjectProp a _prp → [fst a]
+      ObjectUpdate o patches → fst o : toList (fst . snd <$> patches)
+      Abs _ b → [fst b]
+      App a b → [fst a, fst b]
+      IfThenElse i t e → [fst i, fst t, fst e]
+      Ref qname idx → maybeToList $ Map.lookup (qname, idx) exprScope
+      Let _groupings body → [fst body]
 
-    preservedReExports :: Map ModuleName [Name] =
-      filter (`Set.member` reachableReExports) <$> moduleReExports
-     where
-      reachableReExports :: Set Name =
-        Set.fromList
-          [ name
-          | -- TODO: filter by the module which re-exports?
-          (NodeReExported (_modname, name), _qname, _deps) <- adjacencies
-          ]
-
-    reachableNames :: Set Name = Set.fromList $ snd <$> reachableQNames
-     where
-      reachableQNames :: [QName] =
-        [n | (_, qname, deps) <- adjacencies, n <- qname : deps]
-
-type QName = (ModuleName, Name)
-
-data Node
-  = NodeBinding Binding
-  | NodeForeign QName
-  | NodeReExported QName
-  deriving stock (Show)
-
-buildGraph
-  :: [Module]
-  -> ( Graph
-     , Vertex -> (Node, QName, [QName])
-     , QName -> Maybe Vertex
-     )
-buildGraph = graphFromEdges . adjacencyList
- where
-  -- Builds an adjacency list representing a graph
-  -- with vertices of type `QName` labeled by values of type `Node`
-  adjacencyList :: [Module] -> [(Node, QName, [QName])]
-  adjacencyList modules = do
-    m@Module {moduleName = modname} <- modules
-    adjacencyListFromDeclarations modname (moduleBindings m)
-      <> adjacencyListFromForeigns modname (moduleForeigns m)
-      <> adjacencyListFromReExports modname modules (moduleReExports m)
-
-adjacencyListFromDeclarations
-  :: ModuleName -> [Binding] -> [(Node, QName, [QName])]
-adjacencyListFromDeclarations modname bindings =
-  bindings >>= \binding ->
-    case binding of
-      Standalone (n, e) ->
-        [(NodeBinding binding, (modname, n), expDependencies modname e)]
-      RecursiveGroup (toList -> binds) -> do
-        let as = bimap (modname,) (expDependencies modname) <$> binds
-        as <&> \(qn, deps) -> (NodeBinding binding, qn, fmap fst as <> deps)
-
-expDependencies :: ModuleName -> Exp -> [QName]
-expDependencies thisModule Exp {expInfo = Info {refsFree}} =
-  Map.keys refsFree >>= \case
-    Local name -> [(thisModule, name)]
-    Imported fromModule name -> [(fromModule, name)]
-
-adjacencyListFromForeigns :: ModuleName -> [Name] -> [(Node, QName, [QName])]
-adjacencyListFromForeigns modname = fmap \name ->
-  (NodeForeign (modname, name), (modname, name), [])
-
-adjacencyListFromReExports
-  :: ModuleName -> [Module] -> Map ModuleName [Name] -> [(Node, QName, [QName])]
-adjacencyListFromReExports reexporter modules reExports = do
-  m <- modules
-  case Map.lookup (moduleName m) reExports of
-    Nothing -> []
-    Just names -> do
-      name <- names
-      let qname = (reexporter, name)
-      [(NodeReExported qname, qname, [(moduleName m, name)])]
+addLocalToScope
+  ∷ Id
+  → Name
+  → Index
+  → Map (Qualified Name, Index) Id
+  → Map (Qualified Name, Index) Id
+addLocalToScope nid name index s =
+  let lname = Local name
+   in case Map.lookup (lname, index) s of
+        Nothing → Map.insert (lname, index) nid s
+        Just nid' →
+          Map.insert (lname, index) nid $
+            addLocalToScope nid' name (succ index) s
 
 --------------------------------------------------------------------------------
--- Eliminate local subexpressions which are not reachable from the top level ---
---------------------------------------------------------------------------------
+-- Annotating expressions with IDs ---------------------------------------------
 
-{- dceBinding :: Binding -> Binding
-dceBinding = \case
-  Standalone (name, expr) -> Standalone (name, dceExpr expr)
-  RecursiveGroup bs -> RecursiveGroup (dceExpr <<$>> bs)
+type Id = Natural
 
-dceExpr :: Exp -> Exp
-dceExpr =
-  flip evalState 0 <$> everywhereExpM \case
-    e@(Exp {unExp = Abs absBinding}) -> do
-      (mbName, body) <- unbindAbs absBinding
-      pure case mbName of
-        Nothing -> e
-        Just name ->
-          if body `refersTo` name then e else abstraction ArgUnused body
-    Exp {unExp = Let letBinding} -> dceLetBinding letBinding
-    e -> pure e
+type AExp = RawExp ((,) Id)
+
+newtype AnnM a = AnnM {unAnnM ∷ State Id a}
+  deriving newtype (Functor, Applicative, Monad)
+
+nextId ∷ AnnM Id
+nextId = AnnM do
+  i ← get
+  i <$ put (i + 1)
+
+runAnnM ∷ AnnM a → a
+runAnnM = (`evalState` 0) . unAnnM
+
+annotateExp ∷ Exp → AnnM AExp
+annotateExp = \case
+  LiteralInt i → pure $ LiteralInt i
+  LiteralFloat f → pure $ LiteralFloat f
+  LiteralString s → pure $ LiteralString s
+  LiteralChar c → pure $ LiteralChar c
+  LiteralBool b → pure $ LiteralBool b
+  LiteralArray as → LiteralArray <$> traverse ann as
+  LiteralObject ps → LiteralObject <$> traverse (traverse ann) ps
+  ReflectCtor a → ReflectCtor <$> ann a
+  Eq a b → Eq <$> ann a <*> ann b
+  DataArgumentByIndex index a → DataArgumentByIndex index <$> ann a
+  ArrayLength a → ArrayLength <$> ann a
+  ArrayIndex a index → flip ArrayIndex index <$> ann a
+  ObjectProp a prop → flip ObjectProp prop <$> ann a
+  ObjectUpdate a ps → ObjectUpdate <$> ann a <*> traverse (traverse ann) ps
+  Abs param body → Abs <$> ann_ param <*> ann body
+  App a b → App <$> ann a <*> ann b
+  Ref qname index → pure $ Ref qname index
+  Let binds body →
+    Let
+      <$> traverse (traverse (bitraverse ann_ ann)) binds
+      <*> ann body
+  IfThenElse i t e → IfThenElse <$> ann i <*> ann t <*> ann e
+  Ctor aty ty ctor fs → pure $ Ctor aty ty ctor fs
+  Exception m → pure $ Exception m
  where
-  dceLetBinding :: LetBinding Exp -> State Natural Exp
-  dceLetBinding letBinding = do
-    (bindings, body) <- unbindLet letBinding
-    pure case NE.nonEmpty (bindingsToPreserve (toList bindings) body) of
-      Nothing -> body
-      Just someBindings -> lets someBindings body
-   where
-    bindingsToPreserve bindings body =
-      bindings >>= \case
-        s@(Standalone (name, _expr)) ->
-          [s | any (`refersTo` name) exprs || body `refersTo` name]
-         where
-          exprs = fmap snd . listGrouping =<< bindings
-        recursiveGroup ->
-          [ recursiveGroup
-          | names & any \name ->
-              body `refersTo` name || any (`refersTo` name) otherBindingsExprs
-          ]
-         where
-          names = bindingNames recursiveGroup
-          otherBindingsExprs =
-            bindings >>= listGrouping & mapMaybe \(n, e) ->
-              if n `elem` bindingNames recursiveGroup
-                then Nothing
-                else Just e
+  ann ∷ Annotated Identity RawExp → AnnM (Id, AExp)
+  ann = liftA2 (,) nextId . annotateExp . runIdentity
 
-refersTo :: Exp -> Name -> Bool
-refersTo expr name' = getAny (findName name' expr)
+  ann_ ∷ Identity a → AnnM (Id, a)
+  ann_ p = (,runIdentity p) <$> nextId
+
+deannotateExp ∷ AExp → Exp
+deannotateExp = \case
+  LiteralInt i → LiteralInt i
+  LiteralFloat f → LiteralFloat f
+  LiteralString s → LiteralString s
+  LiteralChar c → LiteralChar c
+  LiteralBool b → LiteralBool b
+  LiteralArray as → LiteralArray (de <$> as)
+  LiteralObject ps → LiteralObject (de <<$>> ps)
+  ReflectCtor a → ReflectCtor (de a)
+  Eq a b → Eq (de a) (de b)
+  DataArgumentByIndex index a → DataArgumentByIndex index (de a)
+  ArrayLength a → ArrayLength (de a)
+  ArrayIndex a index → ArrayIndex (de a) index
+  ObjectProp a prop → ObjectProp (de a) prop
+  ObjectUpdate a ps → ObjectUpdate (de a) (de <<$>> ps)
+  Abs param body → Abs (pure $ snd param) (de body)
+  App a b → App (de a) (de b)
+  Ref qname index → Ref qname index
+  Let binds body → Let (bimap (pure . snd) de <<$>> binds) (de body)
+  IfThenElse i t e → IfThenElse (de i) (de t) (de e)
+  Ctor aty ty ctor fs → Ctor aty ty ctor fs
+  Exception m → Exception m
  where
-  findName :: Name -> Exp -> Any
-  findName name e = case unExp e of
-    -- Recursive cases
-    Lit (Array as) -> foldMap' lookDeeper as
-    Lit (Object props) -> foldMap' (lookDeeper . snd) props
-    Prim op ->
-      case op of
-        ArrayLength a -> lookDeeper a
-        ReflectCtor a -> lookDeeper a
-        DataArgumentByIndex _idx a -> lookDeeper a
-        Eq a b -> lookDeeper a <> lookDeeper b
-    ArrayIndex a _indx -> lookDeeper a
-    ObjectProp a _prop -> lookDeeper a
-    ObjectUpdate a patches ->
-      lookDeeper a <> foldMap' (lookDeeper . snd) patches
-    App a b -> lookDeeper a <> lookDeeper b
-    Abs (AbsBinding _arg body) -> _ body
-    Let (LetBinding binds (LocallyNameless body)) ->
-      foldMap'
-        (lookUnderBinder . unLocallyNameless . snd)
-        (listGrouping =<< toList binds)
-        <> lookUnderBinder body
-    IfThenElse p th el -> lookDeeper p <> lookDeeper th <> lookDeeper el
-    -- Bottom cases
-    RefFree qname ->
-      qualified (Any . (== name)) (const (const (Any False))) qname
-    _ -> Any False
-   where
-    lookDeeper = findName name
- -}
+  de ∷ (a, AExp) → Identity Exp
+  de = pure . deannotateExp . snd

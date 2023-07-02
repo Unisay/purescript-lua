@@ -1,148 +1,163 @@
-[ Module
-  { moduleName = ModuleName "Golden.TestCaseStatements", moduleBindings =
+UberModule
+  { uberModuleBindings =
     [ Standalone
-      ( Name "J", Ctor SumType ( TyName "M" ) ( CtorName "J" ) [ FieldName "value0" ] ), Standalone
-      ( Name "N", Ctor SumType ( TyName "M" ) ( CtorName "N" ) [] ), Standalone
-      ( Name "multipleGuards", Lit ( Integer 1 ) ), Standalone
-      ( Name "d", Abs
-        ( AbsBinding
-          ( ArgNamed ( Name "m" ) ) Abs
-          ( AbsBinding
-            ( ArgNamed ( Name "n" ) ) Abs
-            ( AbsBinding
-              ( ArgNamed ( Name "x" ) ) Let
-              ( LetBinding
-                ( Standalone ( Name "v", Abs ( AbsBinding ( ArgNamed ( Name "v1" ) ) IfThenElse Prim ( Eq Lit ( Char 'y' ) RefBound ( Index { level = 2, offset = 0 } ) ) Lit ( Integer 0 ) Lit ( Integer 1 ) ) ) :| [] ) IfThenElse Prim
-                ( Eq Lit ( Char 'x' ) RefBound ( Index { level = 2, offset = 0 } ) ) IfThenElse Prim
-                ( Eq Lit ( String "Golden.TestCaseStatements.J" ) Prim ( ReflectCtor RefBound ( Index { level = 4, offset = 0 } ) ) ) Let
-                ( LetBinding
-                  ( Standalone ( Name "y", ArrayIndex RefBound ( Index { level = 5, offset = 0 } ) 0 ) :| [] ) IfThenElse Prim
-                  ( Eq Lit ( String "Golden.TestCaseStatements.N" ) Prim ( ReflectCtor RefBound ( Index { level = 4, offset = 0 } ) ) ) ArrayIndex RefBound
-                  ( Index { level = 5, offset = 0 } ) 0 App RefBound
-                  ( Index { level = 1, offset = 0 } ) Lit ( Boolean True )
-                ) App RefBound
-                ( Index { level = 1, offset = 0 } ) Lit ( Boolean True ) App RefBound
-                ( Index { level = 1, offset = 0 } ) Lit ( Boolean True )
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestValues", qnameName = Name "f"
+        }, Abs ( Identity ParamUnused )
+        ( Identity ( LiteralBool True ) )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "a", LiteralInt 1 ),
+      ( Name "b", LiteralChar 'b' ),
+      ( Name "c", Let
+        ( Standalone
+          ( Identity
+            ( Name "v" ), Identity
+            ( Abs ( Identity ParamUnused ) ( Identity ( LiteralInt 0 ) ) )
+          ) :| []
+        )
+        ( Identity
+          ( IfThenElse
+            ( Identity
+              ( Eq
+                ( Identity ( LiteralBool True ) )
+                ( Identity
+                  ( App
+                    ( Identity
+                      ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) 0 )
+                    )
+                    ( Identity ( LiteralInt 2 ) )
+                  )
+                )
+              )
+            )
+            ( Identity
+              ( IfThenElse
+                ( Identity
+                  ( Eq
+                    ( Identity ( LiteralBool True ) )
+                    ( Identity
+                      ( App
+                        ( Identity
+                          ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) 0 )
+                        )
+                        ( Identity ( LiteralInt 1 ) )
+                      )
+                    )
+                  )
+                )
+                ( Identity ( LiteralInt 42 ) )
+                ( Identity
+                  ( App
+                    ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                    ( Identity ( LiteralBool True ) )
+                  )
+                )
+              )
+            )
+            ( Identity
+              ( App
+                ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                ( Identity ( LiteralBool True ) )
               )
             )
           )
         )
-      ), Standalone
-      ( Name "b", Lit ( Char 'b' ) ), Standalone
-      ( Name "a", Lit ( Integer 1 ) ), Standalone
-      ( Name "c", Let
-        ( LetBinding
-          ( Standalone
-            ( Name "v", Abs
-              ( AbsBinding
-                ( ArgNamed ( Name "v1" ) ) IfThenElse Prim
-                ( Eq Lit ( Integer 2 ) RefFree ( Local ( Name "a" ) ) ) IfThenElse App RefFree
-                ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) Lit
-                ( Integer 0 ) Lit
-                ( Integer 10 ) IfThenElse Prim
-                ( Eq Lit ( Integer 3 ) RefFree ( Local ( Name "a" ) ) ) Let
-                ( LetBinding
-                  ( Standalone
-                    ( Name "n1", IfThenElse Prim
-                      ( Eq Lit ( Integer 4 ) RefFree ( Local ( Name "a" ) ) ) Let
-                      ( LetBinding
-                        ( Standalone ( Name "n2", Lit ( Integer 0 ) ) :| [ Standalone ( Name "y", RefFree ( Local ( Name "a" ) ) ), Standalone ( Name "z", RefFree ( Local ( Name "a" ) ) ) ] ) IfThenElse App RefFree
-                        ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) RefFree
-                        ( Local ( Name "a" ) ) RefFree
-                        ( Local ( Name "a" ) ) Lit
-                        ( Integer 0 )
-                      ) Lit
-                      ( Integer 0 )
-                    ) :|
-                    [ Standalone ( Name "y", RefFree ( Local ( Name "a" ) ) ), Standalone ( Name "z", RefFree ( Local ( Name "a" ) ) ) ]
-                  ) IfThenElse App RefFree
-                  ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) RefFree
-                  ( Local ( Name "a" ) ) RefFree
-                  ( Local ( Name "a" ) ) IfThenElse Prim
-                  ( Eq Lit ( Integer 4 ) RefFree ( Local ( Name "a" ) ) ) Let
-                  ( LetBinding
-                    ( Standalone ( Name "n2", Lit ( Integer 0 ) ) :| [ Standalone ( Name "y", RefFree ( Local ( Name "a" ) ) ), Standalone ( Name "z", RefFree ( Local ( Name "a" ) ) ) ] ) IfThenElse App RefFree
-                    ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) RefFree
-                    ( Local ( Name "a" ) ) RefFree
-                    ( Local ( Name "a" ) ) Lit
-                    ( Integer 0 )
-                  ) Lit
-                  ( Integer 0 )
-                ) IfThenElse Prim
-                ( Eq Lit ( Integer 4 ) RefFree ( Local ( Name "a" ) ) ) Let
-                ( LetBinding
-                  ( Standalone ( Name "n3", Lit ( Integer 0 ) ) :| [ Standalone ( Name "y", RefFree ( Local ( Name "a" ) ) ), Standalone ( Name "z", RefFree ( Local ( Name "a" ) ) ) ] ) IfThenElse App RefFree
-                  ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) RefFree
-                  ( Local ( Name "a" ) ) RefFree
-                  ( Local ( Name "a" ) ) Lit
-                  ( Integer 0 )
-                ) Lit
-                ( Integer 0 ) IfThenElse Prim
-                ( Eq Lit ( Integer 3 ) RefFree ( Local ( Name "a" ) ) ) Let
-                ( LetBinding
-                  ( Standalone
-                    ( Name "n4", IfThenElse Prim
-                      ( Eq Lit ( Integer 4 ) RefFree ( Local ( Name "a" ) ) ) Let
-                      ( LetBinding
-                        ( Standalone ( Name "n5", Lit ( Integer 0 ) ) :| [ Standalone ( Name "y", RefFree ( Local ( Name "a" ) ) ), Standalone ( Name "z", RefFree ( Local ( Name "a" ) ) ) ] ) IfThenElse App RefFree
-                        ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) RefFree
-                        ( Local ( Name "a" ) ) RefFree
-                        ( Local ( Name "a" ) ) Lit
-                        ( Integer 0 )
-                      ) Lit
-                      ( Integer 0 )
-                    ) :|
-                    [ Standalone ( Name "y", RefFree ( Local ( Name "a" ) ) ), Standalone ( Name "z", RefFree ( Local ( Name "a" ) ) ) ]
-                  ) IfThenElse App RefFree
-                  ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) RefFree
-                  ( Local ( Name "a" ) ) RefFree
-                  ( Local ( Name "a" ) ) IfThenElse Prim
-                  ( Eq Lit ( Integer 4 ) RefFree ( Local ( Name "a" ) ) ) Let
-                  ( LetBinding
-                    ( Standalone ( Name "n5", Lit ( Integer 0 ) ) :| [ Standalone ( Name "y", RefFree ( Local ( Name "a" ) ) ), Standalone ( Name "z", RefFree ( Local ( Name "a" ) ) ) ] ) IfThenElse App RefFree
-                    ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) RefFree
-                    ( Local ( Name "a" ) ) RefFree
-                    ( Local ( Name "a" ) ) Lit
-                    ( Integer 0 )
-                  ) Lit
-                  ( Integer 0 )
-                ) IfThenElse Prim
-                ( Eq Lit ( Integer 4 ) RefFree ( Local ( Name "a" ) ) ) Let
-                ( LetBinding
-                  ( Standalone ( Name "n6", Lit ( Integer 0 ) ) :| [ Standalone ( Name "y", RefFree ( Local ( Name "a" ) ) ), Standalone ( Name "z", RefFree ( Local ( Name "a" ) ) ) ] ) IfThenElse App RefFree
-                  ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) RefFree
-                  ( Local ( Name "a" ) ) RefFree
-                  ( Local ( Name "a" ) ) Lit
-                  ( Integer 0 )
-                ) Lit
-                ( Integer 0 )
+      ),
+      ( Name "J", Ctor SumType ( TyName "M" ) ( CtorName "J" ) [ FieldName "value0" ] ),
+      ( Name "N", Ctor SumType ( TyName "M" ) ( CtorName "N" ) [] ),
+      ( Name "d", Abs
+        ( Identity ( ParamNamed ( Name "m" ) ) )
+        ( Identity
+          ( Abs
+            ( Identity ( ParamNamed ( Name "n" ) ) )
+            ( Identity
+              ( Abs
+                ( Identity ( ParamNamed ( Name "x" ) ) )
+                ( Identity
+                  ( Let
+                    ( Standalone
+                      ( Identity
+                        ( Name "v" ), Identity
+                        ( Abs ( Identity ParamUnused )
+                          ( Identity
+                            ( IfThenElse
+                              ( Identity
+                                ( Eq
+                                  ( Identity ( LiteralChar 'y' ) )
+                                  ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
+                                )
+                              )
+                              ( Identity ( LiteralInt 0 ) )
+                              ( Identity ( LiteralInt 1 ) )
+                            )
+                          )
+                        )
+                      ) :| []
+                    )
+                    ( Identity
+                      ( IfThenElse
+                        ( Identity
+                          ( Eq
+                            ( Identity ( LiteralChar 'x' ) )
+                            ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
+                          )
+                        )
+                        ( Identity
+                          ( IfThenElse
+                            ( Identity
+                              ( Eq
+                                ( Identity ( LiteralString "Golden.TestCaseStatements.J" ) )
+                                ( Identity
+                                  ( ReflectCtor ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) ) )
+                                )
+                              )
+                            )
+                            ( Identity
+                              ( IfThenElse
+                                ( Identity
+                                  ( Eq
+                                    ( Identity ( LiteralString "Golden.TestCaseStatements.N" ) )
+                                    ( Identity
+                                      ( ReflectCtor ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) ) )
+                                    )
+                                  )
+                                )
+                                ( Identity
+                                  ( ArrayIndex ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) ) 0 )
+                                )
+                                ( Identity
+                                  ( App
+                                    ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                                    ( Identity ( LiteralBool True ) )
+                                  )
+                                )
+                              )
+                            )
+                            ( Identity
+                              ( App
+                                ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                                ( Identity ( LiteralBool True ) )
+                              )
+                            )
+                          )
+                        )
+                        ( Identity
+                          ( App
+                            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                            ( Identity ( LiteralBool True ) )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
               )
-            ) :| []
-          ) IfThenElse Prim
-          ( Eq Lit ( Integer 1 ) RefFree ( Local ( Name "a" ) ) ) IfThenElse Prim
-          ( Eq Lit ( Char 'b' ) RefFree ( Local ( Name "b" ) ) ) Let
-          ( LetBinding
-            ( Standalone ( Name "e7", App RefFree ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) Lit ( Integer 2 ) ) :| [] ) IfThenElse Prim
-            ( Eq Lit ( Boolean True ) App RefFree ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) Lit ( Integer 2 ) ) Let
-            ( LetBinding
-              ( Standalone ( Name "e8", App RefFree ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) Lit ( Integer 1 ) ) :| [] ) IfThenElse Prim
-              ( Eq Lit ( Boolean True ) App RefFree ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) Lit ( Integer 1 ) ) Lit
-              ( Integer 42 ) App RefBound
-              ( Index { level = 2, offset = 0 } ) Lit ( Boolean True )
-            ) App RefBound
-            ( Index { level = 2, offset = 0 } ) Lit ( Boolean True )
-          ) App RefBound
-          ( Index { level = 2, offset = 0 } ) Lit ( Boolean True ) App RefBound
-          ( Index { level = 2, offset = 0 } ) Lit ( Boolean True )
+            )
+          )
         )
-      )
-    ], moduleImports =
-    [ ModuleName "Golden.TestValues" ], moduleExports =
-    [ Name "a", Name "b", Name "c", Name "J", Name "N", Name "d", Name "multipleGuards" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestCaseStatements.purs", dataTypes = fromList
-    [ ( TyName "M", ( SumType, fromList [ ( CtorName "J", [ FieldName "value0" ] ), ( CtorName "N", [] ) ] ) ) ]
-  }, Module
-  { moduleName = ModuleName "Golden.TestValues", moduleBindings =
-    [ Standalone ( Name "f", Abs ( AbsBinding ( ArgNamed ( Name "v" ) ) Lit ( Boolean True ) ) ) ], moduleImports = [], moduleExports =
-    [ Name "f" ], moduleReExports = fromList [], moduleForeigns = [], modulePath = "golden/Golden/TestValues.purs", dataTypes = fromList []
+      ),
+      ( Name "multipleGuards", LiteralInt 1 )
+    ]
   }
-]

@@ -1,7 +1,4 @@
-[ Module
-  { moduleName = ModuleName "Golden.Reexport.ReExports", moduleBindings =
-    [ Standalone ( Name "binding2", Lit ( Integer 2 ) ) ], moduleImports = [], moduleExports =
-    [ Name "binding2" ], moduleReExports = fromList
-    [ ( ModuleName "Golden.Reexport.Exports", [] ) ], moduleForeigns = [], modulePath = "golden/Golden/Reexport/ReExports.purs", dataTypes = fromList []
+UberModule
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+    [ ( Name "binding2", LiteralInt 2 ) ]
   }
-]

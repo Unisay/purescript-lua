@@ -15,12 +15,31 @@ import Language.PureScript.Backend.Lua.DeadCodeEliminator qualified as DCE
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Gen qualified as Gen
 import Language.PureScript.Backend.Lua.Name qualified as Lua
+import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
 
 spec :: Spec
 spec = describe "Lua Dead Code Elimination" do
+  test "Doesn't eliminate unused function parameter" do
+    name1 <- forAll Gen.name
+    name2 <- forAll $ mfilter (/= name1) Gen.name
+    expr1 <- forAll Gen.nonRecursiveExpression
+    expr2 <- forAll $ mfilter (/= expr1) Gen.nonRecursiveExpression
+
+    let chunk =
+          [ Lua.local name1 . Just $
+              Lua.functionDef [ParamNamed name2] [Lua.return expr1]
+          , Lua.return $ Lua.functionCall (Lua.varName name1) [expr2]
+          ]
+    let chunk' =
+          [ Lua.local name1 . Just $
+              Lua.functionDef [ParamUnused] [Lua.return expr1]
+          , Lua.return $ Lua.functionCall (Lua.varName name1) [expr2]
+          ]
+    DCE.eliminateDeadCode PreserveReturned chunk === chunk'
+
   test "Eliminates unused local binding" do
     [usedLocal@(Lua.Local name _val), unusedLocal1, unusedLocal2] <-
       forAll . fmap toList $ Gen.set (Range.singleton 3) Gen.local
@@ -36,8 +55,9 @@ spec = describe "Lua Dead Code Elimination" do
     let fnCall :: Lua.Exp = Lua.functionCall (Lua.varName name) []
     let body = [unusedLocal1, usedLocal, unusedLocal2, Lua.return fnCall]
         body' = [usedLocal, Lua.return fnCall]
-    let chunk = [Lua.return $ Lua.functionDef [[Lua.name|unusedArg|]] body]
-        chunk' = [Lua.return $ Lua.functionDef [[Lua.name|unusedArg|]] body']
+    let chunk =
+          [Lua.return $ Lua.functionDef [ParamNamed [Lua.name|unusedArg|]] body]
+        chunk' = [Lua.return $ Lua.functionDef [ParamUnused] body']
     annotateShow chunk
     DCE.eliminateDeadCode PreserveReturned chunk === chunk'
 
