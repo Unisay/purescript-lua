@@ -477,13 +477,16 @@ countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
     → Exp
     → MonoidMap (Qualified Name) (Sum Natural)
   countFreeRefs' minIndexes = \case
-    Ref qname index
-      | Map.findWithDefault 0 qname minIndexes <= index →
-          MMap.singleton qname (Sum 1)
-    Abs (unAnn → ParamNamed name) (unAnn → body) →
-      countFreeRefs' minIndexes' body
-     where
-      minIndexes' = Map.insertWith (+) (Local name) 1 minIndexes
+    Ref qname index →
+      if Map.findWithDefault 0 qname minIndexes <= index
+        then MMap.singleton qname (Sum 1)
+        else mempty
+    Abs (unAnn → param) (unAnn → body) →
+      case param of
+        ParamNamed name → countFreeRefs' minIndexes' body
+         where
+          minIndexes' = Map.insertWith (+) (Local name) 1 minIndexes
+        ParamUnused → countFreeRefs' minIndexes body
     Let binds (unAnn → body) → fold (countsInBody : countsInBinds)
      where
       countsInBody = countFreeRefs' minIndexes' body
@@ -525,7 +528,14 @@ countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
       go a <> foldMap (go . unAnn . snd) patches
     IfThenElse (unAnn → p) (unAnn → th) (unAnn → el) →
       go p <> go th <> go el
-    _ → mempty
+    -- Non-recursives:
+    LiteralInt {} → mempty
+    LiteralBool {} → mempty
+    LiteralFloat {} → mempty
+    LiteralString {} → mempty
+    LiteralChar {} → mempty
+    Ctor {} → mempty
+    Exception {} → mempty
    where
     go = countFreeRefs' minIndexes
 

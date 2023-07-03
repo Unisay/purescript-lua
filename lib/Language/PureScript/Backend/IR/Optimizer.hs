@@ -1,12 +1,13 @@
 module Language.PureScript.Backend.IR.Optimizer where
 
+import Data.Map qualified as Map
 import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Types
   ( Annotated
   , Exp
   , Grouping (..)
-  , Name
+  , Name (..)
   , QName (..)
   , Qualified (..)
   , RawExp (..)
@@ -15,6 +16,7 @@ import Language.PureScript.Backend.IR.Types
   , Rewritten (..)
   , bindingExprs
   , countFreeRef
+  , countFreeRefs
   , isNonRecursiveLiteral
   , literalBool
   , qualifiedQName
@@ -63,11 +65,14 @@ optimizeModule UberModule {..} =
           else (Standalone (qname, expr) : bindings, exports)
        where
         isUsedOnce name =
-          1
-            == sum
-              ( countFreeRef (qualifiedQName name)
-                  <$> ((bindingExprs =<< bindings) <> map snd exports)
-              )
+          1 == Map.findWithDefault 0 (qualifiedQName name) uberModuleFreeRefs
+        uberModuleFreeRefs ∷ Map (Qualified Name) Natural =
+          foldr
+            (\e m → Map.unionWith (+) m (countFreeRefs e))
+            mempty
+            uberModuleExprs
+        uberModuleExprs =
+          (bindingExprs =<< uberModuleBindings) <> map snd exports
       RecursiveGroup recGroup →
         ( RecursiveGroup (optimizedExpression <<$>> recGroup) : bindings
         , exports
