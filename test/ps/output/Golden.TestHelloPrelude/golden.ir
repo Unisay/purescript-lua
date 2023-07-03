@@ -7,194 +7,6 @@ UberModule
         ( Identity
           ( ObjectProp ( Identity ( Ref ( Local ( Name "dict" ) ) 0 ) ) ( PropName "pure" ) )
         )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "liftA1" }, Abs
-        ( Identity ( ParamNamed ( Name "dictApplicative" ) ) )
-        ( Identity
-          ( Abs
-            ( Identity ( ParamNamed ( Name "f" ) ) )
-            ( Identity
-              ( Abs
-                ( Identity ( ParamNamed ( Name "a" ) ) )
-                ( Identity
-                  ( App
-                    ( Identity
-                      ( App
-                        ( Identity
-                          ( App
-                            ( Identity
-                              ( Abs
-                                ( Identity ( ParamNamed ( Name "dict" ) ) )
-                                ( Identity
-                                  ( ObjectProp
-                                    ( Identity ( Ref ( Local ( Name "dict" ) ) 0 ) )
-                                    ( PropName "apply" )
-                                  )
-                                )
-                              )
-                            )
-                            ( Identity
-                              ( App
-                                ( Identity
-                                  ( ObjectProp
-                                    ( Identity ( Ref ( Local ( Name "dictApplicative" ) ) 0 ) )
-                                    ( PropName "Apply0" )
-                                  )
-                                )
-                                ( Identity
-                                  ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
-                                )
-                              )
-                            )
-                          )
-                        )
-                        ( Identity
-                          ( App
-                            ( Identity
-                              ( App
-                                ( Identity
-                                  ( Ref
-                                    ( Imported
-                                      ( ModuleName "Control.Applicative" )
-                                      ( Name "pure" )
-                                    ) 0
-                                  )
-                                )
-                                ( Identity ( Ref ( Local ( Name "dictApplicative" ) ) 0 ) )
-                              )
-                            )
-                            ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
-                          )
-                        )
-                      )
-                    )
-                    ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
-                  )
-                )
-              )
-            )
-          )
-        )
-      ), Standalone
-      ( QName
-        { qnameModuleName = ModuleName "Control.Monad", qnameName = Name "ap" }, Abs
-        ( Identity ( ParamNamed ( Name "dictMonad" ) ) )
-        ( Identity
-          ( Let
-            ( Standalone
-              ( Identity
-                ( Name "bind" ), Identity
-                ( App
-                  ( Identity
-                    ( Abs
-                      ( Identity ( ParamNamed ( Name "dict" ) ) )
-                      ( Identity
-                        ( ObjectProp
-                          ( Identity ( Ref ( Local ( Name "dict" ) ) 0 ) )
-                          ( PropName "bind" )
-                        )
-                      )
-                    )
-                  )
-                  ( Identity
-                    ( App
-                      ( Identity
-                        ( ObjectProp
-                          ( Identity ( Ref ( Local ( Name "dictMonad" ) ) 0 ) )
-                          ( PropName "Bind1" )
-                        )
-                      )
-                      ( Identity ( Ref ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 ) )
-                    )
-                  )
-                )
-              ) :| []
-            )
-            ( Identity
-              ( Abs
-                ( Identity ( ParamNamed ( Name "f" ) ) )
-                ( Identity
-                  ( Abs
-                    ( Identity ( ParamNamed ( Name "a" ) ) )
-                    ( Identity
-                      ( App
-                        ( Identity
-                          ( App
-                            ( Identity ( Ref ( Local ( Name "bind" ) ) 0 ) )
-                            ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
-                          )
-                        )
-                        ( Identity
-                          ( Abs
-                            ( Identity ( ParamNamed ( Name "f'" ) ) )
-                            ( Identity
-                              ( App
-                                ( Identity
-                                  ( App
-                                    ( Identity ( Ref ( Local ( Name "bind" ) ) 0 ) )
-                                    ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
-                                  )
-                                )
-                                ( Identity
-                                  ( Abs
-                                    ( Identity ( ParamNamed ( Name "a'" ) ) )
-                                    ( Identity
-                                      ( App
-                                        ( Identity
-                                          ( App
-                                            ( Identity
-                                              ( Ref
-                                                ( Imported
-                                                  ( ModuleName "Control.Applicative" )
-                                                  ( Name "pure" )
-                                                ) 0
-                                              )
-                                            )
-                                            ( Identity
-                                              ( App
-                                                ( Identity
-                                                  ( ObjectProp
-                                                    ( Identity
-                                                      ( Ref ( Local ( Name "dictMonad" ) ) 0 )
-                                                    )
-                                                    ( PropName "Applicative0" )
-                                                  )
-                                                )
-                                                ( Identity
-                                                  ( Ref
-                                                    ( Imported
-                                                      ( ModuleName "Prim" )
-                                                      ( Name "undefined" )
-                                                    ) 0
-                                                  )
-                                                )
-                                              )
-                                            )
-                                          )
-                                        )
-                                        ( Identity
-                                          ( App
-                                            ( Identity ( Ref ( Local ( Name "f'" ) ) 0 ) )
-                                            ( Identity ( Ref ( Local ( Name "a'" ) ) 0 ) )
-                                          )
-                                        )
-                                      )
-                                    )
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
       ), RecursiveGroup
       (
         ( QName
@@ -277,8 +89,88 @@ UberModule
                       ( PropName "map", Identity
                         ( App
                           ( Identity
-                            ( Ref
-                              ( Imported ( ModuleName "Control.Applicative" ) ( Name "liftA1" ) ) 0
+                            ( Abs
+                              ( Identity ( ParamNamed ( Name "dictApplicative" ) ) )
+                              ( Identity
+                                ( Abs
+                                  ( Identity ( ParamNamed ( Name "f" ) ) )
+                                  ( Identity
+                                    ( Abs
+                                      ( Identity ( ParamNamed ( Name "a" ) ) )
+                                      ( Identity
+                                        ( App
+                                          ( Identity
+                                            ( App
+                                              ( Identity
+                                                ( App
+                                                  ( Identity
+                                                    ( Abs
+                                                      ( Identity ( ParamNamed ( Name "dict" ) ) )
+                                                      ( Identity
+                                                        ( ObjectProp
+                                                          ( Identity
+                                                            ( Ref ( Local ( Name "dict" ) ) 0 )
+                                                          )
+                                                          ( PropName "apply" )
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                  ( Identity
+                                                    ( App
+                                                      ( Identity
+                                                        ( ObjectProp
+                                                          ( Identity
+                                                            ( Ref
+                                                              ( Local ( Name "dictApplicative" ) ) 0
+                                                            )
+                                                          )
+                                                          ( PropName "Apply0" )
+                                                        )
+                                                      )
+                                                      ( Identity
+                                                        ( Ref
+                                                          ( Imported
+                                                            ( ModuleName "Prim" )
+                                                            ( Name "undefined" )
+                                                          ) 0
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                )
+                                              )
+                                              ( Identity
+                                                ( App
+                                                  ( Identity
+                                                    ( App
+                                                      ( Identity
+                                                        ( Ref
+                                                          ( Imported
+                                                            ( ModuleName "Control.Applicative" )
+                                                            ( Name "pure" )
+                                                          ) 0
+                                                        )
+                                                      )
+                                                      ( Identity
+                                                        ( Ref
+                                                          ( Local ( Name "dictApplicative" ) ) 0
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                  ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
+                                                )
+                                              )
+                                            )
+                                          )
+                                          ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
                             )
                           )
                           ( Identity
@@ -310,7 +202,149 @@ UberModule
                       ( PropName "apply", Identity
                         ( App
                           ( Identity
-                            ( Ref ( Imported ( ModuleName "Control.Monad" ) ( Name "ap" ) ) 0 )
+                            ( Abs
+                              ( Identity ( ParamNamed ( Name "dictMonad" ) ) )
+                              ( Identity
+                                ( Let
+                                  ( Standalone
+                                    ( Identity
+                                      ( Name "bind" ), Identity
+                                      ( App
+                                        ( Identity
+                                          ( Abs
+                                            ( Identity ( ParamNamed ( Name "dict" ) ) )
+                                            ( Identity
+                                              ( ObjectProp
+                                                ( Identity ( Ref ( Local ( Name "dict" ) ) 0 ) )
+                                                ( PropName "bind" )
+                                              )
+                                            )
+                                          )
+                                        )
+                                        ( Identity
+                                          ( App
+                                            ( Identity
+                                              ( ObjectProp
+                                                ( Identity
+                                                  ( Ref ( Local ( Name "dictMonad" ) ) 0 )
+                                                )
+                                                ( PropName "Bind1" )
+                                              )
+                                            )
+                                            ( Identity
+                                              ( Ref
+                                                ( Imported
+                                                  ( ModuleName "Prim" )
+                                                  ( Name "undefined" )
+                                                ) 0
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
+                                    ) :| []
+                                  )
+                                  ( Identity
+                                    ( Abs
+                                      ( Identity ( ParamNamed ( Name "f" ) ) )
+                                      ( Identity
+                                        ( Abs
+                                          ( Identity ( ParamNamed ( Name "a" ) ) )
+                                          ( Identity
+                                            ( App
+                                              ( Identity
+                                                ( App
+                                                  ( Identity ( Ref ( Local ( Name "bind" ) ) 0 ) )
+                                                  ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
+                                                )
+                                              )
+                                              ( Identity
+                                                ( Abs
+                                                  ( Identity ( ParamNamed ( Name "f'" ) ) )
+                                                  ( Identity
+                                                    ( App
+                                                      ( Identity
+                                                        ( App
+                                                          ( Identity
+                                                            ( Ref ( Local ( Name "bind" ) ) 0 )
+                                                          )
+                                                          ( Identity
+                                                            ( Ref ( Local ( Name "a" ) ) 0 )
+                                                          )
+                                                        )
+                                                      )
+                                                      ( Identity
+                                                        ( Abs
+                                                          ( Identity ( ParamNamed ( Name "a'" ) ) )
+                                                          ( Identity
+                                                            ( App
+                                                              ( Identity
+                                                                ( App
+                                                                  ( Identity
+                                                                    ( Ref
+                                                                      ( Imported
+                                                                        ( ModuleName "Control.Applicative" )
+                                                                        ( Name "pure" )
+                                                                      ) 0
+                                                                    )
+                                                                  )
+                                                                  ( Identity
+                                                                    ( App
+                                                                      ( Identity
+                                                                        ( ObjectProp
+                                                                          ( Identity
+                                                                            ( Ref
+                                                                              ( Local
+                                                                                ( Name "dictMonad" )
+                                                                              ) 0
+                                                                            )
+                                                                          )
+                                                                          ( PropName "Applicative0" )
+                                                                        )
+                                                                      )
+                                                                      ( Identity
+                                                                        ( Ref
+                                                                          ( Imported
+                                                                            ( ModuleName "Prim" )
+                                                                            ( Name "undefined" )
+                                                                          ) 0
+                                                                        )
+                                                                      )
+                                                                    )
+                                                                  )
+                                                                )
+                                                              )
+                                                              ( Identity
+                                                                ( App
+                                                                  ( Identity
+                                                                    ( Ref
+                                                                      ( Local ( Name "f'" ) ) 0
+                                                                    )
+                                                                  )
+                                                                  ( Identity
+                                                                    ( Ref
+                                                                      ( Local ( Name "a'" ) ) 0
+                                                                    )
+                                                                  )
+                                                                )
+                                                              )
+                                                            )
+                                                          )
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
                           )
                           ( Identity
                             ( Ref ( Imported ( ModuleName "Effect" ) ( Name "monadEffect" ) ) 0 )

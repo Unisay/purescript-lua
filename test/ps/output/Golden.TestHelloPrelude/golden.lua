@@ -81,31 +81,6 @@ end)()
 local Effect_I_pureE = Effect_I_foreign.pureE
 local Effect_I_bindE = Effect_I_foreign.bindE
 local Control_Applicative_I_pure = function(dict) return dict.pure end
-local Control_Applicative_I_liftA1 = function(dictApplicative)
-  return function(f)
-    return function(a)
-      return (function(dict)
-        return dict.apply
-      end)(dictApplicative.Apply0(Prim_I_undefined))(Control_Applicative_I_pure(dictApplicative)(f))(a)
-    end
-  end
-end
-local Control_Monad_I_ap = function(dictMonad)
-  return (function()
-    local bind = (function(dict)
-      return dict.bind
-    end)(dictMonad.Bind1(Prim_I_undefined))
-    return function(f)
-      return function(a)
-        return bind(f)(function(fPrime)
-          return bind(a)(function(aPrime)
-            return Control_Applicative_I_pure(dictMonad.Applicative0(Prim_I_undefined))(fPrime(aPrime))
-          end)
-        end)
-      end
-    end
-  end)()
-end
 local Effect_I_monadEffect
 local Effect_I_bindEffect
 local Effect_I_applicativeEffect
@@ -124,11 +99,36 @@ Effect_I_applicativeEffect = {
   Apply0 = function(unused0) return Effect_I__S___lazy_applyEffect(0) end
 }
 Effect_I__S___lazy_functorEffect = _S___runtime_lazy("functorEffect")(function( unused0 )
-  return { map = Control_Applicative_I_liftA1(Effect_I_applicativeEffect) }
+  return {
+    map = (function(dictApplicative)
+      return function(f)
+        return function(a)
+          return (function(dict)
+            return dict.apply
+          end)(dictApplicative.Apply0(Prim_I_undefined))(Control_Applicative_I_pure(dictApplicative)(f))(a)
+        end
+      end
+    end)(Effect_I_applicativeEffect)
+  }
 end)
 Effect_I__S___lazy_applyEffect = _S___runtime_lazy("applyEffect")(function( unused1 )
   return {
-    apply = Control_Monad_I_ap(Effect_I_monadEffect),
+    apply = (function(dictMonad)
+      return (function()
+        local bind = (function(dict)
+          return dict.bind
+        end)(dictMonad.Bind1(Prim_I_undefined))
+        return function(f)
+          return function(a)
+            return bind(f)(function(fPrime)
+              return bind(a)(function(aPrime)
+                return Control_Applicative_I_pure(dictMonad.Applicative0(Prim_I_undefined))(fPrime(aPrime))
+              end)
+            end)
+          end
+        end
+      end)()
+    end)(Effect_I_monadEffect),
     Functor0 = function(unused0) return Effect_I__S___lazy_functorEffect(0) end
   }
 end)

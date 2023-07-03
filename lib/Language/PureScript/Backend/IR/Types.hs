@@ -1,5 +1,4 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE UndecidableInstances #-}
 
 module Language.PureScript.Backend.IR.Types where
 
@@ -8,7 +7,7 @@ import Data.Deriving (deriveEq1, deriveOrd1)
 import Data.Map qualified as Map
 import Data.MonoidMap (MonoidMap)
 import Data.MonoidMap qualified as MMap
-import Language.PureScript.Names (ModuleName)
+import Language.PureScript.Names (ModuleName, runModuleName)
 import Quiet (Quiet (..))
 import Prelude hiding (show)
 
@@ -122,6 +121,10 @@ newtype Name = Name {nameToText ∷ Text}
 
 data QName = QName {qnameModuleName ∷ ModuleName, qnameName ∷ Name}
   deriving stock (Eq, Ord, Show)
+
+printQName ∷ QName → Text
+printQName QName {..} =
+  runModuleName qnameModuleName <> "∷" <> nameToText qnameName
 
 newtype TyName = TyName {renderTyName ∷ Text}
   deriving newtype (Eq, Ord)
@@ -528,7 +531,7 @@ countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
       go a <> foldMap (go . unAnn . snd) patches
     IfThenElse (unAnn → p) (unAnn → th) (unAnn → el) →
       go p <> go th <> go el
-    -- Non-recursives:
+    -- Terminals:
     LiteralInt {} → mempty
     LiteralBool {} → mempty
     LiteralFloat {} → mempty
@@ -553,18 +556,31 @@ substitute
   → Exp
   -- ^ The expression to substitute into
   → Exp
-substitute name index replacement expression =
-  case expression of
+substitute name idx replacement = substitute' idx
+ where
+  substitute' index subExpression = case subExpression of
     Ref name' index'
-      | name == name' && index == index' → replacement
+      | name == name' && index == index' →
+          {-
+          trace
+            ( "Substituting "
+                <> show name
+                <> "\n\tfor "
+                <> show replacement
+                <> "\n\tin "
+                <> show expression
+            )
+          -}
+          replacement
       | otherwise → ref name' index'
-    Abs argument@(unAnn → ParamNamed argName) body →
-      Abs argument (body <&> substitute name index' replacement')
-     where
-      index' = if name == Local argName then index + 1 else index
-      replacement' = shift 1 argName 0 replacement
-    Let binds body →
-      Let binds' body'
+    Abs param body →
+      Abs param case unAnn param of
+        ParamUnused → go <$> body
+        ParamNamed pName → substitute name index' replacement' <$> body
+         where
+          index' = if name == Local pName then index + 1 else index
+          replacement' = shift 1 pName 0 replacement
+    Let binds body → Let binds' body'
      where
       binds' =
         binds <&> \grouping →
@@ -598,17 +614,23 @@ substitute name index replacement expression =
     LiteralArray as → LiteralArray (go <<$>> as)
     LiteralObject props → LiteralObject (fmap go <<$>> props)
     ReflectCtor a → ReflectCtor (go <$> a)
-    DataArgumentByIndex idx a → DataArgumentByIndex idx (go <$> a)
+    DataArgumentByIndex i a → DataArgumentByIndex i (go <$> a)
     Eq a b → Eq (go <$> a) (go <$> b)
     ArrayLength a → ArrayLength (go <$> a)
     ArrayIndex a indx → ArrayIndex (go <$> a) indx
     ObjectProp a prop → ObjectProp (go <$> a) prop
     ObjectUpdate a patches → ObjectUpdate (go <$> a) (fmap go <<$>> patches)
     IfThenElse p th el → IfThenElse (go <$> p) (go <$> th) (go <$> el)
-    _ → expression
- where
-  go ∷ Exp → Exp
-  go = substitute name index replacement
+    -- Terminals:
+    LiteralInt {} → subExpression
+    LiteralBool {} → subExpression
+    LiteralFloat {} → subExpression
+    LiteralString {} → subExpression
+    LiteralChar {} → subExpression
+    Ctor {} → subExpression
+    Exception {} → subExpression
+   where
+    go ∷ Exp → Exp = substitute' index
 
 -- | Increase the index of all bound variables matching the given variable name
 shift
