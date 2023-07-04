@@ -50,26 +50,18 @@ fromUberModule
   → ExceptT (Variant e) IO Lua.Chunk
 fromUberModule foreigns needsRuntimeLazy appOrModule uber = do
   foreignBindings ←
-    Linker.uberModuleForeigns uber & foldMapM \(moduleName, path, names) → do
-      moduleForeign ←
-        if null names
-          then pure []
-          else do
-            moduleForeign ←
-              Oops.hoistEither =<< liftIO do
-                Foreign.resolveForModule path (untag foreigns)
-                  <&> first LinkerErrorForeign
-            pure . Lua.ForeignSourceCode . Text.strip . decodeUtf8
-              <$> readFileBS (toFilePath moduleForeign)
-
-      let qfname = qualifyName moduleName [Lua.name|foreign|]
-          foreignTable = Lua.local1 qfname (Lua.thunks moduleForeign)
-          foreignFields =
-            toList names <&> \name →
-              Lua.local1
-                (fromQName moduleName name)
-                (Lua.varField (Lua.varName qfname) (fromName name))
-      pure $ foreignTable : foreignFields
+    forM (Linker.uberModuleForeigns uber) \(moduleName, path) → do
+      moduleForeign ← do
+        moduleForeign ←
+          Oops.hoistEither =<< liftIO do
+            Foreign.resolveForModule path (untag foreigns)
+              <&> first LinkerErrorForeign
+        pure . Lua.ForeignSourceCode . Text.strip . decodeUtf8
+          <$> readFileBS (toFilePath moduleForeign)
+      pure $
+        Lua.local1
+          (qualifyName moduleName [Lua.name|foreign|])
+          (Lua.thunks moduleForeign)
 
   bindings ←
     Linker.uberModuleBindings uber & foldMapM \case

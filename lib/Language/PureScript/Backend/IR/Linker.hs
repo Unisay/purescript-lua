@@ -1,19 +1,20 @@
 module Language.PureScript.Backend.IR.Linker where
 
 import Data.Graph (graphFromEdges', reverseTopSort)
-import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
 import Language.PureScript.Backend.IR.Types
   ( Exp
   , Grouping (..)
   , Index
   , Module (..)
-  , Name
+  , Name (..)
   , Parameter (ParamNamed)
+  , PropName (..)
   , QName (QName)
   , Qualified (Imported, Local)
   , RawExp (..)
   , bindingNames
+  , objectProp
   , ref
   , refImported
   , unAnn
@@ -30,7 +31,7 @@ data LinkMode
 
 data UberModule = UberModule
   { uberModuleBindings ∷ [Grouping (QName, Exp)]
-  , uberModuleForeigns ∷ [(ModuleName, FilePath, NonEmpty Name)]
+  , uberModuleForeigns ∷ [(ModuleName, FilePath)]
   , uberModuleExports ∷ [(Name, Exp)]
   }
   deriving stock (Show, Eq)
@@ -62,23 +63,27 @@ makeUberModule linkMode modules =
 
 qualifiedModuleBindings ∷ Module → [Grouping (QName, Exp)]
 qualifiedModuleBindings Module {moduleName, moduleBindings, moduleForeigns} =
-  moduleBindings <&> \case
+  foreignBindings <> flip fmap moduleBindings \case
     Standalone binding → Standalone $ qualifyBinding binding
     RecursiveGroup bindings → RecursiveGroup $ qualifyBinding <$> bindings
  where
+  foreignModule = refImported moduleName (Name "foreign") 0
+  foreignBindings ∷ [Grouping (QName, Exp)] =
+    moduleForeigns <&> \name →
+      Standalone
+        ( QName moduleName name
+        , objectProp foreignModule (PropName (nameToText name))
+        )
+
   qualifyBinding ∷ (Name, Exp) → (QName, Exp)
   qualifyBinding = bimap (QName moduleName) (qualifyTopRefs moduleName topRefs)
-
-  topRefs ∷ Map Name Index
-  topRefs =
-    Map.fromList $
+   where
+    topRefs ∷ Map Name Index = Map.fromList do
       (,0) <$> ((moduleBindings >>= bindingNames) <> moduleForeigns)
 
-qualifiedModuleForeigns ∷ Module → [(ModuleName, FilePath, NonEmpty Name)]
+qualifiedModuleForeigns ∷ Module → [(ModuleName, FilePath)]
 qualifiedModuleForeigns Module {moduleName, modulePath, moduleForeigns} =
-  case NE.nonEmpty moduleForeigns of
-    Nothing → []
-    Just foreignNames → [(moduleName, modulePath, foreignNames)]
+  [(moduleName, modulePath) | not (null moduleForeigns)]
 
 qualifyTopRefs ∷ ModuleName → Map Name Index → Exp → Exp
 qualifyTopRefs moduleName = go

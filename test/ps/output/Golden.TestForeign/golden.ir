@@ -1,7 +1,10 @@
 UberModule
   { uberModuleBindings = [], uberModuleForeigns =
+    [ ( ModuleName "Golden.TestForeign", "golden/Golden/TestForeign.purs" ) ], uberModuleExports =
     [
-      ( ModuleName "Golden.TestForeign", "golden/Golden/TestForeign.purs", Name "foo" :| [] )
-    ], uberModuleExports =
-    [ ( Name "foo", Ref ( Imported ( ModuleName "Golden.TestForeign" ) ( Name "foo" ) ) 0 ) ]
+      ( Name "foo", ObjectProp
+        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestForeign" ) ( Name "foreign" ) ) 0 ) )
+        ( PropName "foo" )
+      )
+    ]
   }

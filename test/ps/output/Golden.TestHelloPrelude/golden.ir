@@ -31,7 +31,10 @@ UberModule
             { qnameModuleName = ModuleName "Effect", qnameName = Name "bindEffect" }, LiteralObject
             [
               ( PropName "bind", Identity
-                ( Ref ( Imported ( ModuleName "Effect" ) ( Name "bindE" ) ) 0 )
+                ( ObjectProp
+                  ( Identity ( Ref ( Imported ( ModuleName "Effect" ) ( Name "foreign" ) ) 0 ) )
+                  ( PropName "bindE" )
+                )
               ),
               ( PropName "Apply0", Identity
                 ( Abs ( Identity ParamUnused )
@@ -54,7 +57,10 @@ UberModule
             }, LiteralObject
             [
               ( PropName "pure", Identity
-                ( Ref ( Imported ( ModuleName "Effect" ) ( Name "pureE" ) ) 0 )
+                ( ObjectProp
+                  ( Identity ( Ref ( Imported ( ModuleName "Effect" ) ( Name "foreign" ) ) 0 ) )
+                  ( PropName "pureE" )
+                )
               ),
               ( PropName "Apply0", Identity
                 ( Abs ( Identity ParamUnused )
@@ -378,10 +384,22 @@ UberModule
       )
     ], uberModuleForeigns =
     [
-      ( ModuleName "Data.Unit", ".spago/prelude/v6.0.3/src/Data/Unit.purs", Name "unit" :| [] ),
-      ( ModuleName "Effect", ".spago/effect/v4.0.0/src/Effect.purs", Name "pureE" :|
-        [ Name "bindE" ]
-      )
+      ( ModuleName "Data.Symbol", ".spago/prelude/v6.0.3/src/Data/Symbol.purs" ),
+      ( ModuleName "Data.Unit", ".spago/prelude/v6.0.3/src/Data/Unit.purs" ),
+      ( ModuleName "Record.Unsafe", ".spago/prelude/v6.0.3/src/Record/Unsafe.purs" ),
+      ( ModuleName "Data.HeytingAlgebra", ".spago/prelude/v6.0.3/src/Data/HeytingAlgebra.purs" ),
+      ( ModuleName "Data.Eq", ".spago/prelude/v6.0.3/src/Data/Eq.purs" ),
+      ( ModuleName "Data.Semigroup", ".spago/prelude/v6.0.3/src/Data/Semigroup.purs" ),
+      ( ModuleName "Data.Show", ".spago/prelude/v6.0.3/src/Data/Show.purs" ),
+      ( ModuleName "Data.Semiring", ".spago/prelude/v6.0.3/src/Data/Semiring.purs" ),
+      ( ModuleName "Data.Ring", ".spago/prelude/v6.0.3/src/Data/Ring.purs" ),
+      ( ModuleName "Data.Ord", ".spago/prelude/v6.0.3/src/Data/Ord.purs" ),
+      ( ModuleName "Data.Functor", ".spago/prelude/v6.0.3/src/Data/Functor.purs" ),
+      ( ModuleName "Control.Apply", ".spago/prelude/v6.0.3/src/Control/Apply.purs" ),
+      ( ModuleName "Control.Bind", ".spago/prelude/v6.0.3/src/Control/Bind.purs" ),
+      ( ModuleName "Data.Bounded", ".spago/prelude/v6.0.3/src/Data/Bounded.purs" ),
+      ( ModuleName "Data.EuclideanRing", ".spago/prelude/v6.0.3/src/Data/EuclideanRing.purs" ),
+      ( ModuleName "Effect", ".spago/effect/v4.0.0/src/Effect.purs" )
     ], uberModuleExports =
     [
       ( Name "main", App
@@ -398,7 +416,14 @@ UberModule
                     ( Identity ( Ref ( Local ( Name "dictApplicative" ) ) 0 ) )
                   )
                 )
-                ( Identity ( Ref ( Imported ( ModuleName "Data.Unit" ) ( Name "unit" ) ) 0 ) )
+                ( Identity
+                  ( ObjectProp
+                    ( Identity
+                      ( Ref ( Imported ( ModuleName "Data.Unit" ) ( Name "foreign" ) ) 0 )
+                    )
+                    ( PropName "unit" )
+                  )
+                )
               )
             )
           )

@@ -136,6 +136,7 @@ newtype CtorName = CtorName {renderCtorName ∷ Text}
   deriving stock (Generic)
   deriving (Show) via (Quiet CtorName)
 
+-- TODO: is it used at all?
 newtype FieldName = FieldName {renderFieldName ∷ Text}
   deriving newtype (Eq, Ord)
   deriving stock (Generic)
@@ -157,69 +158,7 @@ qualifiedQName QName {qnameModuleName, qnameName} =
 -- Instances -------------------------------------------------------------------
 
 $(deriveEq1 ''Grouping)
--- $(deriveEq1 ''RawExp)
-
 $(deriveOrd1 ''Grouping)
--- $(deriveOrd1 ''RawExp)
-
-{-
-\$(deriveShow1 ''Grouping)
--- $(deriveShow1 ''RawExp)
-
-instance Show a ⇒ Show (RawExp a) where
-  show ∷ RawExp a → String
-  show = \case
-    LiteralInt i →
-      "LiteralInt (" +|| i ||+ ")"
-    LiteralFloat f →
-      "LiteralFloat (" +|| f ||+ ")"
-    LiteralString s →
-      "LiteralString (" +|| s ||+ ")"
-    LiteralChar c →
-      "LiteralChar (" +|| c ||+ ")"
-    LiteralBool b →
-      "LiteralBool (" +|| b ||+ ")"
-    LiteralArray as →
-      "LiteralArray (" +|| as ||+ ")"
-    LiteralObject ps →
-      "LiteralObject (" +|| ps ||+ ")"
-    Ctor algebraicType tyName ctorName fieldNames →
-      "Ctor ("
-        +|| algebraicType
-        ||+ ") ("
-        +|| tyName
-        ||+ ") ("
-        +|| ctorName
-        ||+ ") ("
-        +|| fieldNames
-        ||+ ")"
-    ReflectCtor a →
-      "ReflectCtor (" +|| a ||+ ")"
-    Eq a b →
-      "Eq (" +|| a ||+ ") (" +|| b ||+ ")"
-    DataArgumentByIndex index a →
-      "DataArgumentByIndex (" +|| index ||+ ") (" +|| a ||+ ")"
-    ArrayIndex a index →
-      "ArrayIndex (" +|| a ||+ ") (" +|| index ||+ ")"
-    ArrayLength a →
-      "ArrayLength (" +|| a ||+ ")"
-    ObjectProp a propName →
-      "ObjectProp (" +|| a ||+ ") (" +|| propName ||+ ")"
-    ObjectUpdate a patches →
-      "ObjectUpdate (" +|| a ||+ ") (" +|| patches ||+ ")"
-    Abs argument a →
-      "Abs (" +|| argument ||+ ") (" +|| a ||+ ")"
-    App a b →
-      "App (" +|| a ||+ ") (" +|| b ||+ ")"
-    Ref qname index →
-      "Ref (" +|| qname ||+ ") (" +|| index ||+ ")"
-    Let bindings a →
-      "Let (" +|| bindings ||+ ") (" +|| a ||+ ")"
-    IfThenElse p t e →
-      "IfThenElse (" +|| p ||+ ") (" +|| t ||+ ") (" +|| e ||+ ")"
-    Exception msg →
-      "Exception (" +|| msg ||+ ")"
--}
 
 deriving stock instance Show Module
 

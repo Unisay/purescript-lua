@@ -35,24 +35,11 @@ eliminateDeadCode uber@UberModule {..} =
   --     trace ("\nadjacencyList:\n" <> shower adjacencyList <> "\n") $
   --       trace ("\nreachableIds:\n" <> shower reachableIds <> "\n\n") $
   uber
-    { uberModuleForeigns = preservedForeigns
+    { uberModuleForeigns
     , uberModuleBindings = preserveBindings
     , uberModuleExports = preservedExports
     }
  where
-  preservedForeigns ∷ [(ModuleName, FilePath, NonEmpty Name)]
-  preservedForeigns = do
-    (modname, path, foreignNames) ← annotatedForeigns
-    case NE.nonEmpty (preservedNames foreignNames) of
-      Nothing → []
-      Just names → [(modname, path, names)]
-   where
-    preservedNames ∷ [(Id, Name)] → [Name]
-    preservedNames foreignNames = do
-      (idName, foreignName) ← foreignNames
-      guard $ idName `Set.member` reachableIds
-      pure foreignName
-
   preserveBindings ∷ [Grouping (QName, Exp)]
   preserveBindings = do
     grouping ← annotatedBindings
@@ -78,15 +65,12 @@ eliminateDeadCode uber@UberModule {..} =
 
   annotatedExports ∷ [(Id, Name, AExp)]
   annotatedBindings ∷ [Grouping (Id, QName, AExp)]
-  annotatedForeigns ∷ [(ModuleName, FilePath, [(Id, Name)])]
-  (annotatedExports, annotatedBindings, annotatedForeigns) = runAnnM do
+  (annotatedExports, annotatedBindings) = runAnnM do
     annExports ← forM uberModuleExports \(name, expr) →
       (,name,) <$> nextId <*> annotateExp expr
     annBindings ← forM uberModuleBindings $ traverse \(qname, expr) →
       (,qname,) <$> nextId <*> annotateExp expr
-    annForeignNames ← forM uberModuleForeigns \(modname, path, names) →
-      (modname,path,) <$> forM (toList names) \name → fmap (,name) nextId
-    pure (annExports, annBindings, annForeignNames)
+    pure (annExports, annBindings)
 
   dceAnnotatedExp ∷ AExp → Exp
   dceAnnotatedExp =
@@ -141,10 +125,7 @@ eliminateDeadCode uber@UberModule {..} =
 
   adjacencyList ∷ [((), Id, [Id])]
   adjacencyList =
-    DL.toList $
-      adjacencyListFromExports
-        <> adjacencyListFromBindings
-        <> adjacencyListFromForeigns
+    DL.toList $ adjacencyListFromExports <> adjacencyListFromBindings
 
   adjacencyListFromExports ∷ DList ((), Id, [Id])
   adjacencyListFromExports =
@@ -160,11 +141,6 @@ eliminateDeadCode uber@UberModule {..} =
         recBinds & foldMap \(nodeId, _qname, expr) →
           adjacencyListForExpr bindingsInScope (nodeId, expr)
 
-  adjacencyListFromForeigns ∷ DList ((), Id, [Id])
-  adjacencyListFromForeigns =
-    annotatedForeigns & foldMap \(_modname, _path, names) →
-      DL.fromList (((),,[]) . fst <$> names)
-
   bindingsInScope ∷ Map (Qualified Name, Index) Id
   bindingsInScope =
     Map.fromList $
@@ -172,10 +148,6 @@ eliminateDeadCode uber@UberModule {..} =
       | grouping ← annotatedBindings
       , (bindId, QName modname name, _boundExpr) ← listGrouping grouping
       ]
-        <> [ ((Imported modname name, 0), foreignNameId)
-           | (modname, _path, foreignNames) ← annotatedForeigns
-           , (foreignNameId, name) ← foreignNames
-           ]
 
   adjacencyListFromExport ∷ Id → AExp → DList ((), Id, [Id])
   adjacencyListFromExport = curry (adjacencyListForExpr bindingsInScope)
