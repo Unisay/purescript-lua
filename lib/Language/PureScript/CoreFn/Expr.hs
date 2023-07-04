@@ -62,7 +62,7 @@ data Binder a
     NamedBinder a Ident (Binder a)
   deriving stock (Eq, Ord, Show, Functor)
 
-extractBinderAnn :: Binder a -> a
+extractBinderAnn ∷ Binder a → a
 extractBinderAnn (NullBinder a) = a
 extractBinderAnn (LiteralBinder a _) = a
 extractBinderAnn (VarBinder a _) = a
@@ -91,10 +91,10 @@ type Guard a = Expr a
 An alternative in a case statement
 -}
 data CaseAlternative a = CaseAlternative
-  { caseAlternativeBinders :: [Binder a]
+  { caseAlternativeBinders ∷ [Binder a]
   -- ^
   -- A collection of binders with which to match the inputs
-  , caseAlternativeResult :: Either [(Guard a, Expr a)] (Expr a)
+  , caseAlternativeResult ∷ Either [(Guard a, Expr a)] (Expr a)
   -- ^
   -- The result expression or a collect of guarded expressions
   }
@@ -134,7 +134,7 @@ data Literal a
 {- |
 Extract the annotation from a term
 -}
-extractAnn :: Expr a -> a
+extractAnn ∷ Expr a → a
 extractAnn (Literal a _) = a
 extractAnn (Constructor a _ _ _) = a
 extractAnn (Accessor a _ _) = a
@@ -148,7 +148,7 @@ extractAnn (Let a _ _) = a
 {- |
 Modify the annotation on a term
 -}
-modifyAnn :: (a -> a) -> Expr a -> Expr a
+modifyAnn ∷ (a → a) → Expr a → Expr a
 modifyAnn f (Literal a b) = Literal (f a) b
 modifyAnn f (Constructor a b c d) = Constructor (f a) b c d
 modifyAnn f (Accessor a b c) = Accessor (f a) b c

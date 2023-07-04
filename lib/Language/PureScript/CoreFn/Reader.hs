@@ -28,52 +28,52 @@ import Path
 import Path.IO (doesFileExist, makeAbsolute)
 
 readModuleRecursively
-  :: forall e
+  ∷ ∀ e
    . e `CouldBeAnyOf` '[ModuleNotFound, ModuleDecodingErr]
-  => Tagged "output" (SomeBase Dir)
-  -> PS.ModuleName
-  -> ExceptT (Oops.Variant e) IO (Map PS.ModuleName (Cfn.Module Cfn.Ann))
+  ⇒ Tagged "output" (SomeBase Dir)
+  → PS.ModuleName
+  → ExceptT (Oops.Variant e) IO (Map PS.ModuleName (Cfn.Module Cfn.Ann))
 readModuleRecursively output = recurse mempty . pure
  where
   recurse
-    :: Map PS.ModuleName (Cfn.Module Cfn.Ann)
-    -> [PS.ModuleName]
-    -> ExceptT (Oops.Variant e) IO (Map PS.ModuleName (Cfn.Module Cfn.Ann))
+    ∷ Map PS.ModuleName (Cfn.Module Cfn.Ann)
+    → [PS.ModuleName]
+    → ExceptT (Oops.Variant e) IO (Map PS.ModuleName (Cfn.Module Cfn.Ann))
   recurse loaded = \case
-    [] -> pure loaded
+    [] → pure loaded
     modName : otherNames
-      | "Prim" `Text.isPrefixOf` PS.runModuleName modName ->
+      | "Prim" `Text.isPrefixOf` PS.runModuleName modName →
           recurse loaded otherNames
     modName : otherNames
-      | Map.member modName loaded ->
+      | Map.member modName loaded →
           recurse loaded otherNames
-    modName : otherNames ->
-      readModule output modName >>= \m ->
+    modName : otherNames →
+      readModule output modName >>= \m →
         recurse
           (Map.insert modName m loaded)
           (otherNames <> (fmap snd . Cfn.moduleImports) m)
 
 readModule
-  :: e `CouldBeAnyOf` '[ModuleNotFound, ModuleDecodingErr]
-  => Tagged "output" (SomeBase Dir)
-  -> PS.ModuleName
-  -> ExceptT (Variant e) IO (Cfn.Module Cfn.Ann)
+  ∷ e `CouldBeAnyOf` '[ModuleNotFound, ModuleDecodingErr]
+  ⇒ Tagged "output" (SomeBase Dir)
+  → PS.ModuleName
+  → ExceptT (Variant e) IO (Cfn.Module Cfn.Ann)
 readModule output modName = do
-  path <- modulePath output modName
+  path ← modulePath output modName
   lift (Json.eitherDecodeFileStrict @ModuleWithVersion (toFilePath path))
     >>= either (throw . ModuleDecodingErr path) (pure . moduleWithoutVersion)
 
 modulePath
-  :: e `CouldBe` ModuleNotFound
-  => Tagged "output" (SomeBase Dir)
-  -> PS.ModuleName
-  -> ExceptT (Variant e) IO (Path Abs File)
+  ∷ e `CouldBe` ModuleNotFound
+  ⇒ Tagged "output" (SomeBase Dir)
+  → PS.ModuleName
+  → ExceptT (Variant e) IO (Path Abs File)
 modulePath psOutPath modName = do
-  psOutput <-
+  psOutput ←
     case unTagged psOutPath of
-      Abs a -> pure a
-      Rel r -> makeAbsolute r
-  prd <- parseRelDir (toString (PS.runModuleName modName))
+      Abs a → pure a
+      Rel r → makeAbsolute r
+  prd ← parseRelDir (toString (PS.runModuleName modName))
   let path = psOutput </> prd </> $(mkRelFile "corefn.json")
   unlessM (doesFileExist path) $ throw $ ModuleNotFound path
   pure path

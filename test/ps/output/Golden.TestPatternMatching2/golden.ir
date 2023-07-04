@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleExports =
     [
       ( Name "Zero", Ctor SumType ( TyName "N" ) ( CtorName "Zero" ) [] ),
       ( Name "Succ", Ctor SumType ( TyName "N" ) ( CtorName "Succ" ) [ FieldName "value0" ] ),

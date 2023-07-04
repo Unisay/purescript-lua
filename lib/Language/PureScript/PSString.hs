@@ -38,7 +38,7 @@ surrogates in JSON strings, the ToJSON instance for PSString produces JSON
 strings where that would be safe (i.e. when there are no lone surrogates),
 and arrays of UTF-16 code units (integers) otherwise.
 -}
-newtype PSString = PSString {toUTF16CodeUnits :: [Word16]}
+newtype PSString = PSString {toUTF16CodeUnits ∷ [Word16]}
   deriving stock (Eq, Ord, Generic)
   deriving newtype (Semigroup, Monoid)
 
@@ -53,14 +53,14 @@ loss of information as those lone surrogates will be replaced with U+FFFD
 REPLACEMENT CHARACTER. Because this function requires care to use correctly,
 we do not export it.
 -}
-codePoints :: PSString -> String
+codePoints ∷ PSString → String
 codePoints = map (either (Char.chr . fromIntegral) id) . decodeStringEither
 
 {- |
 Decode a PSString as UTF-16 text. Lone surrogates will be replaced with
 U+FFFD REPLACEMENT CHARACTER
 -}
-decodeStringWithReplacement :: PSString -> String
+decodeStringWithReplacement ∷ PSString → String
 decodeStringWithReplacement = map (fromRight '\xFFFD') . decodeStringEither
 
 {- |
@@ -68,10 +68,10 @@ Decode a PSString as UTF-16. Lone surrogates in the input are represented in
 the output with the Left constructor; characters which were successfully
 decoded are represented with the Right constructor.
 -}
-decodeStringEither :: PSString -> [Either Word16 Char]
+decodeStringEither ∷ PSString → [Either Word16 Char]
 decodeStringEither = unfoldr decode . toUTF16CodeUnits
  where
-  decode :: [Word16] -> Maybe (Either Word16 Char, [Word16])
+  decode ∷ [Word16] → Maybe (Either Word16 Char, [Word16])
   decode (h : l : rest)
     | isLead h && isTrail l =
         Just (Right (unsurrogate h l), rest)
@@ -79,7 +79,7 @@ decodeStringEither = unfoldr decode . toUTF16CodeUnits
   decode (c : rest) = Just (Right (toChar c), rest)
   decode [] = Nothing
 
-  unsurrogate :: Word16 -> Word16 -> Char
+  unsurrogate ∷ Word16 → Word16 → Char
   unsurrogate h l =
     toEnum $
       (toInt h - 0xD800) * 0x400
@@ -90,33 +90,33 @@ decodeStringEither = unfoldr decode . toUTF16CodeUnits
 Attempt to decode a PSString as UTF-16 text. This will fail (returning
 Nothing) if the argument contains lone surrogates.
 -}
-decodeString :: PSString -> Maybe Text
+decodeString ∷ PSString → Maybe Text
 decodeString =
   rightToMaybe . decodeEither . BS.pack . concatMap unpair . toUTF16CodeUnits
  where
   unpair w = [highByte w, lowByte w]
 
-  lowByte :: Word16 -> Word8
+  lowByte ∷ Word16 → Word8
   lowByte = fromIntegral
 
-  highByte :: Word16 -> Word8
+  highByte ∷ Word16 → Word8
   highByte = fromIntegral . (`shiftR` 8)
 
   -- Based on a similar function from Data.Text.Encoding for utf8. This is a
   -- safe usage of unsafePerformIO because there are no side effects after
   -- handling any thrown UnicodeExceptions.
-  decodeEither :: ByteString -> Either UnicodeException Text
+  decodeEither ∷ ByteString → Either UnicodeException Text
   decodeEither = unsafePerformIO . try . evaluate . decodeUtf16BE
 
 instance IsString PSString where
   fromString a = PSString $ concatMap encodeUTF16 a
    where
-    surrogates :: Char -> (Word16, Word16)
+    surrogates ∷ Char → (Word16, Word16)
     surrogates c = (toWord (h + 0xD800), toWord (l + 0xDC00))
      where
       (h, l) = divMod (fromEnum c - 0x10000) 0x400
 
-    encodeUTF16 :: Char -> [Word16]
+    encodeUTF16 ∷ Char → [Word16]
     encodeUTF16 c | fromEnum c > 0xFFFF = [high, low]
      where
       (high, low) = surrogates c
@@ -125,8 +125,8 @@ instance IsString PSString where
 instance A.ToJSON PSString where
   toJSON str =
     case decodeString str of
-      Just t -> A.toJSON t
-      Nothing -> A.toJSON (toUTF16CodeUnits str)
+      Just t → A.toJSON t
+      Nothing → A.toJSON (toUTF16CodeUnits str)
 
 instance A.FromJSON PSString where
   parseJSON a = jsonString <|> arrayOfCodeUnits
@@ -135,13 +135,13 @@ instance A.FromJSON PSString where
 
     arrayOfCodeUnits = PSString <$> parseArrayOfCodeUnits a
 
-    parseArrayOfCodeUnits :: A.Value -> A.Parser [Word16]
+    parseArrayOfCodeUnits ∷ A.Value → A.Parser [Word16]
     parseArrayOfCodeUnits =
       A.withArray
         "array of UTF-16 code units"
         (traverse parseCodeUnit . V.toList)
 
-    parseCodeUnit :: A.Value -> A.Parser Word16
+    parseCodeUnit ∷ A.Value → A.Parser Word16
     parseCodeUnit b =
       A.withScientific
         "two-byte non-negative integer"
@@ -151,10 +151,10 @@ instance A.FromJSON PSString where
 {- |
 Pretty print a PSString, using PureScript escape sequences.
 -}
-prettyPrintString :: PSString -> Text
+prettyPrintString ∷ PSString → Text
 prettyPrintString s = "\"" <> foldMap encodeChar (decodeStringEither s) <> "\""
  where
-  encodeChar :: Either Word16 Char -> Text
+  encodeChar ∷ Either Word16 Char → Text
   encodeChar (Left c) = "\\x" <> showHex' 6 c
   encodeChar (Right c)
     | c == '\t' = "\\t"
@@ -169,7 +169,7 @@ prettyPrintString s = "\"" <> foldMap encodeChar (decodeStringEither s) <> "\""
   -- Note we do not use Data.Char.isPrint here because that includes things
   -- like zero-width spaces and combining punctuation marks, which could be
   -- confusing to print unescaped.
-  shouldPrint :: Char -> Bool
+  shouldPrint ∷ Char → Bool
   -- The standard space character, U+20 SPACE, is the only space char we should
   -- print without escaping
   shouldPrint ' ' = True
@@ -199,10 +199,10 @@ prettyPrintString s = "\"" <> foldMap encodeChar (decodeStringEither s) <> "\""
 Pretty print a PSString, using JavaScript escape sequences. Intended for
 use in compiled JS output.
 -}
-prettyPrintStringJS :: PSString -> Text
+prettyPrintStringJS ∷ PSString → Text
 prettyPrintStringJS s = "\"" <> foldMap encodeChar (toUTF16CodeUnits s) <> "\""
  where
-  encodeChar :: Word16 -> Text
+  encodeChar ∷ Word16 → Text
   encodeChar c | c > 0xFF = "\\u" <> showHex' 4 c
   encodeChar c | c > 0x7E || c < 0x20 = "\\x" <> showHex' 2 c
   encodeChar c | toChar c == '\b' = "\\b"
@@ -215,28 +215,28 @@ prettyPrintStringJS s = "\"" <> foldMap encodeChar (toUTF16CodeUnits s) <> "\""
   encodeChar c | toChar c == '\\' = "\\\\"
   encodeChar c = T.singleton $ toChar c
 
-showHex' :: Enum a => Int -> a -> Text
+showHex' ∷ Enum a ⇒ Int → a → Text
 showHex' width c =
   let hs = showHex (fromEnum c) ""
    in T.pack (replicate (width - length hs) '0' <> hs)
 
-isLead :: Word16 -> Bool
+isLead ∷ Word16 → Bool
 isLead h = h >= 0xD800 && h <= 0xDBFF
 
-isTrail :: Word16 -> Bool
+isTrail ∷ Word16 → Bool
 isTrail l = l >= 0xDC00 && l <= 0xDFFF
 
-isSurrogate :: Word16 -> Bool
+isSurrogate ∷ Word16 → Bool
 isSurrogate c = isLead c || isTrail c
 
-toChar :: Word16 -> Char
+toChar ∷ Word16 → Char
 toChar = toEnum . fromIntegral
 
-toWord :: Int -> Word16
+toWord ∷ Int → Word16
 toWord = fromIntegral
 
-toInt :: Word16 -> Int
+toInt ∷ Word16 → Int
 toInt = fromIntegral
 
-mkString :: Text -> PSString
+mkString ∷ Text → PSString
 mkString = fromString . T.unpack

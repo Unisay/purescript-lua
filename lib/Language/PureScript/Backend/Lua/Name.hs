@@ -19,17 +19,17 @@ import Language.Haskell.TH.Quote (QuasiQuoter (..))
 import Prettyprinter (Pretty)
 import Prelude hiding (toText)
 
-newtype Name = Name {toText :: Text}
+newtype Name = Name {toText ∷ Text}
   deriving newtype (Eq, Ord, Show, Pretty)
 
-name :: QuasiQuoter
+name ∷ QuasiQuoter
 name =
   QuasiQuoter
-    { quoteExp = \(s :: String) ->
+    { quoteExp = \(s ∷ String) →
         case fromText (fromString s) of
-          Nothing ->
+          Nothing →
             error "Language.PureScript.Backend.Lua.Name: invalid name"
-          Just (Name n) -> [|Name n|]
+          Just (Name n) → ⟦Name n⟧
     , quotePat =
         const $
           error "Language.PureScript.Backend.Lua.Name.quotePat: unsupported"
@@ -41,21 +41,21 @@ name =
           error "Language.PureScript.Backend.Lua.Name.quoteDec: unsupported"
     }
 
-fromText :: Text -> Maybe Name
+fromText ∷ Text → Maybe Name
 fromText t =
   case Text.strip t of
     n
       | Text.length n > 0
       , checkFirst (Text.head n)
       , Text.all checkRest (Text.tail n)
-      , Set.notMember n reservedNames ->
+      , Set.notMember n reservedNames →
           Just (Name n)
-    _ -> Nothing
+    _ → Nothing
  where
   checkFirst c = Char.isAlpha c || c == '_'
   checkRest c = Char.isDigit c || checkFirst c
 
-makeSafe :: HasCallStack => Text -> Name
+makeSafe ∷ HasCallStack ⇒ Text → Name
 makeSafe unsafe = unsafeName safest
  where
   safest =
@@ -67,7 +67,7 @@ makeSafe unsafe = unsafeName safest
       . Text.replace "." "_"
       $ Text.replace "'" "Prime" unsafe
 
-unsafeName :: HasCallStack => Text -> Name
+unsafeName ∷ HasCallStack ⇒ Text → Name
 unsafeName n =
   fromMaybe
     ( error . unwords $
@@ -78,13 +78,13 @@ unsafeName n =
     )
     (fromText n)
 
-specialNameType :: Name
+specialNameType ∷ Name
 specialNameType = Name "$type"
 
-specialNameCtor :: Name
+specialNameCtor ∷ Name
 specialNameCtor = Name "$ctor"
 
-reservedNames :: Set Text
+reservedNames ∷ Set Text
 reservedNames =
   Set.fromList
     [ "and"
@@ -111,5 +111,5 @@ reservedNames =
     , "while"
     ]
 
-join2 :: Name -> Name -> Name
+join2 ∷ Name → Name → Name
 join2 (Name a) (Name b) = Name (a <> "_I_" <> b)

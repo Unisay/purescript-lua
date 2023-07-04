@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleExports =
     [
       ( Name "U", Ctor ProductType ( TyName "Unit" ) ( CtorName "U" ) [] ),
       ( Name "P3", Ctor ProductType

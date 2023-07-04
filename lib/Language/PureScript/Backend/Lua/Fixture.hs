@@ -9,16 +9,16 @@ import Language.PureScript.Backend.Lua.Types hiding (var)
 --------------------------------------------------------------------------------
 -- Hard-coded Lua pieces -------------------------------------------------------
 
-prim :: Statement
+prim ∷ Statement
 prim = local1 (Name.join2 [name|Prim|] [name|undefined|]) Nil
 
-runtimeLazy :: Statement
+runtimeLazy ∷ Statement
 runtimeLazy = local1 [name|_S___runtime_lazy|] do
-  let fun :: Name -> [Statement] -> Exp
+  let fun ∷ Name → [Statement] → Exp
       fun n = Function [((), ParamNamed n)] . fmap ann
-      var :: Name -> Var
+      var ∷ Name → Var
       var = VarName
-      ret :: Exp -> Statement
+      ret ∷ Exp → Statement
       ret = Return . ann
   fun [name|name|] . pure . ret . fun [name|init|] $
     [ local1 [name|state|] (Integer 0)

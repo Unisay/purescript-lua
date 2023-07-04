@@ -31,7 +31,6 @@ data LinkMode
 
 data UberModule = UberModule
   { uberModuleBindings ∷ [Grouping (QName, Exp)]
-  , uberModuleForeigns ∷ [(ModuleName, FilePath)]
   , uberModuleExports ∷ [(Name, Exp)]
   }
   deriving stock (Show, Eq)
@@ -41,15 +40,14 @@ data UberModule = UberModule
 
 makeUberModule ∷ LinkMode → [Module] → UberModule
 makeUberModule linkMode modules =
-  UberModule
-    { uberModuleBindings
-    , uberModuleForeigns
-    , uberModuleExports
-    }
+  UberModule {uberModuleBindings, uberModuleExports}
  where
   sortedModules = topoSorted modules
-  uberModuleBindings = concatMap qualifiedModuleBindings sortedModules
-  uberModuleForeigns = concatMap qualifiedModuleForeigns sortedModules
+
+  uberModuleBindings =
+    concatMap foreignBindings sortedModules
+      <> concatMap qualifiedModuleBindings sortedModules
+
   uberModuleExports ∷ [(Name, Exp)] =
     case linkMode of
       LinkAsApplication moduleName name →
@@ -61,29 +59,40 @@ makeUberModule linkMode modules =
         , exportedName ← moduleExports
         ]
 
-qualifiedModuleBindings ∷ Module → [Grouping (QName, Exp)]
-qualifiedModuleBindings Module {moduleName, moduleBindings, moduleForeigns} =
-  foreignBindings <> flip fmap moduleBindings \case
-    Standalone binding → Standalone $ qualifyBinding binding
-    RecursiveGroup bindings → RecursiveGroup $ qualifyBinding <$> bindings
+foreignBindings ∷ Module → [Grouping (QName, Exp)]
+foreignBindings Module {moduleName, modulePath, moduleForeigns} =
+  foreignModuleBinding <> foreignNamesBindings
  where
-  foreignModule = refImported moduleName (Name "foreign") 0
-  foreignBindings ∷ [Grouping (QName, Exp)] =
+  foreignName = Name "foreign"
+  foreignModuleRef = refImported moduleName foreignName 0
+
+  foreignModuleBinding ∷ [Grouping (QName, Exp)]
+  foreignModuleBinding =
+    [ Standalone
+      ( QName moduleName foreignName
+      , ForeignImport moduleName modulePath
+      )
+    | not (null moduleForeigns)
+    ]
+
+  foreignNamesBindings ∷ [Grouping (QName, Exp)] =
     moduleForeigns <&> \name →
       Standalone
         ( QName moduleName name
-        , objectProp foreignModule (PropName (nameToText name))
+        , objectProp foreignModuleRef (PropName (nameToText name))
         )
 
+qualifiedModuleBindings ∷ Module → [Grouping (QName, Exp)]
+qualifiedModuleBindings Module {moduleName, moduleBindings, moduleForeigns} =
+  moduleBindings <&> \case
+    Standalone binding → Standalone $ qualifyBinding binding
+    RecursiveGroup bindings → RecursiveGroup $ qualifyBinding <$> bindings
+ where
   qualifyBinding ∷ (Name, Exp) → (QName, Exp)
   qualifyBinding = bimap (QName moduleName) (qualifyTopRefs moduleName topRefs)
    where
     topRefs ∷ Map Name Index = Map.fromList do
       (,0) <$> ((moduleBindings >>= bindingNames) <> moduleForeigns)
-
-qualifiedModuleForeigns ∷ Module → [(ModuleName, FilePath)]
-qualifiedModuleForeigns Module {moduleName, modulePath, moduleForeigns} =
-  [(moduleName, modulePath) | not (null moduleForeigns)]
 
 qualifyTopRefs ∷ ModuleName → Map Name Index → Exp → Exp
 qualifyTopRefs moduleName = go

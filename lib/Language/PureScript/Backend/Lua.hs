@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module Language.PureScript.Backend.Lua
   ( fromUberModule
   , fromExp
@@ -33,7 +31,7 @@ import Language.PureScript.Names (ModuleName, runModuleName)
 import Path (Abs, Dir, Path, toFilePath)
 import Prelude hiding (exp, local)
 
-type LuaM a = StateT Natural (Either Error) a
+type LuaM e a = StateT Natural (ExceptT (Variant e) IO) a
 
 data Error
   = UnexpectedRefBound ModuleName IR.Exp
@@ -48,37 +46,22 @@ fromUberModule
   → AppOrModule
   → Linker.UberModule
   → ExceptT (Variant e) IO Lua.Chunk
-fromUberModule foreigns needsRuntimeLazy appOrModule uber = do
-  foreignBindings ←
-    forM (Linker.uberModuleForeigns uber) \(moduleName, path) → do
-      moduleForeign ← do
-        moduleForeign ←
-          Oops.hoistEither =<< liftIO do
-            Foreign.resolveForModule path (untag foreigns)
-              <&> first LinkerErrorForeign
-        pure . Lua.ForeignSourceCode . Text.strip . decodeUtf8
-          <$> readFileBS (toFilePath moduleForeign)
-      pure $
-        Lua.local1
-          (qualifyName moduleName [Lua.name|foreign|])
-          (Lua.thunks moduleForeign)
-
+fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
   bindings ←
     Linker.uberModuleBindings uber & foldMapM \case
-      IR.Standalone (IR.QName modname name, irExp) → runLuaM do
-        exp ← fromExp Set.empty modname irExp
+      IR.Standalone (IR.QName modname name, irExp) → do
+        exp ← fromExp foreigns Set.empty modname irExp
         pure $ DList.singleton (Lua.local1 (fromQName modname name) exp)
       IR.RecursiveGroup binds →
-        recBindStatements
-          <$> forM binds \(IR.QName modname name, irExp) → runLuaM do
-            (fromQName modname name,) <$> fromExp Set.empty modname irExp
+        recBindStatements <$> forM binds \(IR.QName modname name, irExp) →
+          (fromQName modname name,) <$> fromExp foreigns Set.empty modname irExp
 
   returnExp ←
     case appOrModule of
       AsModule modname →
         Lua.table <$> do
           forM (uberModuleExports uber) \(fromName → name, expr) →
-            Lua.tableRowNV name <$> runLuaM (fromExp mempty modname expr)
+            Lua.tableRowNV name <$> fromExp foreigns mempty modname expr
       AsApplication modname (IR.identToName → name) →
         pure $ Lua.functionCall (Lua.varName (fromQName modname name)) []
 
@@ -87,13 +70,9 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = do
     , if untag needsRuntimeLazy && usesRuntimeLazy uber
         then pure Fixture.runtimeLazy
         else empty
-    , foreignBindings
     , DList.toList bindings
     , [Lua.Return (Lua.ann returnExp)]
     ]
- where
-  runLuaM ∷ LuaM a → ExceptT (Variant e) IO a
-  runLuaM = Oops.hoistEither . (`evalStateT` 0)
 
 fromQName ∷ ModuleName → IR.Name → Lua.Name
 fromQName modname name = qualifyName modname (fromName name)
@@ -107,8 +86,15 @@ fromModuleName = Name.makeSafe . runModuleName
 fromPropName ∷ IR.PropName → Lua.Name
 fromPropName (IR.PropName name) = Name.makeSafe name
 
-fromExp ∷ Set Lua.Name → ModuleName → IR.Exp → LuaM Lua.Exp
-fromExp topLevelNames modname ir = case ir of
+fromExp
+  ∷ ∀ e
+   . e `CouldBe` Error
+  ⇒ Tagged "foreign" (Path Abs Dir)
+  → Set Lua.Name
+  → ModuleName
+  → IR.Exp
+  → LuaM e Lua.Exp
+fromExp foreigns topLevelNames modname ir = case ir of
   IR.LiteralInt i →
     pure $ Lua.Integer i
   IR.LiteralFloat d →
@@ -202,9 +188,16 @@ fromExp topLevelNames modname ir = case ir of
     fromIfThenElse <$> go cond <*> go th <*> go el
   IR.Exception msg →
     pure $ Lua.error msg
+  IR.ForeignImport _moduleName path → do
+    filePath ←
+      Oops.hoistEither =<< liftIO do
+        Foreign.resolveForModule path (untag foreigns)
+          <&> bimap LinkerErrorForeign toFilePath
+    Lua.thunks . pure . Lua.ForeignSourceCode . Text.strip . decodeUtf8
+      <$> liftIO (readFileBS filePath)
  where
-  go ∷ IR.Exp → LuaM Lua.Exp
-  go = fromExp topLevelNames modname
+  go ∷ IR.Exp → LuaM e Lua.Exp
+  go = fromExp foreigns topLevelNames modname
 
 keyCtor ∷ Lua.Exp
 keyCtor = Lua.String "$ctor"

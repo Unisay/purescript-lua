@@ -32,7 +32,7 @@ UberModule
         ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "AB" ) ) 0 ) )
         ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "B" ) ) 0 ) )
       )
-    ], uberModuleForeigns = [], uberModuleExports =
+    ], uberModuleExports =
     [
       ( Name "A", Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "A" ) ) 0 ),
       ( Name "AB", Ref ( Imported ( ModuleName "Golden.TestRecDataDefs" ) ( Name "AB" ) ) 0 ),

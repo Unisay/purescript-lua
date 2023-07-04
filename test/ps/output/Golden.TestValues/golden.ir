@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleExports =
     [
       ( Name "i", LiteralInt 1 ),
       ( Name "b", LiteralBool True ),

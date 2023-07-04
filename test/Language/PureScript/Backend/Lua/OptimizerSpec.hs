@@ -14,11 +14,11 @@ import Shower (shower)
 import Test.Hspec (Spec, describe, it)
 import Test.Hspec.Expectations.Pretty (assertEqual)
 
-spec :: Spec
+spec ∷ Spec
 spec = describe "Lua AST Optimizer" do
   describe "optimizes expressions" do
     it "removes scope when inside an empty function" do
-      let original :: Lua.Exp =
+      let original ∷ Lua.Exp =
             Lua.functionDef
               [ParamNamed [name|a|]]
               [ Lua.return
@@ -27,7 +27,7 @@ spec = describe "Lua AST Optimizer" do
                       [Lua.return (Lua.scope [Lua.return (Lua.varName [name|c|])])]
                   )
               ]
-          expected :: Lua.Exp =
+          expected ∷ Lua.Exp =
             Lua.functionDef
               [ParamNamed [name|a|]]
               [ Lua.return
@@ -40,7 +40,7 @@ spec = describe "Lua AST Optimizer" do
         rewriteExpWithRule removeScopeWhenInsideEmptyFunction original
 
     it "pushes declarations down into an inner scope" do
-      let original :: Lua.Exp =
+      let original ∷ Lua.Exp =
             Lua.functionDef
               [ParamNamed [name|a|], ParamNamed [name|b|]]
               [ Lua.local1 [name|i|] (Lua.Integer 42)
@@ -51,7 +51,7 @@ spec = describe "Lua AST Optimizer" do
                       [Lua.return (Lua.varName [name|c|])]
                   )
               ]
-          expected :: Lua.Exp =
+          expected ∷ Lua.Exp =
             Lua.functionDef
               [ParamNamed [name|a|], ParamNamed [name|b|]]
               [ Lua.return

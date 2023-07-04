@@ -24,9 +24,12 @@ import Language.PureScript.Backend.IR.Types
   , rewriteExpTopDown
   )
 import Language.PureScript.Names (ModuleName)
+import Shower (shower)
 
 data EntryPoint = EntryPoint ModuleName [Name]
   deriving stock (Show)
+
+deriving stock instance Show AExp
 
 eliminateDeadCode ∷ UberModule → UberModule
 eliminateDeadCode uber@UberModule {..} =
@@ -35,8 +38,7 @@ eliminateDeadCode uber@UberModule {..} =
   --     trace ("\nadjacencyList:\n" <> shower adjacencyList <> "\n") $
   --       trace ("\nreachableIds:\n" <> shower reachableIds <> "\n\n") $
   uber
-    { uberModuleForeigns
-    , uberModuleBindings = preserveBindings
+    { uberModuleBindings = preserveBindings
     , uberModuleExports = preservedExports
     }
  where
@@ -45,6 +47,8 @@ eliminateDeadCode uber@UberModule {..} =
     grouping ← annotatedBindings
     case grouping of
       Standalone (nodeId, qname, expr) → do
+        -- unless (nodeId `Set.member` reachableIds) $
+        --   traceM $ "nodeId " <> shower nodeId <> " not in reachable: " <> shower qname
         guard $ nodeId `Set.member` reachableIds
         [Standalone (qname, dceAnnotatedExp expr)]
       RecursiveGroup recBinds →
@@ -167,6 +171,7 @@ eliminateDeadCode uber@UberModule {..} =
         LiteralArray as → foldMap (adjacencyListForExpr scope) as
         LiteralObject ps → foldMap (adjacencyListForExpr scope . snd) ps
         Exception {} → mempty
+        ForeignImport {} → mempty
         Ctor {} → mempty
         ReflectCtor a → adjacencyListForExpr scope a
         Eq a b → adjacencyListForExpr scope a <> adjacencyListForExpr scope b
@@ -236,6 +241,7 @@ eliminateDeadCode uber@UberModule {..} =
       LiteralChar {} → []
       LiteralBool {} → []
       Exception {} → []
+      ForeignImport {} → []
       Ctor {} → []
       ReflectCtor a → [fst a]
       Eq a b → [fst a, fst b]
@@ -308,6 +314,7 @@ annotateExp = \case
   IfThenElse i t e → IfThenElse <$> ann i <*> ann t <*> ann e
   Ctor aty ty ctor fs → pure $ Ctor aty ty ctor fs
   Exception m → pure $ Exception m
+  ForeignImport m p → pure $ ForeignImport m p
  where
   ann ∷ Annotated Identity RawExp → AnnM (Id, AExp)
   ann = liftA2 (,) nextId . annotateExp . runIdentity
@@ -338,6 +345,7 @@ deannotateExp = \case
   IfThenElse i t e → IfThenElse (de i) (de t) (de e)
   Ctor aty ty ctor fs → Ctor aty ty ctor fs
   Exception m → Exception m
+  ForeignImport m p → ForeignImport m p
  where
   de ∷ (a, AExp) → Identity Exp
   de = pure . deannotateExp . snd

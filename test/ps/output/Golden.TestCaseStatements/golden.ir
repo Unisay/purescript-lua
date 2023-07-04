@@ -6,7 +6,7 @@ UberModule
         }, Abs ( Identity ParamUnused )
         ( Identity ( LiteralBool True ) )
       )
-    ], uberModuleForeigns = [], uberModuleExports =
+    ], uberModuleExports =
     [
       ( Name "a", LiteralInt 1 ),
       ( Name "b", LiteralChar 'b' ),

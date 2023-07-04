@@ -12,7 +12,7 @@ import Prettyprinter (Doc, defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
 import Test.Hspec (Spec, describe, it, shouldBe)
 
-spec :: Spec
+spec ∷ Spec
 spec = do
   it "Name" do
     (rendered . Printer.printName) [Lua.name|foo|] `shouldBe` "foo"
@@ -147,14 +147,14 @@ spec = do
 --------------------------------------------------------------------------------
 -- Utility funtions ------------------------------------------------------------
 
-multiline :: [Text] -> Text
+multiline ∷ [Text] → Text
 multiline = Text.concat . intersperse "\n"
 
-renderedStatement :: Lua.Statement -> Text
+renderedStatement ∷ Lua.Statement → Text
 renderedStatement = rendered . Printer.printStatement
 
-renderedExpression :: Lua.Exp -> Text
+renderedExpression ∷ Lua.Exp → Text
 renderedExpression = rendered . Printer.printedExp
 
-rendered :: Doc ann -> Text
+rendered ∷ Doc ann → Text
 rendered = renderStrict . layoutPretty defaultLayoutOptions

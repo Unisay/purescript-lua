@@ -41,62 +41,62 @@ import Test.Hspec.Core.Spec
  @
 -}
 data Golden str = Golden
-  { produceOutput :: IO str
+  { produceOutput ∷ IO str
   -- ^ Output
-  , encodePretty :: str -> String
+  , encodePretty ∷ str → String
   -- ^ Makes the comparison pretty when the test fails
-  , writeToFile :: Path Abs File -> str -> IO ()
+  , writeToFile ∷ Path Abs File → str → IO ()
   -- ^ How to write into the golden file the file
-  , readFromFile :: Path Abs File -> IO str
+  , readFromFile ∷ Path Abs File → IO str
   -- ^ How to read the file,
-  , goldenFile :: Path Abs File
+  , goldenFile ∷ Path Abs File
   -- ^ Where to read/write the golden file for this test.
-  , actualFile :: Maybe (Path Abs File)
+  , actualFile ∷ Maybe (Path Abs File)
   -- ^ Where to save the actual file for this test.
   -- If it is @Nothing@ then no file is written.
-  , failFirstTime :: Bool
+  , failFirstTime ∷ Bool
   -- ^ Whether to record a failure the first time this test is run
   }
 
-instance Eq str => Example (Golden str) where
+instance Eq str ⇒ Example (Golden str) where
   type Arg (Golden str) = ()
-  evaluateExample e = evaluateExample (\() -> e)
+  evaluateExample e = evaluateExample (\() → e)
 
-instance Eq str => Example (arg -> Golden str) where
-  type Arg (arg -> Golden str) = arg
+instance Eq str ⇒ Example (arg → Golden str) where
+  type Arg (arg → Golden str) = arg
   evaluateExample golden _ action _ = do
-    ref <- newIORef (Result "" Success)
-    action $ \arg -> do
-      r <- runGolden (golden arg)
+    ref ← newIORef (Result "" Success)
+    action $ \arg → do
+      r ← runGolden (golden arg)
       writeIORef ref (fromGoldenResult r)
     readIORef ref
 
 -- | Transform a GoldenResult into a Result from Hspec
-fromGoldenResult :: GoldenResult -> Result
+fromGoldenResult ∷ GoldenResult → Result
 fromGoldenResult = \case
-  SameOutput ->
+  SameOutput →
     Result "Golden and Actual output hasn't changed" Success
-  FirstExecutionSucceed ->
+  FirstExecutionSucceed →
     Result "First time execution. Golden file created." Success
-  FirstExecutionFail ->
+  FirstExecutionFail →
     Result
       "First time execution. Golden file created."
       (Failure Nothing (Reason "failFirstTime is set to True"))
-  MissmatchOutput expected actual ->
+  MissmatchOutput expected actual →
     Result
       "Files golden and actual not match"
       (Failure Nothing (ExpectedButGot Nothing expected actual))
 
 defaultGolden
-  :: Path Abs File
-  -> Maybe (Path Abs File)
-  -> IO Text
-  -> Golden Text
+  ∷ Path Abs File
+  → Maybe (Path Abs File)
+  → IO Text
+  → Golden Text
 defaultGolden goldenFile actualFile produceOutput =
   Golden
     { produceOutput
     , encodePretty = show
-    , writeToFile = \f -> writeFileBS (toFilePath f) . encodeUtf8
+    , writeToFile = \f → writeFileBS (toFilePath f) . encodeUtf8
     , readFromFile = fmap decodeUtf8 . readFileBS . toFilePath
     , goldenFile
     , actualFile
@@ -111,16 +111,16 @@ data GoldenResult
   | FirstExecutionFail
 
 -- | Runs a Golden test.
-runGolden :: Eq str => Golden str -> IO GoldenResult
+runGolden ∷ Eq str ⇒ Golden str → IO GoldenResult
 runGolden Golden {..} = do
   let goldenTestDir = parent goldenFile
   createDirIfMissing True goldenTestDir
-  goldenFileExist <- doesFileExist goldenFile
-  output <- produceOutput
+  goldenFileExist ← doesFileExist goldenFile
+  output ← produceOutput
 
   case actualFile of
-    Nothing -> pass
-    Just actual -> do
+    Nothing → pass
+    Just actual → do
       let actualDir = parent actual
       createDirIfMissing True actualDir
       writeToFile actual output
@@ -133,7 +133,7 @@ runGolden Golden {..} = do
           then FirstExecutionFail
           else FirstExecutionSucceed
     else do
-      contentGolden <- readFromFile goldenFile
+      contentGolden ← readFromFile goldenFile
       pure
         if contentGolden == output
           then SameOutput

@@ -96,7 +96,6 @@ spec = describe "IR Optimizer" do
           expected =
             Linker.UberModule
               { uberModuleBindings = []
-              , uberModuleForeigns = []
               , uberModuleExports = [(Name "main", literalInt 1)]
               }
       annotateShow original

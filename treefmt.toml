@@ -1,0 +1,24 @@
+[formatter.haskell]
+command = "fourmolu"
+options = [
+  "--ghc-opt",
+  "-XImportQualifiedPost",
+  "--ghc-opt",
+  "-XTypeApplications",
+  "--record-brace-space",
+  "true",
+  "--single-constraint-parens",
+  "never",
+  "--mode",
+  "inplace",
+]
+includes = ["*.hs"]
+
+[formatter.cabal]
+command = "cabal-fmt"
+options = ["--inplace"]
+includes = ["*.cabal"]
+
+[formatter.nix]
+command = "nixpkgs-fmt"
+includes = ["*.nix"]

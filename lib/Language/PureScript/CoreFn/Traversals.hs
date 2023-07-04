@@ -15,10 +15,10 @@ import Language.PureScript.CoreFn.Expr
   )
 
 everywhereOnValues
-  :: (Bind a -> Bind a)
-  -> (Expr a -> Expr a)
-  -> (Binder a -> Binder a)
-  -> (Bind a -> Bind a, Expr a -> Expr a, Binder a -> Binder a)
+  ∷ (Bind a → Bind a)
+  → (Expr a → Expr a)
+  → (Binder a → Binder a)
+  → (Bind a → Bind a, Expr a → Expr a, Binder a → Binder a)
 everywhereOnValues f g h = (f', g', h')
  where
   f' (NonRec a name e) = f (NonRec a name (g' e))
@@ -47,7 +47,7 @@ everywhereOnValues f g h = (f', g', h')
           (map (g' *** g') +++ g') (caseAlternativeResult ca)
       }
 
-  handleLiteral :: (a -> a) -> Literal a -> Literal a
+  handleLiteral ∷ (a → a) → Literal a → Literal a
   handleLiteral i (ArrayLiteral ls) = ArrayLiteral (map i ls)
   handleLiteral i (ObjectLiteral ls) = ObjectLiteral (map (fmap i) ls)
   handleLiteral _ other = other
@@ -59,18 +59,18 @@ This function is useful as a building block for recursive functions, but
 doesn't actually recurse itself.
 -}
 traverseCoreFn
-  :: forall f a
+  ∷ ∀ f a
    . Applicative f
-  => (Bind a -> f (Bind a))
-  -> (Expr a -> f (Expr a))
-  -> (Binder a -> f (Binder a))
-  -> (CaseAlternative a -> f (CaseAlternative a))
-  -> ( Bind a -> f (Bind a)
-     , Expr a -> f (Expr a)
-     , Binder a
-       -> f (Binder a)
-     , CaseAlternative a -> f (CaseAlternative a)
-     )
+  ⇒ (Bind a → f (Bind a))
+  → (Expr a → f (Expr a))
+  → (Binder a → f (Binder a))
+  → (CaseAlternative a → f (CaseAlternative a))
+  → ( Bind a → f (Bind a)
+    , Expr a → f (Expr a)
+    , Binder a
+      → f (Binder a)
+    , CaseAlternative a → f (CaseAlternative a)
+    )
 traverseCoreFn f g h i = (f', g', h', i')
  where
   f' (NonRec a name e) = NonRec a name <$> g e
@@ -100,6 +100,6 @@ traverseCoreFn f g h i = (f', g', h', i')
       <*> bitraverse (traverse $ bitraverse g g) g (caseAlternativeResult ca)
 
   handleLiteral withItem = \case
-    ArrayLiteral ls -> ArrayLiteral <$> traverse withItem ls
-    ObjectLiteral ls -> ObjectLiteral <$> traverse (traverse withItem) ls
-    other -> pure other
+    ArrayLiteral ls → ArrayLiteral <$> traverse withItem ls
+    ObjectLiteral ls → ObjectLiteral <$> traverse (traverse withItem) ls
+    other → pure other

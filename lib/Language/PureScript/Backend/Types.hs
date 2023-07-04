@@ -7,7 +7,7 @@ data AppOrModule
   | AsModule PS.ModuleName
   deriving stock (Show)
 
-entryPointModule :: AppOrModule -> PS.ModuleName
+entryPointModule ∷ AppOrModule → PS.ModuleName
 entryPointModule = \case
-  AsApplication modul _ident -> modul
-  AsModule modul -> modul
+  AsApplication modul _ident → modul
+  AsModule modul → modul

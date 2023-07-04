@@ -25,18 +25,20 @@
               src = ./.;
               evalSystem = "x86_64-linux";
               # index-state = "2023-06-28T00:00:00Z";
-              modules = let prof = false;
-              in [{
-                doHaddock = false;
-                doHoogle = false;
-                enableProfiling = prof;
-                enableLibraryProfiling = prof;
-              }];
+              modules =
+                let prof = false;
+                in [{
+                  doHaddock = false;
+                  doHoogle = false;
+                  enableProfiling = prof;
+                  enableLibraryProfiling = prof;
+                }];
             };
           })
         ];
         flake = pkgs.hixProject.flake { };
-      in flake // {
+      in
+      flake // {
         legacyPackages = pkgs;
         packages.default = flake.packages."pslua:exe:pslua";
       });

@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleExports =
     [
       ( Name "test", App
         ( Identity

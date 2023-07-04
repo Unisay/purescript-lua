@@ -16,9 +16,9 @@ import Test.Hspec (Expectation)
  myValue `shouldBe` myExpectation `annotatingWith` "Oh GAWD no!"
  @
 -}
-annotatingWith :: Expectation -> String -> Expectation
+annotatingWith ∷ Expectation → String → Expectation
 annotatingWith action message =
-  action `catch` \(HUnitFailure l r) ->
+  action `catch` \(HUnitFailure l r) →
     throwIO . HUnitFailure l . Reason $
       message <> "\n\n" <> formatFailureReason r
 

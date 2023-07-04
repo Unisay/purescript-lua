@@ -3,7 +3,7 @@ return {
   a = 1,
   b = "b",
   c = (function()
-    local v = function(unused0) return 0 end
+    local v = function(unused1) return 0 end
     return (function()
       if true == Golden_TestValues_I_f(2) then
         return (function()
@@ -26,7 +26,7 @@ return {
     return function(n)
       return function(x)
         return (function()
-          local v = function(unused0)
+          local v = function(unused2)
             return (function()
               if "y" == x then return 0 else return 1 end
             end)()

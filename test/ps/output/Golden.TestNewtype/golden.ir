@@ -6,7 +6,7 @@ UberModule
         ( Identity ( ParamNamed ( Name "x" ) ) )
         ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
       )
-    ], uberModuleForeigns = [], uberModuleExports =
+    ], uberModuleExports =
     [
       ( Name "NT", Ref ( Imported ( ModuleName "Golden.TestNewtype" ) ( Name "NT" ) ) 0 ),
       ( Name "f", Abs

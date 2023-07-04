@@ -9,7 +9,7 @@ UberModule
           ( PropName "y", Identity ( LiteralBool True ) )
         ]
       )
-    ], uberModuleForeigns = [], uberModuleExports =
+    ], uberModuleExports =
     [
       ( Name "r", Ref ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) 0 ),
       ( Name "test1", ObjectProp

@@ -24,72 +24,72 @@ import Language.PureScript.Backend.Lua.Types
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prelude hiding (return)
 
-optimizeChunk :: Chunk -> Chunk
+optimizeChunk ∷ Chunk → Chunk
 optimizeChunk = identity
 
 -- fmap optimizeStatement
 --   >>> inlineTopLevelLocalDefs
 
-inlineTopLevelLocalDefs :: Chunk -> Chunk
+inlineTopLevelLocalDefs ∷ Chunk → Chunk
 inlineTopLevelLocalDefs = snd . foldr inlineTopLevelLocalDef mempty
  where
   inlineTopLevelLocalDef
-    :: Statement
-    -> (Map Lua.Name (Sum Natural), Chunk)
-    -> (Map Lua.Name (Sum Natural), Chunk)
+    ∷ Statement
+    → (Map Lua.Name (Sum Natural), Chunk)
+    → (Map Lua.Name (Sum Natural), Chunk)
   inlineTopLevelLocalDef statement (counts, result) =
     case statement of
       Local name (Just value)
-        | Just (Sum 1) <- Map.lookup name counts ->
+        | Just (Sum 1) ← Map.lookup name counts →
             (counts, substituteVarForValue name (Lua.unAnn value) result)
-      other -> (countRefs other <> counts, other : result)
+      other → (countRefs other <> counts, other : result)
 
-substituteVarForValue :: Lua.Name -> Exp -> Chunk -> Chunk
+substituteVarForValue ∷ Lua.Name → Exp → Chunk → Chunk
 substituteVarForValue name inlinee =
   runIdentity . everywhereInChunkM (pure . subst) pure
  where
   subst = \case
-    Lua.Var (Lua.unAnn -> Lua.VarName varName) | varName == name -> inlinee
-    expr -> expr
+    Lua.Var (Lua.unAnn → Lua.VarName varName) | varName == name → inlinee
+    expr → expr
 
-countRefs :: Statement -> Map Lua.Name (Sum Natural)
+countRefs ∷ Statement → Map Lua.Name (Sum Natural)
 countRefs = everywhereStatM pure countRefsInExpression >>> (`execAccum` mempty)
  where
-  countRefsInExpression :: Exp -> Accum (Map Lua.Name (Sum Natural)) Exp
+  countRefsInExpression ∷ Exp → Accum (Map Lua.Name (Sum Natural)) Exp
   countRefsInExpression = \case
-    expr@(Lua.Var (Lua.unAnn -> Lua.VarName name)) ->
+    expr@(Lua.Var (Lua.unAnn → Lua.VarName name)) →
       add (Map.singleton name (Sum 1)) $> expr
-    expr -> pure expr
+    expr → pure expr
 
-optimizeStatement :: Statement -> Statement
+optimizeStatement ∷ Statement → Statement
 optimizeStatement = everywhereStat identity optimizeExpression
 
-optimizeExpression :: Exp -> Exp
+optimizeExpression ∷ Exp → Exp
 optimizeExpression = foldr (>>>) identity rewriteRulesInOrder
 
-rewriteRulesInOrder :: [RewriteRule]
+rewriteRulesInOrder ∷ [RewriteRule]
 rewriteRulesInOrder =
   [ pushDeclarationsDownTheInnerScope
   , removeScopeWhenInsideEmptyFunction
   -- , collapseNestedFunctions
   ]
 
-type RewriteRule = Exp -> Exp
+type RewriteRule = Exp → Exp
 
-rewriteExpWithRule :: RewriteRule -> Exp -> Exp
+rewriteExpWithRule ∷ RewriteRule → Exp → Exp
 rewriteExpWithRule rule = everywhereExp rule identity
 
 --------------------------------------------------------------------------------
 -- Rewrite rules for expressions -----------------------------------------------
 
-pushDeclarationsDownTheInnerScope :: RewriteRule
+pushDeclarationsDownTheInnerScope ∷ RewriteRule
 pushDeclarationsDownTheInnerScope = \case
   Function outerArgs outerBody
-    | lastStatement <- List.last outerBody
-    , Ann (Return (Ann (Function innerArgs innerBody))) <- lastStatement
-    , declarations <- unAnn <$> List.init outerBody
+    | lastStatement ← List.last outerBody
+    , Ann (Return (Ann (Function innerArgs innerBody))) ← lastStatement
+    , declarations ← unAnn <$> List.init outerBody
     , not (null declarations)
-    , all isDeclaration declarations ->
+    , all isDeclaration declarations →
         functionDef
           (fmap unAnn outerArgs)
           [ return $
@@ -97,12 +97,12 @@ pushDeclarationsDownTheInnerScope = \case
                 (fmap unAnn innerArgs)
                 (declarations <> fmap unAnn innerBody)
           ]
-  e -> e
+  e → e
  where
-  isDeclaration :: Statement -> Bool
+  isDeclaration ∷ Statement → Bool
   isDeclaration = \case
-    Local _ _ -> True
-    _ -> False
+    Local _ _ → True
+    _ → False
 
 {- collapseNestedFunctions :: RewriteRule
 collapseNestedFunctions = \case
@@ -110,10 +110,10 @@ collapseNestedFunctions = \case
     Function (outerArgs <> innerArgs) innerBody
   e -> e
  -}
-removeScopeWhenInsideEmptyFunction :: RewriteRule
+removeScopeWhenInsideEmptyFunction ∷ RewriteRule
 removeScopeWhenInsideEmptyFunction = \case
   Function
     outerArgs
-    [Ann (Return (Ann (FunctionCall (Ann (Function [] body)) [])))] ->
+    [Ann (Return (Ann (FunctionCall (Ann (Function [] body)) [])))] →
       Function outerArgs body
-  e -> e
+  e → e

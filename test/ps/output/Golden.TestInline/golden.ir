@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleExports =
     [
       ( Name "main", App
         ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralInt 1 ) ) ) )

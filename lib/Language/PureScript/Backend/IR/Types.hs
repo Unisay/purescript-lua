@@ -70,6 +70,7 @@ data RawExp (n ∷ Type → Type)
   | Let (NonEmpty (Grouping (n Name, Annotated n RawExp))) (Annotated n RawExp)
   | IfThenElse (Annotated n RawExp) (Annotated n RawExp) (Annotated n RawExp)
   | Exception Text
+  | ForeignImport ModuleName FilePath
 
 type Exp = RawExp Identity
 
@@ -478,6 +479,7 @@ countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
     LiteralChar {} → mempty
     Ctor {} → mempty
     Exception {} → mempty
+    ForeignImport {} → mempty
    where
     go = countFreeRefs' minIndexes
 
@@ -568,6 +570,7 @@ substitute name idx replacement = substitute' idx
     LiteralChar {} → subExpression
     Ctor {} → subExpression
     Exception {} → subExpression
+    ForeignImport {} → subExpression
    where
     go ∷ Exp → Exp = substitute' index
 

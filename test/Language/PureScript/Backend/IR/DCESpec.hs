@@ -148,7 +148,6 @@ emptyModule ∷ UberModule
 emptyModule =
   UberModule
     { uberModuleBindings = []
-    , uberModuleForeigns = []
     , uberModuleExports = []
     }
 

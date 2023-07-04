@@ -28,19 +28,19 @@ data Name
   | ModName ModuleName
   deriving stock (Eq, Ord, Show, Generic)
 
-getIdentName :: Name -> Maybe Ident
+getIdentName ∷ Name → Maybe Ident
 getIdentName (IdentName name) = Just name
 getIdentName _ = Nothing
 
-getTypeName :: Name -> Maybe (ProperName 'TypeName)
+getTypeName ∷ Name → Maybe (ProperName 'TypeName)
 getTypeName (TyName name) = Just name
 getTypeName _ = Nothing
 
-getDctorName :: Name -> Maybe (ProperName 'ConstructorName)
+getDctorName ∷ Name → Maybe (ProperName 'ConstructorName)
 getDctorName (DctorName name) = Just name
 getDctorName _ = Nothing
 
-getClassName :: Name -> Maybe (ProperName 'ClassName)
+getClassName ∷ Name → Maybe (ProperName 'ClassName)
 getClassName (TyClassName name) = Just name
 getClassName _ = Nothing
 
@@ -73,24 +73,24 @@ data Ident
     InternalIdent !InternalIdentData
   deriving stock (Show, Eq, Ord, Generic)
 
-runIdent :: Ident -> Text
+runIdent ∷ Ident → Text
 runIdent = \case
-  Ident i -> i
-  GenIdent Nothing n -> "$" <> show n
-  GenIdent (Just name) n -> "$" <> name <> show n
-  UnusedIdent -> unusedIdent
-  InternalIdent internalIdentData ->
+  Ident i → i
+  GenIdent Nothing n → "$" <> show n
+  GenIdent (Just name) n → "$" <> name <> show n
+  UnusedIdent → unusedIdent
+  InternalIdent internalIdentData →
     case internalIdentData of
-      RuntimeLazyFactory -> "$__runtime_lazy"
-      Lazy t -> "$__lazy_" <> t
+      RuntimeLazyFactory → "$__runtime_lazy"
+      Lazy t → "$__lazy_" <> t
 
-unusedIdent :: Text
+unusedIdent ∷ Text
 unusedIdent = "$__unused"
 
 {- | Proper names, i.e. capitalized names for e.g. module names,
 type/data constructors.
 -}
-newtype ProperName (a :: ProperNameType) = ProperName {runProperName :: Text}
+newtype ProperName (a ∷ ProperNameType) = ProperName {runProperName ∷ Text}
   deriving stock (Show, Eq, Ord, Generic)
 
 instance ToJSON (ProperName a) where
@@ -111,34 +111,34 @@ Coerces a ProperName from one ProperNameType to another. This should be used
 with care, and is primarily used to convert ClassNames into TypeNames after
 classes have been desugared.
 -}
-coerceProperName :: ProperName a -> ProperName b
+coerceProperName ∷ ProperName a → ProperName b
 coerceProperName = ProperName . runProperName
 
 -- | Module names
 newtype ModuleName = ModuleName Text
   deriving stock (Show, Eq, Ord, Generic)
 
-runModuleName :: ModuleName -> Text
+runModuleName ∷ ModuleName → Text
 runModuleName (ModuleName name) = name
 
-moduleNameFromString :: Text -> ModuleName
+moduleNameFromString ∷ Text → ModuleName
 moduleNameFromString = ModuleName
 
-isBuiltinModuleName :: ModuleName -> Bool
+isBuiltinModuleName ∷ ModuleName → Bool
 isBuiltinModuleName (ModuleName mn) = mn == "Prim" || "Prim." `T.isPrefixOf` mn
 
 -- | Source position information
 data SourcePos = SourcePos
-  { sourcePosLine :: Int
-  , sourcePosColumn :: Int
+  { sourcePosLine ∷ Int
+  , sourcePosColumn ∷ Int
   }
   deriving stock (Show, Eq, Ord, Generic)
 
-displaySourcePos :: SourcePos -> Text
+displaySourcePos ∷ SourcePos → Text
 displaySourcePos sp =
   "line " <> show (sourcePosLine sp) <> ", column " <> show (sourcePosColumn sp)
 
-displaySourcePosShort :: SourcePos -> Text
+displaySourcePosShort ∷ SourcePos → Text
 displaySourcePosShort sp =
   show (sourcePosLine sp) <> ":" <> show (sourcePosColumn sp)
 
@@ -148,7 +148,7 @@ instance ToJSON SourcePos where
 
 instance FromJSON SourcePos where
   parseJSON arr = do
-    [line, col] <- parseJSON arr
+    [line, col] ← parseJSON arr
     return $ SourcePos line col
 
 data QualifiedBy
@@ -156,18 +156,18 @@ data QualifiedBy
   | ByModuleName ModuleName
   deriving stock (Show, Eq, Ord, Generic)
 
-pattern ByNullSourcePos :: QualifiedBy
+pattern ByNullSourcePos ∷ QualifiedBy
 pattern ByNullSourcePos = BySourcePos (SourcePos 0 0)
 
-isBySourcePos :: QualifiedBy -> Bool
+isBySourcePos ∷ QualifiedBy → Bool
 isBySourcePos (BySourcePos _) = True
 isBySourcePos _ = False
 
-byMaybeModuleName :: Maybe ModuleName -> QualifiedBy
+byMaybeModuleName ∷ Maybe ModuleName → QualifiedBy
 byMaybeModuleName (Just mn) = ByModuleName mn
 byMaybeModuleName Nothing = ByNullSourcePos
 
-toMaybeModuleName :: QualifiedBy -> Maybe ModuleName
+toMaybeModuleName ∷ QualifiedBy → Maybe ModuleName
 toMaybeModuleName (ByModuleName mn) = Just mn
 toMaybeModuleName (BySourcePos _) = Nothing
 
@@ -177,83 +177,83 @@ A qualified name, i.e. a name with an optional module name
 data Qualified a = Qualified QualifiedBy a
   deriving stock (Show, Eq, Ord, Functor, Foldable, Traversable, Generic)
 
-showQualified :: (a -> Text) -> Qualified a -> Text
+showQualified ∷ (a → Text) → Qualified a → Text
 showQualified f = \case
-  Qualified (BySourcePos _) a -> f a
-  Qualified (ByModuleName name) a -> runModuleName name <> "." <> f a
+  Qualified (BySourcePos _) a → f a
+  Qualified (ByModuleName name) a → runModuleName name <> "." <> f a
 
-getQual :: Qualified a -> Maybe ModuleName
+getQual ∷ Qualified a → Maybe ModuleName
 getQual (Qualified qb _) = toMaybeModuleName qb
 
 {- |
 Provide a default module name, if a name is unqualified
 -}
-qualify :: ModuleName -> Qualified a -> (ModuleName, a)
+qualify ∷ ModuleName → Qualified a → (ModuleName, a)
 qualify m (Qualified (BySourcePos _) a) = (m, a)
 qualify _ (Qualified (ByModuleName m) a) = (m, a)
 
 {- |
 Makes a qualified value from a name and module name.
 -}
-mkQualified :: a -> ModuleName -> Qualified a
+mkQualified ∷ a → ModuleName → Qualified a
 mkQualified name mn = Qualified (ByModuleName mn) name
 
 -- | Remove the module name from a qualified name
-disqualify :: Qualified a -> a
+disqualify ∷ Qualified a → a
 disqualify (Qualified _ a) = a
 
 {- |
 Remove the qualification from a value when it is qualified with a particular
 module name.
 -}
-disqualifyFor :: Maybe ModuleName -> Qualified a -> Maybe a
+disqualifyFor ∷ Maybe ModuleName → Qualified a → Maybe a
 disqualifyFor mn (Qualified qb a) | mn == toMaybeModuleName qb = Just a
 disqualifyFor _ _ = Nothing
 
 {- |
 Checks whether a qualified value is actually qualified with a module reference
 -}
-isQualified :: Qualified a -> Bool
+isQualified ∷ Qualified a → Bool
 isQualified (Qualified (BySourcePos _) _) = False
 isQualified _ = True
 
 {- |
 Checks whether a qualified value is not actually qualified with a module reference
 -}
-isUnqualified :: Qualified a -> Bool
+isUnqualified ∷ Qualified a → Bool
 isUnqualified = not . isQualified
 
 {- |
 Checks whether a qualified value is qualified with a particular module
 -}
-isQualifiedWith :: ModuleName -> Qualified a -> Bool
+isQualifiedWith ∷ ModuleName → Qualified a → Bool
 isQualifiedWith mn (Qualified (ByModuleName mn') _) = mn == mn'
 isQualifiedWith _ _ = False
 
-instance ToJSON a => ToJSON (Qualified a) where
+instance ToJSON a ⇒ ToJSON (Qualified a) where
   toJSON (Qualified qb a) = case qb of
-    ByModuleName mn -> toJSON2 (mn, a)
-    BySourcePos ss -> toJSON2 (ss, a)
+    ByModuleName mn → toJSON2 (mn, a)
+    BySourcePos ss → toJSON2 (ss, a)
 
-instance FromJSON a => FromJSON (Qualified a) where
+instance FromJSON a ⇒ FromJSON (Qualified a) where
   parseJSON v = byModule <|> bySourcePos <|> byMaybeModuleName'
    where
     byModule = do
-      (mn, a) <- parseJSON2 v
+      (mn, a) ← parseJSON2 v
       pure $ Qualified (ByModuleName mn) a
     bySourcePos = do
-      (ss, a) <- parseJSON2 v
+      (ss, a) ← parseJSON2 v
       pure $ Qualified (BySourcePos ss) a
     byMaybeModuleName' = do
-      (mn, a) <- parseJSON2 v
+      (mn, a) ← parseJSON2 v
       pure $ Qualified (byMaybeModuleName mn) a
 
 instance ToJSON ModuleName where
   toJSON (ModuleName name) = toJSON (T.splitOn "." name)
 
 instance FromJSON ModuleName where
-  parseJSON = withArray "ModuleName" $ \names -> do
-    names' <- traverse parseJSON names
+  parseJSON = withArray "ModuleName" $ \names → do
+    names' ← traverse parseJSON names
     pure (ModuleName (T.intercalate "." (V.toList names')))
 
 instance ToJSONKey ModuleName where
