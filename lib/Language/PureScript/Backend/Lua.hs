@@ -10,8 +10,8 @@ module Language.PureScript.Backend.Lua
 import Control.Monad (ap)
 import Control.Monad.Oops (CouldBe, Variant)
 import Control.Monad.Oops qualified as Oops
-import Data.DList (DList)
 import Data.DList qualified as DList
+import Data.List qualified as List
 import Data.Set qualified as Set
 import Data.Tagged (Tagged (..), untag)
 import Data.Text qualified as Text
@@ -28,6 +28,7 @@ import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Types (AppOrModule (..))
 import Language.PureScript.Names (ModuleName, runModuleName)
+import Language.PureScript.Names qualified as PS
 import Path (Abs, Dir, Path, toFilePath)
 import Prelude hiding (exp, local)
 
@@ -36,6 +37,7 @@ type LuaM e a = StateT Natural (ExceptT (Variant e) IO) a
 data Error
   = UnexpectedRefBound ModuleName IR.Exp
   | LinkerErrorForeign Foreign.Error
+  | AppEntryPointNotFound ModuleName PS.Ident
   deriving stock (Show)
 
 fromUberModule
@@ -52,9 +54,13 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
       IR.Standalone (IR.QName modname name, irExp) → do
         exp ← fromExp foreigns Set.empty modname irExp
         pure $ DList.singleton (Lua.local1 (fromQName modname name) exp)
-      IR.RecursiveGroup binds →
-        recBindStatements <$> forM binds \(IR.QName modname name, irExp) →
+      IR.RecursiveGroup recGroup → do
+        recBinds ← forM (toList recGroup) \(IR.QName modname name, irExp) →
           (fromQName modname name,) <$> fromExp foreigns Set.empty modname irExp
+        let declarations = Lua.local0 . fst <$> DList.fromList recBinds
+            assignments = DList.fromList do
+              recBinds <&> \(name, exp) → Lua.assign (Lua.VarName name) exp
+        pure $ declarations <> assignments
 
   returnExp ←
     case appOrModule of
@@ -62,8 +68,14 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
         Lua.table <$> do
           forM (uberModuleExports uber) \(fromName → name, expr) →
             Lua.tableRowNV name <$> fromExp foreigns mempty modname expr
-      AsApplication modname (IR.identToName → name) →
-        pure $ Lua.functionCall (Lua.varName (fromQName modname name)) []
+      AsApplication modname ident → do
+        case List.lookup name (uberModuleExports uber) of
+          Just expr → do
+            entry ← fromExp foreigns mempty modname expr
+            pure $ Lua.functionCall entry []
+          _ → Oops.throw $ AppEntryPointNotFound modname ident
+       where
+        name = IR.identToName ident
 
   pure . mconcat $
     [ if usesPrimModule uber then [Fixture.prim] else empty
@@ -201,14 +213,6 @@ fromExp foreigns topLevelNames modname ir = case ir of
 
 keyCtor ∷ Lua.Exp
 keyCtor = Lua.String "$ctor"
-
-recBindStatements ∷ NonEmpty (Lua.Name, Lua.Exp) → DList Lua.Statement
-recBindStatements (toList → binds) = fmap Lua.local0 names <> assigns
- where
-  names ∷ DList Lua.Name =
-    DList.fromList (fst <$> binds)
-  assigns ∷ DList Lua.Statement =
-    DList.fromList (binds <&> \(name, exp) → Lua.assign (Lua.VarName name) exp)
 
 fromIfThenElse ∷ Lua.Exp → Lua.Exp → Lua.Exp → Lua.Exp
 fromIfThenElse cond thenExp elseExp = Lua.functionCall fun []

@@ -1,7 +1,6 @@
-local Golden_TestRecordsAccess_I_r = { x = 1, y = true }
 return {
-  r = Golden_TestRecordsAccess_I_r,
-  test1 = Golden_TestRecordsAccess_I_r.x,
+  r = { x = 1, y = true },
+  test1 = ({ x = 1, y = true }).x,
   test2 = function(v) return v.x end,
   test3 = function(v) return v.x end,
   test4 = function(v) return v.x end

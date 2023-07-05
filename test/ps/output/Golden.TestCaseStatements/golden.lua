@@ -1,13 +1,12 @@
-local Golden_TestValues_I_f = function(unused0) return true end
 return {
   a = 1,
   b = "b",
   c = (function()
     local v = function(unused1) return 0 end
     return (function()
-      if true == Golden_TestValues_I_f(2) then
+      if true == (function(unused0) return true end)(2) then
         return (function()
-          if true == Golden_TestValues_I_f(1) then
+          if true == (function(unused0) return true end)(1) then
             return 42
           else
             return v(true)
@@ -25,31 +24,27 @@ return {
   d = function(m)
     return function(n)
       return function(x)
+        local v = function(unused2)
+          if "y" == x then return 0 else return 1 end
+        end
         return (function()
-          local v = function(unused2)
+          if "x" == x then
             return (function()
-              if "y" == x then return 0 else return 1 end
+              if "Golden.TestCaseStatements.J" == m["$ctor"] then
+                return (function()
+                  if "Golden.TestCaseStatements.N" == n["$ctor"] then
+                    return m[0]
+                  else
+                    return v(true)
+                  end
+                end)()
+              else
+                return v(true)
+              end
             end)()
+          else
+            return v(true)
           end
-          return (function()
-            if "x" == x then
-              return (function()
-                if "Golden.TestCaseStatements.J" == m["$ctor"] then
-                  return (function()
-                    if "Golden.TestCaseStatements.N" == n["$ctor"] then
-                      return m[0]
-                    else
-                      return v(true)
-                    end
-                  end)()
-                else
-                  return v(true)
-                end
-              end)()
-            else
-              return v(true)
-            end
-          end)()
         end)()
       end
     end

@@ -25,10 +25,7 @@ import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prelude hiding (return)
 
 optimizeChunk ∷ Chunk → Chunk
-optimizeChunk = identity
-
--- fmap optimizeStatement
---   >>> inlineTopLevelLocalDefs
+optimizeChunk = fmap optimizeStatement >>> inlineTopLevelLocalDefs
 
 inlineTopLevelLocalDefs ∷ Chunk → Chunk
 inlineTopLevelLocalDefs = snd . foldr inlineTopLevelLocalDef mempty

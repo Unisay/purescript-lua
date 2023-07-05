@@ -3,34 +3,30 @@ return {
     local yes
     local no
     yes = function(v)
-      return (function()
-        if true == v then
-          return no(false)
-        else
-          return (function()
-            if false == v then
-              return no(true)
-            else
-              return error("No patterns matched")
-            end
-          end)()
-        end
-      end)()
+      if true == v then
+        return no(false)
+      else
+        return (function()
+          if false == v then
+            return no(true)
+          else
+            return error("No patterns matched")
+          end
+        end)()
+      end
     end
     no = function(v)
-      return (function()
-        if true == v then
-          return yes(false)
-        else
-          return (function()
-            if false == v then
-              return yes(true)
-            else
-              return error("No patterns matched")
-            end
-          end)()
-        end
-      end)()
+      if true == v then
+        return yes(false)
+      else
+        return (function()
+          if false == v then
+            return yes(true)
+          else
+            return error("No patterns matched")
+          end
+        end)()
+      end
     end
     return no(false)
   end)(),
@@ -38,34 +34,30 @@ return {
     local yes
     local no
     yes = function(v)
-      return (function()
-        if true == v then
-          return no(false)
-        else
-          return (function()
-            if false == v then
-              return no(true)
-            else
-              return error("No patterns matched")
-            end
-          end)()
-        end
-      end)()
+      if true == v then
+        return no(false)
+      else
+        return (function()
+          if false == v then
+            return no(true)
+          else
+            return error("No patterns matched")
+          end
+        end)()
+      end
     end
     no = function(v)
-      return (function()
-        if true == v then
-          return yes(false)
-        else
-          return (function()
-            if false == v then
-              return yes(true)
-            else
-              return error("No patterns matched")
-            end
-          end)()
-        end
-      end)()
+      if true == v then
+        return yes(false)
+      else
+        return (function()
+          if false == v then
+            return yes(true)
+          else
+            return error("No patterns matched")
+          end
+        end)()
+      end
     end
     return no(false)
   end)(),
