@@ -90,8 +90,10 @@ spec = do
         let moduleName =
               parent corefn
                 & dirname
-                & FilePath.dropTrailingPathSeparator . toFilePath
-                & PS.ModuleName . toText
+                & FilePath.dropTrailingPathSeparator
+                . toFilePath
+                & PS.ModuleName
+                . toText
 
             modulePath = parent corefn
         -- IR golden

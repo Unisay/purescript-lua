@@ -20,5 +20,5 @@ options = ["--inplace"]
 includes = ["*.cabal"]
 
 [formatter.nix]
-command = "nixpkgs-fmt"
+command = "nixfmt"
 includes = ["*.nix"]

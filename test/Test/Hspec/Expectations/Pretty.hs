@@ -30,13 +30,13 @@ assertEqual
   → Assertion
 assertEqual preface expected actual =
   unless (actual == expected) do
-    prefaceMsg `deepseq`
-      expectedMsg `deepseq`
-        actualMsg `deepseq`
-          throwIO
-            ( HUnitFailure location $
-                ExpectedButGot prefaceMsg expectedMsg actualMsg
-            )
+    prefaceMsg
+      `deepseq` expectedMsg
+      `deepseq` actualMsg
+      `deepseq` throwIO
+        ( HUnitFailure location $
+            ExpectedButGot prefaceMsg expectedMsg actualMsg
+        )
  where
   prefaceMsg
     | null preface = Nothing

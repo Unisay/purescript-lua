@@ -5,24 +5,27 @@ module Language.PureScript.Backend.IR
 
 import Control.Monad.Error.Class (MonadError (throwError))
 import Control.Monad.Writer.Class (MonadWriter (..))
-import Data.Char qualified as Char
+import qualified Data.Char as Char
 import Data.Foldable (foldrM)
-import Data.List qualified as List
+import qualified Data.List as List
 import Data.List.NonEmpty ((<|))
-import Data.List.NonEmpty qualified as NE
-import Data.Map.Lazy qualified as Map
+import qualified Data.List.NonEmpty as NE
+import qualified Data.Map.Lazy as Map
 import Data.Tagged (Tagged (Tagged))
-import Data.Text qualified as Text
+import qualified Data.Text as Text
 import Data.Traversable (for)
 import Language.PureScript.Backend.IR.Types
-import Language.PureScript.CoreFn qualified as Cfn
+import qualified Language.PureScript.CoreFn as Cfn
 import Language.PureScript.CoreFn.Laziness (applyLazinessTransform)
 import Language.PureScript.Names (ModuleName)
-import Language.PureScript.Names qualified as PS
-import Language.PureScript.PSString (PSString, decodeStringEither)
+import qualified Language.PureScript.Names as PS
+import Language.PureScript.PSString
+  ( PSString
+  , decodeStringEither
+  )
 import Numeric (showHex)
 import Relude.Extra (toFst)
-import Relude.Unsafe qualified as Unsafe
+import qualified Relude.Unsafe as Unsafe
 import Prelude hiding (identity)
 
 data Context = Context
@@ -460,7 +463,8 @@ mkCaseClauses = mkClauses mempty
                     let qctor =
                           constructor
                             & fmap renderCtorName
-                            & literalString . \case
+                            & literalString
+                            . \case
                               Local name → name
                               Imported modname c →
                                 PS.runModuleName modname <> "." <> c
