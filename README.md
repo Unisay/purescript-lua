@@ -1,15 +1,15 @@
 # Purescript Backend for Lua
 
-Status: (2023-05-17) the project is in the "*almost ready to be usable*" state (read: it isn't working as you'd expect it to work), I am finilizing core libs and final optimisations in the backend.
+Status: (2023-07-05) the project is in the "*ready to be experimented with*" state (read: it likely contains bugs but is already usable).
 
 ## Features
 
 - [x] Lua code bundling: emits either a Lua module or "App".
 - [X] FFI with Lua.
 - [x] Dead Code Elimination (DCE).
-- [ ] Code inlining.
+- [x] Code inlining.
 - [x] [Package Set](https://github.com/Unisay/purescript-lua-package-sets) for PureScript/Lua libs.
-- [ ] All core libs added to the package set.
+- [x] All core libs added to the package set.
 
 ## Quick Start
 
