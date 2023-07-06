@@ -34,6 +34,7 @@
       };
     };
     buildInputs = with pkgs; [
+      cachix
       lua53Packages.lua
       lua53Packages.luacheck
       purescript
