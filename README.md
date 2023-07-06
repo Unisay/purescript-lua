@@ -15,6 +15,12 @@ Status: (2023-07-05) the project is in the "_ready to be experimented with_" sta
 
 For the moment the best way to start is to use `nix` to intall `pslua`.
 
+Consider configuring [Cachix](https://docs.cachix.org/installation) as a binary nix cache to avoid rebuilding a ton of dependencies:
+
+```
+cachix use purescript-lua
+```
+
 Here is an [example](https://github.com/Unisay/purescript-lua-example) project.
 
 If you use [Spago](https://github.com/purescript/spago) to build your PureScript project, then you can configure `pslua` as a custom backend like this:
@@ -33,7 +39,7 @@ Assuming that `pslua` executable is already available on your PATH
     pslua \
     --foreign-path . \
     --ps-output output \
-    --lua-output-file dist/acme.lua \
+    --lua-output-file dist/Acme_Main.lua \
     --entry Acme.Main
     ''
 }
