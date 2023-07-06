@@ -8,3 +8,4 @@ result-*
 .psc-ide-port
 /output/
 .vscode/settings.json
+.envrc.local
