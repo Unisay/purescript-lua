@@ -4,7 +4,7 @@ Status: (2023-07-05) the project is in the "_ready to be experimented with_" sta
 
 ## Features
 
-- [x] Lua code bundling: emits either a Lua module or "App".
+- [x] Lua code bundling: emits either a Lua module (a file that returns a table with functions) or an application (a file that executes itself).
 - [x] FFI with Lua.
 - [x] Dead Code Elimination (DCE).
 - [x] Code inlining.
@@ -48,6 +48,14 @@ nix run 'github:Unisay/purescript-lua' -- --help
 ```
 
 ## Installation
+
+If you're on a x86 64bit Linux system then you can download a pre-built executable from the [releases](https://github.com/Unisay/purescript-lua/releases) page:
+
+```
+wget -c https://github.com/Unisay/purescript-lua/releases/download/0.1.0-alpha/pslua-linux_x86_64.tar.gz -O - | tar -xz
+```
+
+alternatively,
 
 ### Using nix with flakes
 
