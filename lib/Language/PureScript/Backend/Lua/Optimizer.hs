@@ -25,21 +25,7 @@ import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prelude hiding (return)
 
 optimizeChunk ∷ Chunk → Chunk
-optimizeChunk = fmap optimizeStatement >>> inlineTopLevelLocalDefs
-
-inlineTopLevelLocalDefs ∷ Chunk → Chunk
-inlineTopLevelLocalDefs = snd . foldr inlineTopLevelLocalDef mempty
- where
-  inlineTopLevelLocalDef
-    ∷ Statement
-    → (Map Lua.Name (Sum Natural), Chunk)
-    → (Map Lua.Name (Sum Natural), Chunk)
-  inlineTopLevelLocalDef statement (counts, result) =
-    case statement of
-      Local name (Just value)
-        | Just (Sum 1) ← Map.lookup name counts →
-            (counts, substituteVarForValue name (Lua.unAnn value) result)
-      other → (countRefs other <> counts, other : result)
+optimizeChunk = fmap optimizeStatement
 
 substituteVarForValue ∷ Lua.Name → Exp → Chunk → Chunk
 substituteVarForValue name inlinee =
