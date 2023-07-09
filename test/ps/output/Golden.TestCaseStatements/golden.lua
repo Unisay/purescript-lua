@@ -1,12 +1,13 @@
+local Golden_TestValues_I_f = function(unused0) return true end
 return {
   a = 1,
   b = "b",
   c = (function()
     local v = function(unused1) return 0 end
     return (function()
-      if true == (function(unused0) return true end)(2) then
+      if true == Golden_TestValues_I_f(2) then
         return (function()
-          if true == (function(unused0) return true end)(1) then
+          if true == Golden_TestValues_I_f(1) then
             return 42
           else
             return v(true)
