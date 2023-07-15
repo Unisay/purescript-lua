@@ -60,7 +60,7 @@ nix run 'github:Unisay/purescript-lua' -- --help
 If you're on a x86 64bit Linux system then you can download a pre-built executable from the [releases](https://github.com/Unisay/purescript-lua/releases) page:
 
 ```
-wget -c https://github.com/Unisay/purescript-lua/releases/download/0.1.0-alpha/pslua-linux_x86_64.tar.gz -O - | tar -xz
+wget -c https://github.com/Unisay/purescript-lua/releases/download/0.1.1-alpha/pslua-linux_x86_64.tar.gz -O - | tar -xz
 ```
 
 alternatively,
