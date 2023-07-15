@@ -258,7 +258,8 @@ exprFromJSON modulePath = withObject "Expr" exprFromObj
   caseFromObj o = do
     ann ← o .: "annotation" >>= annFromJSON modulePath
     cs ← o .: "caseExpressions" >>= listParser (exprFromJSON modulePath)
-    cas ← o .: "caseAlternatives" >>= listParser (caseAlternativeFromJSON modulePath)
+    cas ←
+      o .: "caseAlternatives" >>= listParser (caseAlternativeFromJSON modulePath)
     return $ Case ann cs cas
 
   letFromObj o = do

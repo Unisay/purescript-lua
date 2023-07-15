@@ -1,31 +1,26 @@
 name: Purescript Lua CI
 on:
+  push:
+    branches: [main]
   pull_request:
 jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Checkout repository"
-      uses: actions/checkout@v3
-
-    - name: "❄ Install Nix"
-      uses: cachix/install-nix-action@v22
-      with:
-        github_access_token: ${{ secrets.GITHUB_TOKEN }}
-        extra_nix_config: |
-          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-          substituters = https://hydra.iohk.io https://cache.nixos.org/
-          trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-
-    - uses: cachix/cachix-action@v12
-      with:
-        name: purescript-lua
-        authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-
-    - name: "🔨 Build & test"
-      run: >-
-        nix develop
-        --accept-flake-config
-        --allow-import-from-derivation
-        --command
-        cabal test all --test-show-details=direct
+      - name: "📥 Checkout repository"
+        uses: actions/checkout@v3
+      - name: "❄ Install Nix"
+        uses: cachix/install-nix-action@v22
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            substituters = https://hydra.iohk.io https://cache.nixos.org/
+            trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+      - uses: cachix/cachix-action@v12
+        with:
+          name: purescript-lua
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+      - name: "🔨 Build & test"
+        run: >-
+          nix develop --accept-flake-config --allow-import-from-derivation --command cabal test all --test-show-details=direct

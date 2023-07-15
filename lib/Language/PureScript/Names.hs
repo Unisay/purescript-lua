@@ -262,5 +262,8 @@ instance ToJSONKey ModuleName where
 instance FromJSONKey ModuleName where
   fromJSONKey = fmap moduleNameFromString fromJSONKey
 
-$(deriveJSON (defaultOptions {sumEncoding = ObjectWithSingleField}) ''InternalIdentData)
+$( deriveJSON
+    (defaultOptions {sumEncoding = ObjectWithSingleField})
+    ''InternalIdentData
+ )
 $(deriveJSON (defaultOptions {sumEncoding = ObjectWithSingleField}) ''Ident)

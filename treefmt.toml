@@ -22,3 +22,7 @@ includes = ["*.cabal"]
 [formatter.nix]
 command = "nixfmt"
 includes = ["*.nix"]
+
+[formatter.yaml]
+command = "yamlfmt"
+includes = ["*.yaml", "*.yml" ]

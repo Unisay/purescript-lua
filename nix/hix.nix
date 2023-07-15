@@ -41,6 +41,7 @@
       spago
       treefmt
       upx
+      yamlfmt
     ];
   };
 }

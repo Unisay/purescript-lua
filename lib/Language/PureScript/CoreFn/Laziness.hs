@@ -419,7 +419,9 @@ searchReachable maxIdx lookupEdges = mrtFlatten . Unsafe.head <$> mem
   mem =
     A.listArray
       (0, maxIdx)
-      [ [cutLoops <*> fmap (IM.mapWithKey memoizedNode) . lookupEdges $ (i, f) | f ← [toEnum 0 ..]]
+      [ [ cutLoops <*> fmap (IM.mapWithKey memoizedNode) . lookupEdges $ (i, f)
+        | f ← [toEnum 0 ..]
+        ]
       | i ← [0 .. maxIdx]
       ]
 
