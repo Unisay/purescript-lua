@@ -40,6 +40,7 @@
       purescript
       spago
       treefmt
+      upx
     ];
   };
 }
