@@ -406,7 +406,7 @@ UberModule
                   ( ObjectProp
                     ( Identity
                       ( ForeignImport
-                        ( ModuleName "Data.Unit" ) ".spago/prelude/v6.0.3/src/Data/Unit.purs"
+                        ( ModuleName "Data.Unit" ) ".spago/prelude/v6.0.2/src/Data/Unit.purs"
                       )
                     )
                     ( PropName "unit" )

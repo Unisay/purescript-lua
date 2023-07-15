@@ -24,4 +24,9 @@ jobs:
         authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
     - name: "🔨 Build & test"
-      run: nix develop -c cabal test all --test-show-details=direct
+      run: >-
+        nix develop
+        --accept-flake-config
+        --allow-import-from-derivation
+        --command
+        cabal test all --test-show-details=direct
