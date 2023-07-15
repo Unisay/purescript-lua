@@ -9,13 +9,16 @@ import Language.PureScript.Backend.IR.Linker qualified as Linker
 import Language.PureScript.Backend.IR.Optimizer
   ( optimizedExpression
   , optimizedUberModule
+  , renameShadowedNamesInExpr
   )
 import Language.PureScript.Backend.IR.Types
   ( Exp
   , Grouping (Standalone)
   , Module (..)
   , Name (..)
+  , Parameter (..)
   , RawExp (..)
+  , abstraction
   , application
   , eq
   , ifThenElse
@@ -23,6 +26,7 @@ import Language.PureScript.Backend.IR.Types
   , lets
   , literalBool
   , literalInt
+  , refLocal
   , refLocal0
   )
 import Language.PureScript.Names (moduleNameFromString)
@@ -101,6 +105,92 @@ spec = describe "IR Optimizer" do
       annotateShow original
       annotateShow expected
       optimizedUberModule original === expected
+
+  describe "renames shadowed names" do
+    test "nested λ-abstractions" do
+      name ← forAll Gen.name
+      let
+        name1 = Name $ nameToText name <> "1"
+        name2 = Name $ nameToText name <> "2"
+        name3 = Name $ nameToText name <> "3"
+
+      let original =
+            abstraction
+              (ParamNamed name)
+              ( abstraction
+                  (ParamNamed name)
+                  ( application
+                      (refLocal name 0)
+                      ( abstraction
+                          (ParamNamed name)
+                          ( abstraction
+                              (ParamNamed name1)
+                              ( application
+                                  (refLocal name 0)
+                                  (refLocal name 2)
+                              )
+                          )
+                      )
+                  )
+              )
+
+          renamed =
+            abstraction
+              (ParamNamed name)
+              ( abstraction
+                  (ParamNamed name2)
+                  ( application
+                      (refLocal name2 0)
+                      ( abstraction
+                          (ParamNamed name3)
+                          ( abstraction
+                              (ParamNamed name1)
+                              ( application
+                                  (refLocal name3 0)
+                                  (refLocal name 0)
+                              )
+                          )
+                      )
+                  )
+              )
+      renameShadowedNamesInExpr mempty original === renamed
+
+    test "nested let-bindings" do
+      nameA ← forAll Gen.name
+      nameB ← forAll $ mfilter (/= nameA) Gen.name
+      valueA ← forAll Gen.literalNonRecursiveExp
+      valueB ← forAll Gen.literalNonRecursiveExp
+      let original =
+            lets
+              (Standalone (nameA, valueA) :| [Standalone (nameB, valueB)])
+              ( lets
+                  ( Standalone (nameA, refLocal nameA 0)
+                      :| [Standalone (nameB, refLocal nameB 0)]
+                  )
+                  ( application
+                      (application (refLocal nameA 0) (refLocal nameA 1))
+                      (application (refLocal nameB 0) (refLocal nameB 1))
+                  )
+              )
+
+          nameA1 = Name $ nameToText nameA <> "1"
+          nameB1 = Name $ nameToText nameB <> "1"
+
+          renamed =
+            lets
+              ( Standalone (nameA, valueA)
+                  :| [Standalone (nameB, valueB)]
+              )
+              ( lets
+                  ( Standalone (nameA1, refLocal nameA 0)
+                      :| [Standalone (nameB1, refLocal nameB 0)]
+                  )
+                  ( application
+                      (application (refLocal nameA1 0) (refLocal nameA 0))
+                      (application (refLocal nameB1 0) (refLocal nameB 0))
+                  )
+              )
+      renameShadowedNamesInExpr mempty original === renamed
 
 --------------------------------------------------------------------------------
 -- Helpers ---------------------------------------------------------------------

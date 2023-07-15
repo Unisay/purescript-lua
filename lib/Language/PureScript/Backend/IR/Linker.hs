@@ -13,7 +13,7 @@ import Language.PureScript.Backend.IR.Types
   , QName (QName)
   , Qualified (Imported, Local)
   , RawExp (..)
-  , bindingNames
+  , groupingNames
   , objectProp
   , ref
   , refImported
@@ -92,7 +92,7 @@ qualifiedModuleBindings Module {moduleName, moduleBindings, moduleForeigns} =
   qualifyBinding = bimap (QName moduleName) (qualifyTopRefs moduleName topRefs)
    where
     topRefs ∷ Map Name Index = Map.fromList do
-      (,0) <$> ((moduleBindings >>= bindingNames) <> moduleForeigns)
+      (,0) <$> ((moduleBindings >>= groupingNames) <> moduleForeigns)
 
 qualifyTopRefs ∷ ModuleName → Map Name Index → Exp → Exp
 qualifyTopRefs moduleName = go
@@ -127,7 +127,7 @@ qualifyTopRefs moduleName = go
         qualifyBody = go topNames'
          where
           topNames' = foldr (Map.adjust (+ 1) . unAnn) topNames boundNames
-          boundNames = toList groupings >>= bindingNames
+          boundNames = toList groupings >>= groupingNames
       App argument function → App (go' <$> argument) (go' <$> function)
       LiteralArray as → LiteralArray (go' <<$>> as)
       LiteralObject props → LiteralObject (fmap go' <<$>> props)

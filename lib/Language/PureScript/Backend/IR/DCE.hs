@@ -19,17 +19,17 @@ import Language.PureScript.Backend.IR.Types
   , RawExp (..)
   , RewriteMod (..)
   , Rewritten (..)
-  , bindingNames
+  , annotateExpM
+  , groupingNames
   , listGrouping
   , rewriteExpTopDown
   )
 import Language.PureScript.Names (ModuleName)
-import Shower (shower)
 
 data EntryPoint = EntryPoint ModuleName [Name]
   deriving stock (Show)
 
-deriving stock instance Show AExp
+-- deriving stock instance Show AExp
 
 eliminateDeadCode ∷ UberModule → UberModule
 eliminateDeadCode uber@UberModule {..} =
@@ -71,9 +71,9 @@ eliminateDeadCode uber@UberModule {..} =
   annotatedBindings ∷ [Grouping (Id, QName, AExp)]
   (annotatedExports, annotatedBindings) = runAnnM do
     annExports ← forM uberModuleExports \(name, expr) →
-      (,name,) <$> nextId <*> annotateExp expr
+      (,name,) <$> nextId <*> annotateExpWithIds expr
     annBindings ← forM uberModuleBindings $ traverse \(qname, expr) →
-      (,qname,) <$> nextId <*> annotateExp expr
+      (,qname,) <$> nextId <*> annotateExpWithIds expr
     pure (annExports, annBindings)
 
   dceAnnotatedExp ∷ AExp → Exp
@@ -201,7 +201,7 @@ eliminateDeadCode uber@UberModule {..} =
           adjacencyListForExpr scope' body
             <> snd (foldl' adjacencyListForGrouping (scope, mempty) groupings)
          where
-          scope' = foldr addToScope scope (bindingNames =<< toList groupings)
+          scope' = foldr addToScope scope (groupingNames =<< toList groupings)
           addToScope (nameId, name) = addLocalToScope nameId name 0
    where
     adjacencyListForGrouping
@@ -288,39 +288,9 @@ nextId = AnnM do
 runAnnM ∷ AnnM a → a
 runAnnM = (`evalState` 0) . unAnnM
 
-annotateExp ∷ Exp → AnnM AExp
-annotateExp = \case
-  LiteralInt i → pure $ LiteralInt i
-  LiteralFloat f → pure $ LiteralFloat f
-  LiteralString s → pure $ LiteralString s
-  LiteralChar c → pure $ LiteralChar c
-  LiteralBool b → pure $ LiteralBool b
-  LiteralArray as → LiteralArray <$> traverse ann as
-  LiteralObject ps → LiteralObject <$> traverse (traverse ann) ps
-  ReflectCtor a → ReflectCtor <$> ann a
-  Eq a b → Eq <$> ann a <*> ann b
-  DataArgumentByIndex index a → DataArgumentByIndex index <$> ann a
-  ArrayLength a → ArrayLength <$> ann a
-  ArrayIndex a index → flip ArrayIndex index <$> ann a
-  ObjectProp a prop → flip ObjectProp prop <$> ann a
-  ObjectUpdate a ps → ObjectUpdate <$> ann a <*> traverse (traverse ann) ps
-  Abs param body → Abs <$> ann_ param <*> ann body
-  App a b → App <$> ann a <*> ann b
-  Ref qname index → pure $ Ref qname index
-  Let binds body →
-    Let
-      <$> traverse (traverse (bitraverse ann_ ann)) binds
-      <*> ann body
-  IfThenElse i t e → IfThenElse <$> ann i <*> ann t <*> ann e
-  Ctor aty ty ctor fs → pure $ Ctor aty ty ctor fs
-  Exception m → pure $ Exception m
-  ForeignImport m p → pure $ ForeignImport m p
- where
-  ann ∷ Annotated Identity RawExp → AnnM (Id, AExp)
-  ann = liftA2 (,) nextId . annotateExp . runIdentity
-
-  ann_ ∷ Identity a → AnnM (Id, a)
-  ann_ p = (,runIdentity p) <$> nextId
+annotateExpWithIds ∷ Exp → AnnM (RawExp ((,) Id))
+annotateExpWithIds =
+  annotateExpM identity (const nextId) (const nextId) (const nextId)
 
 deannotateExp ∷ AExp → Exp
 deannotateExp = \case

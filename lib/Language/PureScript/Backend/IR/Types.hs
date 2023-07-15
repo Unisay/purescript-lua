@@ -32,8 +32,8 @@ listGrouping = \case
   Standalone a → [a]
   RecursiveGroup as → toList as
 
-bindingNames ∷ Grouping (name, exp) → [name]
-bindingNames = fmap fst . listGrouping
+groupingNames ∷ Grouping (name, exp) → [name]
+groupingNames = fmap fst . listGrouping
 
 bindingExprs ∷ Grouping (name, Exp) → [Exp]
 bindingExprs = fmap snd . listGrouping
@@ -187,7 +187,8 @@ abstraction p e = Abs (pure p) (pure e)
 identity ∷ Exp
 identity = abstraction (ParamNamed name) (refLocal name 0) where name = Name "x"
 
-lets ∷ Applicative n ⇒ NonEmpty (Grouping (Name, RawExp n)) → RawExp n → RawExp n
+lets
+  ∷ Applicative n ⇒ NonEmpty (Grouping (Name, RawExp n)) → RawExp n → RawExp n
 lets binds body = Let (bimap pure pure <<$>> binds) (pure body)
 
 application ∷ Applicative n ⇒ RawExp n → RawExp n → RawExp n
@@ -281,12 +282,57 @@ literalObject ps = LiteralObject (pure <<$>> ps)
 --------------------------------------------------------------------------------
 -- Traversals ------------------------------------------------------------------
 
+annotateExpM
+  ∷ ∀ b m
+   . Applicative m
+  ⇒ (∀ x. m x → m x)
+  → (RawExp Identity → m b)
+  → (Parameter → m b)
+  → (Name → m b)
+  → (RawExp Identity → m (RawExp ((,) b)))
+annotateExpM around annotateExp annotateParam annotateName =
+  around . \case
+    LiteralInt i → pure $ LiteralInt i
+    LiteralFloat f → pure $ LiteralFloat f
+    LiteralString s → pure $ LiteralString s
+    LiteralChar c → pure $ LiteralChar c
+    LiteralBool b → pure $ LiteralBool b
+    LiteralArray as → LiteralArray <$> traverse ann as
+    LiteralObject ps → LiteralObject <$> traverse (traverse ann) ps
+    ReflectCtor a → ReflectCtor <$> ann a
+    Eq a b → Eq <$> ann a <*> ann b
+    DataArgumentByIndex index a → DataArgumentByIndex index <$> ann a
+    ArrayLength a → ArrayLength <$> ann a
+    ArrayIndex a index → flip ArrayIndex index <$> ann a
+    ObjectProp a prop → flip ObjectProp prop <$> ann a
+    ObjectUpdate a ps → ObjectUpdate <$> ann a <*> traverse (traverse ann) ps
+    Abs param body → Abs <$> annParam param <*> ann body
+    App a b → App <$> ann a <*> ann b
+    Ref qname index → pure $ Ref qname index
+    Let binds body →
+      Let <$> traverse (traverse (bitraverse annLetName ann)) binds <*> ann body
+    IfThenElse i t e → IfThenElse <$> ann i <*> ann t <*> ann e
+    Ctor aty ty ctr fs → pure $ Ctor aty ty ctr fs
+    Exception m → pure $ Exception m
+    ForeignImport m p → pure $ ForeignImport m p
+ where
+  ann ∷ Identity (RawExp Identity) → m (b, RawExp ((,) b))
+  ann (unAnn → expr) =
+    (,)
+      <$> annotateExp expr
+      <*> annotateExpM around annotateExp annotateParam annotateName expr
+
+  annParam ∷ Identity Parameter → m (b, Parameter)
+  annParam (unAnn → param) = (,param) <$> annotateParam param
+
+  annLetName ∷ Identity Name → m (b, Name)
+  annLetName (unAnn → name) = (,name) <$> annotateName name
+
 traverseExpBottomUp
   ∷ ∀ n m
    . (Monad m, Traversable n)
   ⇒ (RawExp n → m (RawExp n))
-  → RawExp n
-  → m (RawExp n)
+  → (RawExp n → m (RawExp n))
 traverseExpBottomUp visit = go
  where
   go ∷ RawExp n → m (RawExp n)
@@ -436,7 +482,7 @@ countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
        where
         minIndexes' =
           foldr (\name → Map.insertWith (+) name 1) minIndexes $
-            toList binds >>= fmap (Local . runIdentity) . bindingNames
+            toList binds >>= fmap (Local . runIdentity) . groupingNames
       countsInBinds =
         toList binds >>= \case
           Standalone (unAnn → boundName, expr) →
@@ -548,7 +594,7 @@ substitute name idx replacement = substitute' idx
               boundNames = runIdentity . fst <$> grouping
       body' = substitute name index' replacement' <$> body
        where
-        boundNames = toList binds >>= fmap runIdentity . bindingNames
+        boundNames = toList binds >>= fmap runIdentity . groupingNames
         index' = if name `elem` fmap Local boundNames then index + 1 else index
         replacement' = foldr (\n r → shift 1 n 0 r) replacement boundNames
     App argument function → App (go <$> argument) (go <$> function)
@@ -619,7 +665,7 @@ shift offset namespace minIndex expression =
                 | otherwise = minIndex
       body' = shift offset namespace minIndex' <$> body
        where
-        boundNames' = toList binds >>= fmap unAnn . bindingNames
+        boundNames' = toList binds >>= fmap unAnn . groupingNames
         minIndex'
           | namespace `elem` boundNames' = minIndex + 1
           | otherwise = minIndex

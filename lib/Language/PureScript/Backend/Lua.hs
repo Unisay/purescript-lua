@@ -92,6 +92,12 @@ fromQName modname name = qualifyName modname (fromName name)
 fromName ∷ HasCallStack ⇒ IR.Name → Lua.Name
 fromName = Name.makeSafe . IR.nameToText
 
+fromNameWithIndex ∷ HasCallStack ⇒ IR.Name → IR.Index → Lua.Name
+fromNameWithIndex name (IR.unIndex → index) =
+  if index == 0
+    then fromName name
+    else Name.makeSafe $ IR.nameToText name <> show index
+
 fromModuleName ∷ ModuleName → Lua.Name
 fromModuleName = Name.makeSafe . runModuleName
 
@@ -163,14 +169,14 @@ fromExp foreigns topLevelNames modname ir = case ir of
     e ← go $ IR.unAnn expr
     a ← go $ IR.unAnn param
     pure $ Lua.functionCall e [a]
-  IR.Ref qualifiedName _index →
+  IR.Ref qualifiedName index →
     pure case qualifiedName of
       IR.Local name
         | topLevelName ← fromQName modname name
         , Set.member topLevelName topLevelNames →
             Lua.varName topLevelName
       IR.Local name →
-        Lua.varName (fromName name)
+        Lua.varName (fromNameWithIndex name index)
       IR.Imported modname' name →
         Lua.varName (fromQName modname' name)
   IR.Let bindings bodyExp → do

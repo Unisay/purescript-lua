@@ -5,7 +5,7 @@ UberModule
         ( RecursiveGroup
           (
             ( Identity
-              ( Name "yes" ), Identity
+              ( Name "no" ), Identity
               ( Abs
                 ( Identity ( ParamNamed ( Name "v" ) ) )
                 ( Identity
@@ -18,7 +18,7 @@ UberModule
                     )
                     ( Identity
                       ( App
-                        ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
+                        ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
                         ( Identity ( LiteralBool False ) )
                       )
                     )
@@ -32,7 +32,7 @@ UberModule
                         )
                         ( Identity
                           ( App
-                            ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
+                            ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
                             ( Identity ( LiteralBool True ) )
                           )
                         )
@@ -45,7 +45,7 @@ UberModule
             ) :|
             [
               ( Identity
-                ( Name "no" ), Identity
+                ( Name "yes" ), Identity
                 ( Abs
                   ( Identity ( ParamNamed ( Name "v" ) ) )
                   ( Identity
@@ -58,7 +58,7 @@ UberModule
                       )
                       ( Identity
                         ( App
-                          ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
+                          ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
                           ( Identity ( LiteralBool False ) )
                         )
                       )
@@ -72,7 +72,7 @@ UberModule
                           )
                           ( Identity
                             ( App
-                              ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
+                              ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
                               ( Identity ( LiteralBool True ) )
                             )
                           )
@@ -94,7 +94,7 @@ UberModule
         ( RecursiveGroup
           (
             ( Identity
-              ( Name "yes" ), Identity
+              ( Name "no" ), Identity
               ( Abs
                 ( Identity ( ParamNamed ( Name "v" ) ) )
                 ( Identity
@@ -107,7 +107,7 @@ UberModule
                     )
                     ( Identity
                       ( App
-                        ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
+                        ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
                         ( Identity ( LiteralBool False ) )
                       )
                     )
@@ -121,7 +121,7 @@ UberModule
                         )
                         ( Identity
                           ( App
-                            ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
+                            ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
                             ( Identity ( LiteralBool True ) )
                           )
                         )
@@ -134,7 +134,7 @@ UberModule
             ) :|
             [
               ( Identity
-                ( Name "no" ), Identity
+                ( Name "yes" ), Identity
                 ( Abs
                   ( Identity ( ParamNamed ( Name "v" ) ) )
                   ( Identity
@@ -147,7 +147,7 @@ UberModule
                       )
                       ( Identity
                         ( App
-                          ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
+                          ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
                           ( Identity ( LiteralBool False ) )
                         )
                       )
@@ -161,7 +161,7 @@ UberModule
                           )
                           ( Identity
                             ( App
-                              ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
+                              ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
                               ( Identity ( LiteralBool True ) )
                             )
                           )
@@ -185,11 +185,11 @@ UberModule
           [ RecursiveGroup
             (
               ( Identity
-                ( Name "b" ), Identity
+                ( Name "a" ), Identity
                 ( Abs ( Identity ParamUnused )
                   ( Identity
                     ( App
-                      ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
+                      ( Identity ( Ref ( Local ( Name "b" ) ) 0 ) )
                       ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
                     )
                   )
@@ -197,11 +197,11 @@ UberModule
               ) :|
               [
                 ( Identity
-                  ( Name "a" ), Identity
+                  ( Name "b" ), Identity
                   ( Abs ( Identity ParamUnused )
                     ( Identity
                       ( App
-                        ( Identity ( Ref ( Local ( Name "b" ) ) 0 ) )
+                        ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
                         ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
                       )
                     )

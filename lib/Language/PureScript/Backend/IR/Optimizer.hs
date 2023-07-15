@@ -1,8 +1,11 @@
 module Language.PureScript.Backend.IR.Optimizer where
 
+import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
+import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.DCE qualified as DCE
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
+import Language.PureScript.Backend.IR.Query (collectBoundNames)
 import Language.PureScript.Backend.IR.Types
   ( Annotated
   , Exp
@@ -25,9 +28,131 @@ import Language.PureScript.Backend.IR.Types
   , thenRewrite
   , unAnn
   )
+import Language.PureScript.Backend.IR.Types qualified as IR
 
 optimizedUberModule ∷ UberModule → UberModule
-optimizedUberModule = idempotently $ DCE.eliminateDeadCode . optimizeModule
+optimizedUberModule =
+  renameShadowedNames . idempotently (DCE.eliminateDeadCode . optimizeModule)
+
+renameShadowedNames ∷ UberModule → UberModule
+renameShadowedNames UberModule {..} =
+  UberModule
+    { uberModuleBindings = uberModuleBindings'
+    , uberModuleExports = uberModuleExports'
+    }
+ where
+  uberModuleBindings' ∷ [Grouping (QName, Exp)] = uberModuleBindings
+  uberModuleExports' ∷ [(Name, Exp)] =
+    renameShadowedNamesInExpr mempty <<$>> uberModuleExports
+
+type RenamesInScope = Map Name [Name]
+
+renameShadowedNamesInExpr ∷ RenamesInScope → RawExp Identity → RawExp Identity
+renameShadowedNamesInExpr scope = go
+ where
+  go = \case
+    IR.LiteralInt i →
+      IR.LiteralInt i
+    IR.LiteralFloat f →
+      IR.LiteralFloat f
+    IR.LiteralString s →
+      IR.LiteralString s
+    IR.LiteralChar c →
+      IR.LiteralChar c
+    IR.LiteralBool b →
+      IR.LiteralBool b
+    IR.LiteralArray as →
+      IR.LiteralArray (go <<$>> as)
+    IR.LiteralObject ps →
+      IR.LiteralObject ((go <$>) <<$>> ps)
+    IR.ReflectCtor a →
+      IR.ReflectCtor (go <$> a)
+    IR.Eq a b →
+      IR.Eq (go <$> a) (go <$> b)
+    IR.DataArgumentByIndex index a →
+      IR.DataArgumentByIndex index (go <$> a)
+    IR.ArrayLength a →
+      IR.ArrayLength (go <$> a)
+    IR.ArrayIndex a index →
+      IR.ArrayIndex (go <$> a) index
+    IR.ObjectProp a prop →
+      IR.ObjectProp (go <$> a) prop
+    IR.ObjectUpdate a ps →
+      IR.ObjectUpdate (go <$> a) ((go <$>) <<$>> ps)
+    IR.Abs param body →
+      IR.Abs param' (renameShadowedNamesInExpr scope' <$> body)
+     where
+      (param', scope') =
+        case IR.unAnn param of
+          IR.ParamUnused →
+            (param, scope)
+          IR.ParamNamed name →
+            first
+              (pure . IR.ParamNamed)
+              (withScopedName (IR.unAnn body) scope name)
+    IR.App a b →
+      IR.App (go <$> a) (go <$> b)
+    IR.Ref qname index →
+      case qname of
+        IR.Local lname
+          | Just renames ← Map.lookup lname scope
+          , Just rename ← renames !!? fromIntegral (IR.unIndex index) →
+              IR.Ref (IR.Local rename) 0
+        _ → IR.Ref qname index
+    IR.Let binds body →
+      IR.Let (NE.fromList (reverse binds')) body'
+     where
+      scope' ∷ RenamesInScope
+      binds' ∷ [Grouping (Identity Name, Identity Exp)]
+      (scope', binds') = foldl' f (scope, []) (toList binds)
+      f
+        ∷ (RenamesInScope, [Grouping (Identity Name, Identity Exp)])
+        → Grouping (Identity Name, Identity Exp)
+        → (RenamesInScope, [Grouping (Identity Name, Identity Exp)])
+      f (sc, bs) = \case
+        Standalone (IR.unAnn → name, expr) →
+          withScopedName (IR.unAnn expr) sc name & \(name', sc') →
+            let expr' = renameShadowedNamesInExpr sc <$> expr
+             in (sc', Standalone (pure name', expr') : bs)
+        RecursiveGroup (toList → recGroup) →
+          (: bs) . RecursiveGroup . NE.fromList <$> foldl' g (sc, []) recGroup
+         where
+          g
+            ∷ (RenamesInScope, [(Identity Name, Identity Exp)])
+            → (Identity Name, Identity Exp)
+            → (RenamesInScope, [(Identity Name, Identity Exp)])
+          g (sc', recBinds) (IR.unAnn → name, expr) =
+            withScopedName (IR.unAnn expr) sc' name & \(name', sc'') →
+              let expr' = renameShadowedNamesInExpr sc' <$> expr
+               in (sc'', (pure name', expr') : recBinds)
+      body' = renameShadowedNamesInExpr scope' <$> body
+    IR.IfThenElse i t e →
+      IR.IfThenElse (go <$> i) (go <$> t) (go <$> e)
+    IR.Ctor aty ty ctr fs →
+      IR.Ctor aty ty ctr fs
+    IR.Exception m →
+      IR.Exception m
+    IR.ForeignImport m p →
+      IR.ForeignImport m p
+   where
+    withScopedName ∷ Exp → Map Name [Name] → Name → (Name, Map Name [Name])
+    withScopedName e sc name = case Map.lookup name sc of
+      Nothing → (name, Map.insert name [name] sc)
+      Just renames →
+        ( rename
+        , Map.insert rename [] $ Map.insert name (rename : renames) sc
+        )
+       where
+        nextIndex = length renames
+        usedNames = Map.keysSet sc <> collectBoundNames e
+        rename = uniqueName usedNames name nextIndex
+
+    uniqueName ∷ Set Name → Name → Int → Name
+    uniqueName usedNames n i =
+      let nextName = Name (nameToText n <> show i)
+       in if Set.member nextName usedNames
+            then uniqueName usedNames n (i + 1)
+            else nextName
 
 idempotently ∷ Eq a ⇒ (a → a) → a → a
 idempotently = fix $ \i f a →
@@ -43,7 +168,6 @@ optimizeModule UberModule {..} =
   UberModule
     { uberModuleBindings = uberModuleBindings'
     , uberModuleExports = uberModuleExports'
-    , ..
     }
  where
   (uberModuleBindings', uberModuleExports') =
