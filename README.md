@@ -1,5 +1,7 @@
 # Purescript Backend for Lua
 
+[![Purescript Lua CI](https://github.com/Unisay/purescript-lua/actions/workflows/ci.yaml/badge.svg)](https://github.com/Unisay/purescript-lua/actions/workflows/ci.yaml)
+
 Status: (2023-07-05) the project is in the "_ready to be experimented with_" state (read: it likely contains bugs but is already usable).
 
 ## Features
