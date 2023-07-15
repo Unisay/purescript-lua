@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+
+nix build '.#static'
+mkdir -p dist
+rm -f -- dist/pslua-linux_x86_64.tar.gz
+rm -f -- dist/pslua
+upx --best ./result/bin/pslua -o ./dist/pslua
+rm -rf ./result
+tar -czcf dist/pslua-linux_x86_64.tar.gz -C ./dist pslua
