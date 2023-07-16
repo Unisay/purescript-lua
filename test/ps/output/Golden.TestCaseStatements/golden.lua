@@ -18,10 +18,8 @@ return {
       end
     end)()
   end)(),
-  J = function(value0)
-    return { ["$ctor"] = "Golden_TestCaseStatements.J", value0 = value0 }
-  end,
-  N = function() return { ["$ctor"] = "Golden_TestCaseStatements.N" } end,
+  J = function(value0) return { ["$ctor"] = "M.J", value0 = value0 } end,
+  N = { ["$ctor"] = "M.N" },
   d = function(m)
     return function(n)
       return function(x)
@@ -31,10 +29,10 @@ return {
         return (function()
           if "x" == x then
             return (function()
-              if "Golden.TestCaseStatements.J" == m["$ctor"] then
+              if "M.J" == m["$ctor"] then
                 return (function()
-                  if "Golden.TestCaseStatements.N" == n["$ctor"] then
-                    return m[0]
+                  if "M.N" == n["$ctor"] then
+                    return m.value0
                   else
                     return v(true)
                   end

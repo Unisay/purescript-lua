@@ -108,7 +108,7 @@ UberModule
                           ( IfThenElse
                             ( Identity
                               ( Eq
-                                ( Identity ( LiteralString "Golden.TestCaseStatements.J" ) )
+                                ( Identity ( LiteralString "M.J" ) )
                                 ( Identity
                                   ( ReflectCtor ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) ) )
                                 )
@@ -118,14 +118,17 @@ UberModule
                               ( IfThenElse
                                 ( Identity
                                   ( Eq
-                                    ( Identity ( LiteralString "Golden.TestCaseStatements.N" ) )
+                                    ( Identity ( LiteralString "M.N" ) )
                                     ( Identity
                                       ( ReflectCtor ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) ) )
                                     )
                                   )
                                 )
                                 ( Identity
-                                  ( ArrayIndex ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) ) 0 )
+                                  ( ObjectProp
+                                    ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) )
+                                    ( PropName "value0" )
+                                  )
                                 )
                                 ( Identity
                                   ( App

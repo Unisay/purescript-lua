@@ -1,12 +1,10 @@
 return {
-  CtorSameName = function()
-    return { ["$ctor"] = "Golden_TestDataDeclarations2.CtorSameName" }
-  end,
+  CtorSameName = { ["$ctor"] = "TySameName.CtorSameName" },
   test = function(v)
     return function(v1)
-      if "Golden.TestDataDeclarations1.CtorSameName" == v["$ctor"] then
+      if "TySameName.CtorSameName" == v["$ctor"] then
         return (function()
-          if "Golden.TestDataDeclarations2.CtorSameName" == v1["$ctor"] then
+          if "TySameName.CtorSameName" == v1["$ctor"] then
             return true
           else
             return error("No patterns matched")

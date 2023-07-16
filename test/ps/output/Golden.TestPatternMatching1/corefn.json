@@ -1,1 +1,1413 @@
-{"builtWith":"0.15.9","comments":[],"decls":[{"annotation":{"meta":null,"sourceSpan":{"end":[3,23],"start":[3,1]}},"bindType":"NonRec","expression":{"annotation":{"meta":null,"sourceSpan":{"end":[3,23],"start":[3,1]}},"constructorName":"Zero","fieldNames":[],"type":"Constructor","typeName":"N"},"identifier":"Zero"},{"annotation":{"meta":null,"sourceSpan":{"end":[3,23],"start":[3,1]}},"bindType":"NonRec","expression":{"annotation":{"meta":null,"sourceSpan":{"end":[3,23],"start":[3,1]}},"constructorName":"Succ","fieldNames":["value0"],"type":"Constructor","typeName":"N"},"identifier":"Succ"},{"annotation":{"meta":null,"sourceSpan":{"end":[4,23],"start":[4,1]}},"bindType":"NonRec","expression":{"annotation":{"meta":null,"sourceSpan":{"end":[4,23],"start":[4,1]}},"constructorName":"Num","fieldNames":["value0"],"type":"Constructor","typeName":"E"},"identifier":"Num"},{"annotation":{"meta":null,"sourceSpan":{"end":[4,23],"start":[4,1]}},"bindType":"NonRec","expression":{"annotation":{"meta":null,"sourceSpan":{"end":[4,23],"start":[4,1]}},"constructorName":"Not","fieldNames":["value0"],"type":"Constructor","typeName":"E"},"identifier":"Not"},{"annotation":{"meta":null,"sourceSpan":{"end":[6,16],"start":[6,1]}},"bindType":"NonRec","expression":{"annotation":{"meta":null,"sourceSpan":{"end":[6,16],"start":[6,1]}},"argument":"e","body":{"annotation":{"meta":null,"sourceSpan":{"end":[13,9],"start":[7,9]}},"caseAlternatives":[{"binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[8,21],"start":[8,3]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[8,20],"start":[8,8]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[8,19],"start":[8,13]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":null,"sourceSpan":{"end":[8,19],"start":[8,18]}},"binderType":"NullBinder"}],"constructorName":{"identifier":"Succ","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"N","moduleName":["Golden","TestPatternMatching1"]}}],"constructorName":{"identifier":"Num","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"E","moduleName":["Golden","TestPatternMatching1"]}}],"constructorName":{"identifier":"Not","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"E","moduleName":["Golden","TestPatternMatching1"]}}],"expression":{"annotation":{"meta":null,"sourceSpan":{"end":[8,26],"start":[8,25]}},"type":"Literal","value":{"literalType":"IntLiteral","value":1}},"isGuarded":false},{"binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[9,17],"start":[9,3]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[9,16],"start":[9,8]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":[],"metaType":"IsConstructor"},"sourceSpan":{"end":[9,16],"start":[9,12]}},"binderType":"ConstructorBinder","binders":[],"constructorName":{"identifier":"Zero","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"N","moduleName":["Golden","TestPatternMatching1"]}}],"constructorName":{"identifier":"Num","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"E","moduleName":["Golden","TestPatternMatching1"]}}],"constructorName":{"identifier":"Not","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"E","moduleName":["Golden","TestPatternMatching1"]}}],"expression":{"annotation":{"meta":null,"sourceSpan":{"end":[9,22],"start":[9,21]}},"type":"Literal","value":{"literalType":"IntLiteral","value":2}},"isGuarded":false},{"binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[10,27],"start":[10,3]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[10,26],"start":[10,8]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[10,25],"start":[10,13]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[10,24],"start":[10,18]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":null,"sourceSpan":{"end":[10,24],"start":[10,23]}},"binderType":"NullBinder"}],"constructorName":{"identifier":"Succ","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"N","moduleName":["Golden","TestPatternMatching1"]}}],"constructorName":{"identifier":"Num","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"E","moduleName":["Golden","TestPatternMatching1"]}}],"constructorName":{"identifier":"Not","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"E","moduleName":["Golden","TestPatternMatching1"]}}],"constructorName":{"identifier":"Not","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"E","moduleName":["Golden","TestPatternMatching1"]}}],"expression":{"annotation":{"meta":null,"sourceSpan":{"end":[10,32],"start":[10,31]}},"type":"Literal","value":{"literalType":"IntLiteral","value":3}},"isGuarded":false},{"binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[11,15],"start":[11,3]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[11,14],"start":[11,8]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":null,"sourceSpan":{"end":[11,14],"start":[11,13]}},"binderType":"NullBinder"}],"constructorName":{"identifier":"Succ","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"N","moduleName":["Golden","TestPatternMatching1"]}}],"constructorName":{"identifier":"Num","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"E","moduleName":["Golden","TestPatternMatching1"]}}],"expression":{"annotation":{"meta":null,"sourceSpan":{"end":[11,20],"start":[11,19]}},"type":"Literal","value":{"literalType":"IntLiteral","value":4}},"isGuarded":false},{"binders":[{"annotation":{"meta":{"constructorType":"SumType","identifiers":["value0"],"metaType":"IsConstructor"},"sourceSpan":{"end":[12,8],"start":[12,3]}},"binderType":"ConstructorBinder","binders":[{"annotation":{"meta":null,"sourceSpan":{"end":[12,8],"start":[12,7]}},"binderType":"NullBinder"}],"constructorName":{"identifier":"Num","moduleName":["Golden","TestPatternMatching1"]},"typeName":{"identifier":"E","moduleName":["Golden","TestPatternMatching1"]}}],"expression":{"annotation":{"meta":null,"sourceSpan":{"end":[12,13],"start":[12,12]}},"type":"Literal","value":{"literalType":"IntLiteral","value":5}},"isGuarded":false},{"binders":[{"annotation":{"meta":null,"sourceSpan":{"end":[13,4],"start":[13,3]}},"binderType":"NullBinder"}],"expression":{"annotation":{"meta":null,"sourceSpan":{"end":[13,9],"start":[13,8]}},"type":"Literal","value":{"literalType":"IntLiteral","value":6}},"isGuarded":false}],"caseExpressions":[{"annotation":{"meta":null,"sourceSpan":{"end":[7,15],"start":[7,14]}},"type":"Var","value":{"identifier":"e","sourcePos":[7,1]}}],"type":"Case"},"type":"Abs"},"identifier":"pat"}],"exports":["Zero","Succ","Num","Not","pat"],"foreign":[],"imports":[{"annotation":{"meta":null,"sourceSpan":{"end":[13,9],"start":[1,1]}},"moduleName":["Golden","TestPatternMatching1"]},{"annotation":{"meta":null,"sourceSpan":{"end":[13,9],"start":[1,1]}},"moduleName":["Prim"]}],"moduleName":["Golden","TestPatternMatching1"],"modulePath":"golden/Golden/TestPatternMatching1.purs","reExports":{},"sourceSpan":{"end":[13,9],"start":[1,1]}}
+{
+  "builtWith": "0.15.9",
+  "comments": [],
+  "decls": [
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            15,
+            23
+          ],
+          "start": [
+            15,
+            1
+          ]
+        }
+      },
+      "bindType": "NonRec",
+      "expression": {
+        "annotation": {
+          "meta": null,
+          "sourceSpan": {
+            "end": [
+              15,
+              23
+            ],
+            "start": [
+              15,
+              1
+            ]
+          }
+        },
+        "constructorName": "T",
+        "fieldNames": [
+          "value0",
+          "value1"
+        ],
+        "type": "Constructor",
+        "typeName": "Tuple"
+      },
+      "identifier": "T"
+    },
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            3,
+            23
+          ],
+          "start": [
+            3,
+            1
+          ]
+        }
+      },
+      "bindType": "NonRec",
+      "expression": {
+        "annotation": {
+          "meta": null,
+          "sourceSpan": {
+            "end": [
+              3,
+              23
+            ],
+            "start": [
+              3,
+              1
+            ]
+          }
+        },
+        "constructorName": "Zero",
+        "fieldNames": [],
+        "type": "Constructor",
+        "typeName": "N"
+      },
+      "identifier": "Zero"
+    },
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            3,
+            23
+          ],
+          "start": [
+            3,
+            1
+          ]
+        }
+      },
+      "bindType": "NonRec",
+      "expression": {
+        "annotation": {
+          "meta": null,
+          "sourceSpan": {
+            "end": [
+              3,
+              23
+            ],
+            "start": [
+              3,
+              1
+            ]
+          }
+        },
+        "constructorName": "Succ",
+        "fieldNames": [
+          "value0"
+        ],
+        "type": "Constructor",
+        "typeName": "N"
+      },
+      "identifier": "Succ"
+    },
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            4,
+            23
+          ],
+          "start": [
+            4,
+            1
+          ]
+        }
+      },
+      "bindType": "NonRec",
+      "expression": {
+        "annotation": {
+          "meta": null,
+          "sourceSpan": {
+            "end": [
+              4,
+              23
+            ],
+            "start": [
+              4,
+              1
+            ]
+          }
+        },
+        "constructorName": "Num",
+        "fieldNames": [
+          "value0"
+        ],
+        "type": "Constructor",
+        "typeName": "E"
+      },
+      "identifier": "Num"
+    },
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            4,
+            23
+          ],
+          "start": [
+            4,
+            1
+          ]
+        }
+      },
+      "bindType": "NonRec",
+      "expression": {
+        "annotation": {
+          "meta": null,
+          "sourceSpan": {
+            "end": [
+              4,
+              23
+            ],
+            "start": [
+              4,
+              1
+            ]
+          }
+        },
+        "constructorName": "Not",
+        "fieldNames": [
+          "value0"
+        ],
+        "type": "Constructor",
+        "typeName": "E"
+      },
+      "identifier": "Not"
+    },
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            20,
+            20
+          ],
+          "start": [
+            20,
+            1
+          ]
+        }
+      },
+      "bindType": "NonRec",
+      "expression": {
+        "annotation": {
+          "meta": null,
+          "sourceSpan": {
+            "end": [
+              20,
+              20
+            ],
+            "start": [
+              20,
+              1
+            ]
+          }
+        },
+        "argument": "v",
+        "body": {
+          "annotation": {
+            "meta": null,
+            "sourceSpan": {
+              "end": [
+                20,
+                20
+              ],
+              "start": [
+                20,
+                1
+              ]
+            }
+          },
+          "caseAlternatives": [
+            {
+              "binders": [
+                {
+                  "annotation": {
+                    "meta": {
+                      "constructorType": "ProductType",
+                      "identifiers": [
+                        "value0",
+                        "value1"
+                      ],
+                      "metaType": "IsConstructor"
+                    },
+                    "sourceSpan": {
+                      "end": [
+                        21,
+                        11
+                      ],
+                      "start": [
+                        21,
+                        6
+                      ]
+                    }
+                  },
+                  "binderType": "ConstructorBinder",
+                  "binders": [
+                    {
+                      "annotation": {
+                        "meta": null,
+                        "sourceSpan": {
+                          "end": [
+                            21,
+                            9
+                          ],
+                          "start": [
+                            21,
+                            8
+                          ]
+                        }
+                      },
+                      "binderType": "NullBinder"
+                    },
+                    {
+                      "annotation": {
+                        "meta": null,
+                        "sourceSpan": {
+                          "end": [
+                            21,
+                            11
+                          ],
+                          "start": [
+                            21,
+                            10
+                          ]
+                        }
+                      },
+                      "binderType": "VarBinder",
+                      "identifier": "y"
+                    }
+                  ],
+                  "constructorName": {
+                    "identifier": "T",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  },
+                  "typeName": {
+                    "identifier": "Tuple",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  }
+                }
+              ],
+              "expression": {
+                "annotation": {
+                  "meta": null,
+                  "sourceSpan": {
+                    "end": [
+                      21,
+                      16
+                    ],
+                    "start": [
+                      21,
+                      15
+                    ]
+                  }
+                },
+                "type": "Var",
+                "value": {
+                  "identifier": "y",
+                  "sourcePos": [
+                    21,
+                    10
+                  ]
+                }
+              },
+              "isGuarded": false
+            }
+          ],
+          "caseExpressions": [
+            {
+              "annotation": {
+                "meta": null,
+                "sourceSpan": {
+                  "end": [
+                    21,
+                    16
+                  ],
+                  "start": [
+                    21,
+                    1
+                  ]
+                }
+              },
+              "type": "Var",
+              "value": {
+                "identifier": "v",
+                "sourcePos": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ],
+          "type": "Case"
+        },
+        "type": "Abs"
+      },
+      "identifier": "snd"
+    },
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            6,
+            16
+          ],
+          "start": [
+            6,
+            1
+          ]
+        }
+      },
+      "bindType": "NonRec",
+      "expression": {
+        "annotation": {
+          "meta": null,
+          "sourceSpan": {
+            "end": [
+              6,
+              16
+            ],
+            "start": [
+              6,
+              1
+            ]
+          }
+        },
+        "argument": "e",
+        "body": {
+          "annotation": {
+            "meta": null,
+            "sourceSpan": {
+              "end": [
+                13,
+                9
+              ],
+              "start": [
+                7,
+                9
+              ]
+            }
+          },
+          "caseAlternatives": [
+            {
+              "binders": [
+                {
+                  "annotation": {
+                    "meta": {
+                      "constructorType": "SumType",
+                      "identifiers": [
+                        "value0"
+                      ],
+                      "metaType": "IsConstructor"
+                    },
+                    "sourceSpan": {
+                      "end": [
+                        8,
+                        21
+                      ],
+                      "start": [
+                        8,
+                        3
+                      ]
+                    }
+                  },
+                  "binderType": "ConstructorBinder",
+                  "binders": [
+                    {
+                      "annotation": {
+                        "meta": {
+                          "constructorType": "SumType",
+                          "identifiers": [
+                            "value0"
+                          ],
+                          "metaType": "IsConstructor"
+                        },
+                        "sourceSpan": {
+                          "end": [
+                            8,
+                            20
+                          ],
+                          "start": [
+                            8,
+                            8
+                          ]
+                        }
+                      },
+                      "binderType": "ConstructorBinder",
+                      "binders": [
+                        {
+                          "annotation": {
+                            "meta": {
+                              "constructorType": "SumType",
+                              "identifiers": [
+                                "value0"
+                              ],
+                              "metaType": "IsConstructor"
+                            },
+                            "sourceSpan": {
+                              "end": [
+                                8,
+                                19
+                              ],
+                              "start": [
+                                8,
+                                13
+                              ]
+                            }
+                          },
+                          "binderType": "ConstructorBinder",
+                          "binders": [
+                            {
+                              "annotation": {
+                                "meta": null,
+                                "sourceSpan": {
+                                  "end": [
+                                    8,
+                                    19
+                                  ],
+                                  "start": [
+                                    8,
+                                    18
+                                  ]
+                                }
+                              },
+                              "binderType": "NullBinder"
+                            }
+                          ],
+                          "constructorName": {
+                            "identifier": "Succ",
+                            "moduleName": [
+                              "Golden",
+                              "TestPatternMatching1"
+                            ]
+                          },
+                          "typeName": {
+                            "identifier": "N",
+                            "moduleName": [
+                              "Golden",
+                              "TestPatternMatching1"
+                            ]
+                          }
+                        }
+                      ],
+                      "constructorName": {
+                        "identifier": "Num",
+                        "moduleName": [
+                          "Golden",
+                          "TestPatternMatching1"
+                        ]
+                      },
+                      "typeName": {
+                        "identifier": "E",
+                        "moduleName": [
+                          "Golden",
+                          "TestPatternMatching1"
+                        ]
+                      }
+                    }
+                  ],
+                  "constructorName": {
+                    "identifier": "Not",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  },
+                  "typeName": {
+                    "identifier": "E",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  }
+                }
+              ],
+              "expression": {
+                "annotation": {
+                  "meta": null,
+                  "sourceSpan": {
+                    "end": [
+                      8,
+                      26
+                    ],
+                    "start": [
+                      8,
+                      25
+                    ]
+                  }
+                },
+                "type": "Literal",
+                "value": {
+                  "literalType": "IntLiteral",
+                  "value": 1
+                }
+              },
+              "isGuarded": false
+            },
+            {
+              "binders": [
+                {
+                  "annotation": {
+                    "meta": {
+                      "constructorType": "SumType",
+                      "identifiers": [
+                        "value0"
+                      ],
+                      "metaType": "IsConstructor"
+                    },
+                    "sourceSpan": {
+                      "end": [
+                        9,
+                        17
+                      ],
+                      "start": [
+                        9,
+                        3
+                      ]
+                    }
+                  },
+                  "binderType": "ConstructorBinder",
+                  "binders": [
+                    {
+                      "annotation": {
+                        "meta": {
+                          "constructorType": "SumType",
+                          "identifiers": [
+                            "value0"
+                          ],
+                          "metaType": "IsConstructor"
+                        },
+                        "sourceSpan": {
+                          "end": [
+                            9,
+                            16
+                          ],
+                          "start": [
+                            9,
+                            8
+                          ]
+                        }
+                      },
+                      "binderType": "ConstructorBinder",
+                      "binders": [
+                        {
+                          "annotation": {
+                            "meta": {
+                              "constructorType": "SumType",
+                              "identifiers": [],
+                              "metaType": "IsConstructor"
+                            },
+                            "sourceSpan": {
+                              "end": [
+                                9,
+                                16
+                              ],
+                              "start": [
+                                9,
+                                12
+                              ]
+                            }
+                          },
+                          "binderType": "ConstructorBinder",
+                          "binders": [],
+                          "constructorName": {
+                            "identifier": "Zero",
+                            "moduleName": [
+                              "Golden",
+                              "TestPatternMatching1"
+                            ]
+                          },
+                          "typeName": {
+                            "identifier": "N",
+                            "moduleName": [
+                              "Golden",
+                              "TestPatternMatching1"
+                            ]
+                          }
+                        }
+                      ],
+                      "constructorName": {
+                        "identifier": "Num",
+                        "moduleName": [
+                          "Golden",
+                          "TestPatternMatching1"
+                        ]
+                      },
+                      "typeName": {
+                        "identifier": "E",
+                        "moduleName": [
+                          "Golden",
+                          "TestPatternMatching1"
+                        ]
+                      }
+                    }
+                  ],
+                  "constructorName": {
+                    "identifier": "Not",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  },
+                  "typeName": {
+                    "identifier": "E",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  }
+                }
+              ],
+              "expression": {
+                "annotation": {
+                  "meta": null,
+                  "sourceSpan": {
+                    "end": [
+                      9,
+                      22
+                    ],
+                    "start": [
+                      9,
+                      21
+                    ]
+                  }
+                },
+                "type": "Literal",
+                "value": {
+                  "literalType": "IntLiteral",
+                  "value": 2
+                }
+              },
+              "isGuarded": false
+            },
+            {
+              "binders": [
+                {
+                  "annotation": {
+                    "meta": {
+                      "constructorType": "SumType",
+                      "identifiers": [
+                        "value0"
+                      ],
+                      "metaType": "IsConstructor"
+                    },
+                    "sourceSpan": {
+                      "end": [
+                        10,
+                        27
+                      ],
+                      "start": [
+                        10,
+                        3
+                      ]
+                    }
+                  },
+                  "binderType": "ConstructorBinder",
+                  "binders": [
+                    {
+                      "annotation": {
+                        "meta": {
+                          "constructorType": "SumType",
+                          "identifiers": [
+                            "value0"
+                          ],
+                          "metaType": "IsConstructor"
+                        },
+                        "sourceSpan": {
+                          "end": [
+                            10,
+                            26
+                          ],
+                          "start": [
+                            10,
+                            8
+                          ]
+                        }
+                      },
+                      "binderType": "ConstructorBinder",
+                      "binders": [
+                        {
+                          "annotation": {
+                            "meta": {
+                              "constructorType": "SumType",
+                              "identifiers": [
+                                "value0"
+                              ],
+                              "metaType": "IsConstructor"
+                            },
+                            "sourceSpan": {
+                              "end": [
+                                10,
+                                25
+                              ],
+                              "start": [
+                                10,
+                                13
+                              ]
+                            }
+                          },
+                          "binderType": "ConstructorBinder",
+                          "binders": [
+                            {
+                              "annotation": {
+                                "meta": {
+                                  "constructorType": "SumType",
+                                  "identifiers": [
+                                    "value0"
+                                  ],
+                                  "metaType": "IsConstructor"
+                                },
+                                "sourceSpan": {
+                                  "end": [
+                                    10,
+                                    24
+                                  ],
+                                  "start": [
+                                    10,
+                                    18
+                                  ]
+                                }
+                              },
+                              "binderType": "ConstructorBinder",
+                              "binders": [
+                                {
+                                  "annotation": {
+                                    "meta": null,
+                                    "sourceSpan": {
+                                      "end": [
+                                        10,
+                                        24
+                                      ],
+                                      "start": [
+                                        10,
+                                        23
+                                      ]
+                                    }
+                                  },
+                                  "binderType": "NullBinder"
+                                }
+                              ],
+                              "constructorName": {
+                                "identifier": "Succ",
+                                "moduleName": [
+                                  "Golden",
+                                  "TestPatternMatching1"
+                                ]
+                              },
+                              "typeName": {
+                                "identifier": "N",
+                                "moduleName": [
+                                  "Golden",
+                                  "TestPatternMatching1"
+                                ]
+                              }
+                            }
+                          ],
+                          "constructorName": {
+                            "identifier": "Num",
+                            "moduleName": [
+                              "Golden",
+                              "TestPatternMatching1"
+                            ]
+                          },
+                          "typeName": {
+                            "identifier": "E",
+                            "moduleName": [
+                              "Golden",
+                              "TestPatternMatching1"
+                            ]
+                          }
+                        }
+                      ],
+                      "constructorName": {
+                        "identifier": "Not",
+                        "moduleName": [
+                          "Golden",
+                          "TestPatternMatching1"
+                        ]
+                      },
+                      "typeName": {
+                        "identifier": "E",
+                        "moduleName": [
+                          "Golden",
+                          "TestPatternMatching1"
+                        ]
+                      }
+                    }
+                  ],
+                  "constructorName": {
+                    "identifier": "Not",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  },
+                  "typeName": {
+                    "identifier": "E",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  }
+                }
+              ],
+              "expression": {
+                "annotation": {
+                  "meta": null,
+                  "sourceSpan": {
+                    "end": [
+                      10,
+                      32
+                    ],
+                    "start": [
+                      10,
+                      31
+                    ]
+                  }
+                },
+                "type": "Literal",
+                "value": {
+                  "literalType": "IntLiteral",
+                  "value": 3
+                }
+              },
+              "isGuarded": false
+            },
+            {
+              "binders": [
+                {
+                  "annotation": {
+                    "meta": {
+                      "constructorType": "SumType",
+                      "identifiers": [
+                        "value0"
+                      ],
+                      "metaType": "IsConstructor"
+                    },
+                    "sourceSpan": {
+                      "end": [
+                        11,
+                        15
+                      ],
+                      "start": [
+                        11,
+                        3
+                      ]
+                    }
+                  },
+                  "binderType": "ConstructorBinder",
+                  "binders": [
+                    {
+                      "annotation": {
+                        "meta": {
+                          "constructorType": "SumType",
+                          "identifiers": [
+                            "value0"
+                          ],
+                          "metaType": "IsConstructor"
+                        },
+                        "sourceSpan": {
+                          "end": [
+                            11,
+                            14
+                          ],
+                          "start": [
+                            11,
+                            8
+                          ]
+                        }
+                      },
+                      "binderType": "ConstructorBinder",
+                      "binders": [
+                        {
+                          "annotation": {
+                            "meta": null,
+                            "sourceSpan": {
+                              "end": [
+                                11,
+                                14
+                              ],
+                              "start": [
+                                11,
+                                13
+                              ]
+                            }
+                          },
+                          "binderType": "NullBinder"
+                        }
+                      ],
+                      "constructorName": {
+                        "identifier": "Succ",
+                        "moduleName": [
+                          "Golden",
+                          "TestPatternMatching1"
+                        ]
+                      },
+                      "typeName": {
+                        "identifier": "N",
+                        "moduleName": [
+                          "Golden",
+                          "TestPatternMatching1"
+                        ]
+                      }
+                    }
+                  ],
+                  "constructorName": {
+                    "identifier": "Num",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  },
+                  "typeName": {
+                    "identifier": "E",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  }
+                }
+              ],
+              "expression": {
+                "annotation": {
+                  "meta": null,
+                  "sourceSpan": {
+                    "end": [
+                      11,
+                      20
+                    ],
+                    "start": [
+                      11,
+                      19
+                    ]
+                  }
+                },
+                "type": "Literal",
+                "value": {
+                  "literalType": "IntLiteral",
+                  "value": 4
+                }
+              },
+              "isGuarded": false
+            },
+            {
+              "binders": [
+                {
+                  "annotation": {
+                    "meta": {
+                      "constructorType": "SumType",
+                      "identifiers": [
+                        "value0"
+                      ],
+                      "metaType": "IsConstructor"
+                    },
+                    "sourceSpan": {
+                      "end": [
+                        12,
+                        8
+                      ],
+                      "start": [
+                        12,
+                        3
+                      ]
+                    }
+                  },
+                  "binderType": "ConstructorBinder",
+                  "binders": [
+                    {
+                      "annotation": {
+                        "meta": null,
+                        "sourceSpan": {
+                          "end": [
+                            12,
+                            8
+                          ],
+                          "start": [
+                            12,
+                            7
+                          ]
+                        }
+                      },
+                      "binderType": "NullBinder"
+                    }
+                  ],
+                  "constructorName": {
+                    "identifier": "Num",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  },
+                  "typeName": {
+                    "identifier": "E",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  }
+                }
+              ],
+              "expression": {
+                "annotation": {
+                  "meta": null,
+                  "sourceSpan": {
+                    "end": [
+                      12,
+                      13
+                    ],
+                    "start": [
+                      12,
+                      12
+                    ]
+                  }
+                },
+                "type": "Literal",
+                "value": {
+                  "literalType": "IntLiteral",
+                  "value": 5
+                }
+              },
+              "isGuarded": false
+            },
+            {
+              "binders": [
+                {
+                  "annotation": {
+                    "meta": null,
+                    "sourceSpan": {
+                      "end": [
+                        13,
+                        4
+                      ],
+                      "start": [
+                        13,
+                        3
+                      ]
+                    }
+                  },
+                  "binderType": "NullBinder"
+                }
+              ],
+              "expression": {
+                "annotation": {
+                  "meta": null,
+                  "sourceSpan": {
+                    "end": [
+                      13,
+                      9
+                    ],
+                    "start": [
+                      13,
+                      8
+                    ]
+                  }
+                },
+                "type": "Literal",
+                "value": {
+                  "literalType": "IntLiteral",
+                  "value": 6
+                }
+              },
+              "isGuarded": false
+            }
+          ],
+          "caseExpressions": [
+            {
+              "annotation": {
+                "meta": null,
+                "sourceSpan": {
+                  "end": [
+                    7,
+                    15
+                  ],
+                  "start": [
+                    7,
+                    14
+                  ]
+                }
+              },
+              "type": "Var",
+              "value": {
+                "identifier": "e",
+                "sourcePos": [
+                  7,
+                  1
+                ]
+              }
+            }
+          ],
+          "type": "Case"
+        },
+        "type": "Abs"
+      },
+      "identifier": "pat"
+    },
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            17,
+            20
+          ],
+          "start": [
+            17,
+            1
+          ]
+        }
+      },
+      "bindType": "NonRec",
+      "expression": {
+        "annotation": {
+          "meta": null,
+          "sourceSpan": {
+            "end": [
+              17,
+              20
+            ],
+            "start": [
+              17,
+              1
+            ]
+          }
+        },
+        "argument": "v",
+        "body": {
+          "annotation": {
+            "meta": null,
+            "sourceSpan": {
+              "end": [
+                17,
+                20
+              ],
+              "start": [
+                17,
+                1
+              ]
+            }
+          },
+          "caseAlternatives": [
+            {
+              "binders": [
+                {
+                  "annotation": {
+                    "meta": {
+                      "constructorType": "ProductType",
+                      "identifiers": [
+                        "value0",
+                        "value1"
+                      ],
+                      "metaType": "IsConstructor"
+                    },
+                    "sourceSpan": {
+                      "end": [
+                        18,
+                        11
+                      ],
+                      "start": [
+                        18,
+                        6
+                      ]
+                    }
+                  },
+                  "binderType": "ConstructorBinder",
+                  "binders": [
+                    {
+                      "annotation": {
+                        "meta": null,
+                        "sourceSpan": {
+                          "end": [
+                            18,
+                            9
+                          ],
+                          "start": [
+                            18,
+                            8
+                          ]
+                        }
+                      },
+                      "binderType": "VarBinder",
+                      "identifier": "x"
+                    },
+                    {
+                      "annotation": {
+                        "meta": null,
+                        "sourceSpan": {
+                          "end": [
+                            18,
+                            11
+                          ],
+                          "start": [
+                            18,
+                            10
+                          ]
+                        }
+                      },
+                      "binderType": "NullBinder"
+                    }
+                  ],
+                  "constructorName": {
+                    "identifier": "T",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  },
+                  "typeName": {
+                    "identifier": "Tuple",
+                    "moduleName": [
+                      "Golden",
+                      "TestPatternMatching1"
+                    ]
+                  }
+                }
+              ],
+              "expression": {
+                "annotation": {
+                  "meta": null,
+                  "sourceSpan": {
+                    "end": [
+                      18,
+                      16
+                    ],
+                    "start": [
+                      18,
+                      15
+                    ]
+                  }
+                },
+                "type": "Var",
+                "value": {
+                  "identifier": "x",
+                  "sourcePos": [
+                    18,
+                    8
+                  ]
+                }
+              },
+              "isGuarded": false
+            }
+          ],
+          "caseExpressions": [
+            {
+              "annotation": {
+                "meta": null,
+                "sourceSpan": {
+                  "end": [
+                    18,
+                    16
+                  ],
+                  "start": [
+                    18,
+                    1
+                  ]
+                }
+              },
+              "type": "Var",
+              "value": {
+                "identifier": "v",
+                "sourcePos": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ],
+          "type": "Case"
+        },
+        "type": "Abs"
+      },
+      "identifier": "fst"
+    }
+  ],
+  "exports": [
+    "Zero",
+    "Succ",
+    "Num",
+    "Not",
+    "pat",
+    "T",
+    "fst",
+    "snd"
+  ],
+  "foreign": [],
+  "imports": [
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            21,
+            16
+          ],
+          "start": [
+            1,
+            1
+          ]
+        }
+      },
+      "moduleName": [
+        "Golden",
+        "TestPatternMatching1"
+      ]
+    },
+    {
+      "annotation": {
+        "meta": null,
+        "sourceSpan": {
+          "end": [
+            21,
+            16
+          ],
+          "start": [
+            1,
+            1
+          ]
+        }
+      },
+      "moduleName": [
+        "Prim"
+      ]
+    }
+  ],
+  "moduleName": [
+    "Golden",
+    "TestPatternMatching1"
+  ],
+  "modulePath": "golden/Golden/TestPatternMatching1.purs",
+  "reExports": {},
+  "sourceSpan": {
+    "end": [
+      21,
+      16
+    ],
+    "start": [
+      1,
+      1
+    ]
+  }
+}

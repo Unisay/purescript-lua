@@ -11,7 +11,7 @@ UberModule
           ( IfThenElse
             ( Identity
               ( Eq
-                ( Identity ( LiteralString "Golden.TestPatternMatching1.Not" ) )
+                ( Identity ( LiteralString "E.Not" ) )
                 ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) ) )
               )
             )
@@ -19,10 +19,15 @@ UberModule
               ( IfThenElse
                 ( Identity
                   ( Eq
-                    ( Identity ( LiteralString "Golden.TestPatternMatching1.Num" ) )
+                    ( Identity ( LiteralString "E.Num" ) )
                     ( Identity
                       ( ReflectCtor
-                        ( Identity ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 ) )
+                        ( Identity
+                          ( ObjectProp
+                            ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
+                            ( PropName "value0" )
+                          )
+                        )
                       )
                     )
                   )
@@ -31,14 +36,18 @@ UberModule
                   ( IfThenElse
                     ( Identity
                       ( Eq
-                        ( Identity ( LiteralString "Golden.TestPatternMatching1.Succ" ) )
+                        ( Identity ( LiteralString "N.Succ" ) )
                         ( Identity
                           ( ReflectCtor
                             ( Identity
-                              ( ArrayIndex
+                              ( ObjectProp
                                 ( Identity
-                                  ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
-                                ) 0
+                                  ( ObjectProp
+                                    ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
+                                    ( PropName "value0" )
+                                  )
+                                )
+                                ( PropName "value0" )
                               )
                             )
                           )
@@ -50,14 +59,18 @@ UberModule
                       ( IfThenElse
                         ( Identity
                           ( Eq
-                            ( Identity ( LiteralString "Golden.TestPatternMatching1.Zero" ) )
+                            ( Identity ( LiteralString "N.Zero" ) )
                             ( Identity
                               ( ReflectCtor
                                 ( Identity
-                                  ( ArrayIndex
+                                  ( ObjectProp
                                     ( Identity
-                                      ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
-                                    ) 0
+                                      ( ObjectProp
+                                        ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
+                                        ( PropName "value0" )
+                                      )
+                                    )
+                                    ( PropName "value0" )
                                   )
                                 )
                               )
@@ -74,11 +87,14 @@ UberModule
                   ( IfThenElse
                     ( Identity
                       ( Eq
-                        ( Identity ( LiteralString "Golden.TestPatternMatching1.Not" ) )
+                        ( Identity ( LiteralString "E.Not" ) )
                         ( Identity
                           ( ReflectCtor
                             ( Identity
-                              ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
+                              ( ObjectProp
+                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
+                                ( PropName "value0" )
+                              )
                             )
                           )
                         )
@@ -88,14 +104,18 @@ UberModule
                       ( IfThenElse
                         ( Identity
                           ( Eq
-                            ( Identity ( LiteralString "Golden.TestPatternMatching1.Num" ) )
+                            ( Identity ( LiteralString "E.Num" ) )
                             ( Identity
                               ( ReflectCtor
                                 ( Identity
-                                  ( ArrayIndex
+                                  ( ObjectProp
                                     ( Identity
-                                      ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
-                                    ) 0
+                                      ( ObjectProp
+                                        ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
+                                        ( PropName "value0" )
+                                      )
+                                    )
+                                    ( PropName "value0" )
                                   )
                                 )
                               )
@@ -106,20 +126,23 @@ UberModule
                           ( IfThenElse
                             ( Identity
                               ( Eq
-                                ( Identity ( LiteralString "Golden.TestPatternMatching1.Succ" ) )
+                                ( Identity ( LiteralString "N.Succ" ) )
                                 ( Identity
                                   ( ReflectCtor
                                     ( Identity
-                                      ( ArrayIndex
+                                      ( ObjectProp
                                         ( Identity
-                                          ( ArrayIndex
+                                          ( ObjectProp
                                             ( Identity
-                                              ( ArrayIndex
-                                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0
+                                              ( ObjectProp
+                                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
+                                                ( PropName "value0" )
                                               )
-                                            ) 0
+                                            )
+                                            ( PropName "value0" )
                                           )
-                                        ) 0
+                                        )
+                                        ( PropName "value0" )
                                       )
                                     )
                                   )
@@ -142,7 +165,7 @@ UberModule
               ( IfThenElse
                 ( Identity
                   ( Eq
-                    ( Identity ( LiteralString "Golden.TestPatternMatching1.Num" ) )
+                    ( Identity ( LiteralString "E.Num" ) )
                     ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) ) )
                   )
                 )
@@ -150,11 +173,14 @@ UberModule
                   ( IfThenElse
                     ( Identity
                       ( Eq
-                        ( Identity ( LiteralString "Golden.TestPatternMatching1.Succ" ) )
+                        ( Identity ( LiteralString "N.Succ" ) )
                         ( Identity
                           ( ReflectCtor
                             ( Identity
-                              ( ArrayIndex ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) 0 )
+                              ( ObjectProp
+                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
+                                ( PropName "value0" )
+                              )
                             )
                           )
                         )
@@ -167,6 +193,45 @@ UberModule
                 ( Identity ( LiteralInt 6 ) )
               )
             )
+          )
+        )
+      ),
+      ( Name "T", Ctor ProductType
+        ( TyName "Tuple" )
+        ( CtorName "T" )
+        [ FieldName "value0", FieldName "value1" ]
+      ),
+      ( Name "fst", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity
+          ( IfThenElse
+            ( Identity
+              ( Eq
+                ( Identity ( LiteralString "Tuple.T" ) )
+                ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ) )
+              )
+            )
+            ( Identity
+              ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "value0" ) )
+            )
+            ( Identity ( Exception "No patterns matched" ) )
+          )
+        )
+      ),
+      ( Name "snd", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity
+          ( IfThenElse
+            ( Identity
+              ( Eq
+                ( Identity ( LiteralString "Tuple.T" ) )
+                ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ) )
+              )
+            )
+            ( Identity
+              ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "value1" ) )
+            )
+            ( Identity ( Exception "No patterns matched" ) )
           )
         )
       )

@@ -1,34 +1,30 @@
 return {
-  U = function() return { ["$ctor"] = "Golden_TestDataDeclarations1.U" } end,
-  P3 = function(value0, value1, value2)
-    return {
-      ["$ctor"] = "Golden_TestDataDeclarations1.P3",
-      value0 = value0,
-      value1 = value1,
-      value2 = value2
-    }
+  U = { ["$ctor"] = "Unit.U" },
+  P3 = function(value0)
+    return function(value1)
+      return function(value2)
+        return {
+          ["$ctor"] = "TProduct.P3",
+          value0 = value0,
+          value1 = value1,
+          value2 = value2
+        }
+      end
+    end
   end,
   PF = function(value0)
-    return { ["$ctor"] = "Golden_TestDataDeclarations1.PF", value0 = value0 }
+    return { ["$ctor"] = "TProductWithFields.PF", value0 = value0 }
   end,
-  S0 = function() return { ["$ctor"] = "Golden_TestDataDeclarations1.S0" } end,
-  S1 = function(value0)
-    return { ["$ctor"] = "Golden_TestDataDeclarations1.S1", value0 = value0 }
+  S0 = { ["$ctor"] = "TSum.S0" },
+  S1 = function(value0) return { ["$ctor"] = "TSum.S1", value0 = value0 } end,
+  S2 = function(value0)
+    return function(value1)
+      return { ["$ctor"] = "TSum.S2", value0 = value0, value1 = value1 }
+    end
   end,
-  S2 = function(value0, value1)
-    return {
-      ["$ctor"] = "Golden_TestDataDeclarations1.S2",
-      value0 = value0,
-      value1 = value1
-    }
-  end,
-  Nop = function()
-    return { ["$ctor"] = "Golden_TestDataDeclarations1.Nop" }
-  end,
+  Nop = { ["$ctor"] = "Rec.Nop" },
   More = function(value0)
-    return { ["$ctor"] = "Golden_TestDataDeclarations1.More", value0 = value0 }
+    return { ["$ctor"] = "Rec.More", value0 = value0 }
   end,
-  CtorSameName = function()
-    return { ["$ctor"] = "Golden_TestDataDeclarations1.CtorSameName" }
-  end
+  CtorSameName = { ["$ctor"] = "TySameName.CtorSameName" }
 }

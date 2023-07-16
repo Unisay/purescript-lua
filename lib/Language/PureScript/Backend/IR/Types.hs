@@ -112,6 +112,9 @@ isRecursiveLiteral = \case
 data AlgebraicType = SumType | ProductType
   deriving stock (Generic, Eq, Ord, Show, Enum, Bounded)
 
+ctorId ∷ TyName → CtorName → Text
+ctorId tyName ctorName = renderTyName tyName <> "." <> renderCtorName ctorName
+
 --------------------------------------------------------------------------------
 -- Names -----------------------------------------------------------------------
 

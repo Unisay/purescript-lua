@@ -18,6 +18,7 @@ import Language.PureScript.Backend.IR.Types
 import Language.PureScript.CoreFn qualified as Cfn
 import Language.PureScript.CoreFn.Laziness (applyLazinessTransform)
 import Language.PureScript.Names (ModuleName)
+import Language.PureScript.Names qualified as Names
 import Language.PureScript.Names qualified as PS
 import Language.PureScript.PSString
   ( PSString
@@ -444,37 +445,29 @@ mkCaseClauses = mkClauses mempty
                 ifThenElse (literalBool b `eq` expr)
                   <$> nextMatch history clause'
                   <*> nextClause history
-              PatCtor _ty constructor → do
-                case Map.lookup expr history of
-                  Just (c, True) →
-                    if c == constructor
-                      then -- This constructor matched positively before,
-                      -- proceed matching nested constructors.
-                        nextMatch history clause'
-                      else -- Other constructor matched positively before,
-                      -- this one can't match, proceed to next clause.
-                        nextClause history
-                  Just (c, False)
-                    | c == constructor →
-                        -- This constructor matched negatively before,
-                        -- proceed to the next clause.
-                        nextClause history
-                  _ → do
-                    let qctor =
-                          constructor
-                            & fmap renderCtorName
-                            & literalString
-                            . \case
-                              Local name → name
-                              Imported modname c →
-                                PS.runModuleName modname <> "." <> c
-
-                        history' b = Map.insert expr (constructor, b) history
-                    -- Either this constructor is matched for the first time,
-                    -- or other constructor didn't pass the match before.
-                    ifThenElse (qctor `eq` reflectCtor expr)
-                      <$> nextMatch (history' True) clause'
-                      <*> nextClause (history' False)
+              PatCtor ty ctr → case Map.lookup expr history of
+                Just (ctr', True) →
+                  if ctr' == ctr
+                    then -- This constructor matched positively before,
+                    -- proceed matching nested constructors.
+                      nextMatch history clause'
+                    else -- Other constructor matched positively before,
+                    -- this one can't match, proceed to next clause.
+                      nextClause history
+                Just (ctr', False)
+                  | ctr' == ctr →
+                      -- This constructor matched negatively before,
+                      -- proceed to the next clause.
+                      nextClause history
+                _ →
+                  -- Either this constructor is matched for the first time,
+                  -- or other constructor didn't pass the match before.
+                  ifThenElse
+                    (literalString (ctorId ty ctr) `eq` reflectCtor expr)
+                    <$> nextMatch (history' True) clause'
+                    <*> nextClause (history' False)
+                 where
+                  history' b = Map.insert expr (ctr, b) history
    where
     nextMatch hist clause = mkClause hist clause heuristic nextClause
 
@@ -527,7 +520,7 @@ data CaseClause = CaseClause
 
 data Pattern
   = PatAny
-  | PatCtor (Qualified TyName) (Qualified CtorName)
+  | PatCtor TyName CtorName
   | PatInteger Integer
   | PatFloating Double
   | PatString Text
@@ -577,15 +570,16 @@ mkBinder matchExp = go mempty
           _ → throwError NewtypeCtorBinderHasUnexpectedNumberOfNestedBinders
         else do
           nestedMatches ←
-            for (zip [0 ..] binders) \(index, binder) →
-              go (TakeIndex index : stepsToFocus) binder
+            for (zip [0 ..] binders) \(index ∷ Int, binder) →
+              let prop = PropName ("value" <> show index)
+               in go (TakeProp prop : stepsToFocus) binder
           pure
             Match
               { matchExp
               , matchPat =
                   PatCtor
-                    (mkQualified mkTyName tyName)
-                    (mkQualified mkCtorName ctorName)
+                    (mkTyName (Names.disqualify tyName))
+                    (mkCtorName (Names.disqualify ctorName))
               , stepsToFocus
               , matchBinds = mempty
               , nestedMatches
@@ -643,7 +637,7 @@ mkBinder matchExp = go mempty
         , nestedMatches = mempty
         }
 
-type MatchHistory = Map Exp (Qualified CtorName, Bool)
+type MatchHistory = Map Exp (CtorName, Bool)
 
 alternativeToClauses
   ∷ [Exp] → Cfn.CaseAlternative Cfn.Ann → RepM CaseClause

@@ -130,20 +130,17 @@ fromExp foreigns topLevelNames modname ir = case ir of
     Lua.table <$> for kvs \(prop, exp) →
       Lua.tableRowNV (fromPropName prop) <$> go (IR.unAnn exp)
   IR.ReflectCtor e →
-    flip Lua.varIndex keyCtor <$> go (IR.unAnn e)
+    (`Lua.varIndex` keyCtor) <$> go (IR.unAnn e)
   IR.DataArgumentByIndex i e →
-    flip Lua.varIndex (Lua.Integer (fromIntegral i)) <$> go (IR.unAnn e)
+    (`Lua.varField` Lua.unsafeName ("value" <> show i)) <$> go (IR.unAnn e)
   IR.Eq l r →
     Lua.equalTo <$> go (IR.unAnn l) <*> go (IR.unAnn r)
-  IR.Ctor _algebraicTy _tyName ctorName fieldNames →
-    pure $ Lua.functionDef (ParamNamed <$> args) [Lua.return value]
+  IR.Ctor _algebraicTy tyName ctorName fieldNames →
+    pure $ foldr wrap value args
    where
+    wrap name expr = Lua.functionDef [ParamNamed name] [Lua.return expr]
     value = Lua.table $ ctorRow : attributes
-    ctorValue =
-      Name.toText (fromModuleName modname)
-        <> "."
-        <> IR.renderCtorName ctorName
-    ctorRow = Lua.tableRowKV keyCtor (Lua.String ctorValue)
+    ctorRow = Lua.tableRowKV keyCtor (Lua.String (IR.ctorId tyName ctorName))
     args = Name.unsafeName . IR.renderFieldName <$> fieldNames
     attributes = args <&> ap Lua.tableRowNV Lua.varName
   IR.ArrayLength e →

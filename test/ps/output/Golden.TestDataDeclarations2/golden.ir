@@ -14,7 +14,7 @@ UberModule
               ( IfThenElse
                 ( Identity
                   ( Eq
-                    ( Identity ( LiteralString "Golden.TestDataDeclarations1.CtorSameName" ) )
+                    ( Identity ( LiteralString "TySameName.CtorSameName" ) )
                     ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ) )
                   )
                 )
@@ -22,7 +22,7 @@ UberModule
                   ( IfThenElse
                     ( Identity
                       ( Eq
-                        ( Identity ( LiteralString "Golden.TestDataDeclarations2.CtorSameName" ) )
+                        ( Identity ( LiteralString "TySameName.CtorSameName" ) )
                         ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v1" ) ) 0 ) ) ) )
                       )
                     )
