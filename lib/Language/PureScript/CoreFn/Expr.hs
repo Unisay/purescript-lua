@@ -11,32 +11,23 @@ import Language.PureScript.PSString (PSString)
 Data type for expressions and terms
 -}
 data Expr a
-  = -- |
-    -- A literal value
+  = -- A literal value
     Literal a (Literal (Expr a))
-  | -- |
-    -- A data constructor (type name, constructor name, field names)
+  | -- A data constructor (type name, constructor name, field names)
     Constructor a (ProperName 'TypeName) (ProperName 'ConstructorName) [Ident]
-  | -- |
-    -- A record property accessor
+  | -- A record property accessor
     Accessor a PSString (Expr a)
-  | -- |
-    -- Partial record update
+  | -- Partial record update
     ObjectUpdate a (Expr a) [(PSString, Expr a)]
-  | -- |
-    -- Function introduction
+  | -- Function introduction
     Abs a Ident (Expr a)
-  | -- |
-    -- Function application
+  | -- Function application
     App a (Expr a) (Expr a)
-  | -- |
-    -- Variable
+  | -- Variable
     Var a (Qualified Ident)
-  | -- |
-    -- A case expression
+  | -- A case expression
     Case a [Expr a] [CaseAlternative a]
-  | -- |
-    -- A let binding
+  | -- A let binding
     Let a [Bind a] (Expr a)
   deriving stock (Eq, Ord, Show, Functor)
 
