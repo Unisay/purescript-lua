@@ -67,8 +67,8 @@ spec = describe "IR Optimizer" do
 
     test "inlines expressions referenced once" do
       name ← forAll Gen.name
-      inlinee ←
-        forAll $ mfilter (\e → not (isRef e || isLiteral e)) Gen.exp
+      inlinee ← forAll $ fmap optimizedExpression do
+        mfilter (\e → not (isRef e || isLiteral e)) Gen.exp
       let body = refLocal0 name
           original = let1 name inlinee body
           expected = let1 name inlinee inlinee
