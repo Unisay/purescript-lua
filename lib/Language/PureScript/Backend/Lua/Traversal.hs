@@ -40,7 +40,7 @@ everywhereExpM f g = goe
       tableRows ← forM rows \case
         TableRowKV (Ann k) (Ann v) → tableRowKV <$> goe k <*> goe v
         TableRowNV n (Ann e) → tableRowNV n <$> goe e
-      f $ tableCtor tableRows
+      f $ table tableRows
     UnOp op (Ann e) →
       f . unOp op =<< goe e
     BinOp op (Ann e1) (Ann e2) →

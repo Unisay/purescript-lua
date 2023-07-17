@@ -10,6 +10,7 @@ module Language.PureScript.Backend.Lua
 import Control.Monad (ap)
 import Control.Monad.Oops (CouldBe, Variant)
 import Control.Monad.Oops qualified as Oops
+import Control.Monad.Trans.Accum (AccumT, add, runAccumT)
 import Data.DList qualified as DList
 import Data.List qualified as List
 import Data.Set qualified as Set
@@ -32,7 +33,19 @@ import Language.PureScript.Names qualified as PS
 import Path (Abs, Dir, Path, toFilePath)
 import Prelude hiding (exp, local)
 
-type LuaM e a = StateT Natural (ExceptT (Variant e) IO) a
+type LuaM e a =
+  AccumT UsesObjectUpdate (StateT Natural (ExceptT (Variant e) IO)) a
+
+data UsesObjectUpdate = NoObjectUpdate | UsesObjectUpdate
+  deriving stock (Eq, Ord, Show)
+
+instance Semigroup UsesObjectUpdate where
+  _ <> UsesObjectUpdate = UsesObjectUpdate
+  UsesObjectUpdate <> _ = UsesObjectUpdate
+  NoObjectUpdate <> NoObjectUpdate = NoObjectUpdate
+
+instance Monoid UsesObjectUpdate where
+  mempty = NoObjectUpdate
 
 data Error
   = UnexpectedRefBound ModuleName IR.Exp
@@ -49,41 +62,42 @@ fromUberModule
   → Linker.UberModule
   → ExceptT (Variant e) IO Lua.Chunk
 fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
-  bindings ←
-    Linker.uberModuleBindings uber & foldMapM \case
-      IR.Standalone (IR.QName modname name, irExp) → do
-        exp ← fromExp foreigns Set.empty modname irExp
-        pure $ DList.singleton (Lua.local1 (fromQName modname name) exp)
-      IR.RecursiveGroup recGroup → do
-        recBinds ← forM (toList recGroup) \(IR.QName modname name, irExp) →
-          (fromQName modname name,) <$> fromExp foreigns Set.empty modname irExp
-        let declarations = Lua.local0 . fst <$> DList.fromList recBinds
-            assignments = DList.fromList do
-              recBinds <&> \(name, exp) → Lua.assign (Lua.VarName name) exp
-        pure $ declarations <> assignments
+  (chunk, usesObjectUpdate) ← (`runAccumT` NoObjectUpdate) do
+    bindings ←
+      Linker.uberModuleBindings uber & foldMapM \case
+        IR.Standalone (IR.QName modname name, irExp) → do
+          exp ← fromExp foreigns Set.empty modname irExp
+          pure $ DList.singleton (Lua.local1 (fromQName modname name) exp)
+        IR.RecursiveGroup recGroup → do
+          recBinds ← forM (toList recGroup) \(IR.QName modname name, irExp) →
+            (fromQName modname name,) <$> fromExp foreigns Set.empty modname irExp
+          let declarations = Lua.local0 . fst <$> DList.fromList recBinds
+              assignments = DList.fromList do
+                recBinds <&> \(name, exp) → Lua.assign (Lua.VarName name) exp
+          pure $ declarations <> assignments
 
-  returnExp ←
-    case appOrModule of
-      AsModule modname →
-        Lua.table <$> do
-          forM (uberModuleExports uber) \(fromName → name, expr) →
-            Lua.tableRowNV name <$> fromExp foreigns mempty modname expr
-      AsApplication modname ident → do
-        case List.lookup name (uberModuleExports uber) of
-          Just expr → do
-            entry ← fromExp foreigns mempty modname expr
-            pure $ Lua.functionCall entry []
-          _ → Oops.throw $ AppEntryPointNotFound modname ident
-       where
-        name = IR.identToName ident
+    returnExp ←
+      case appOrModule of
+        AsModule modname →
+          Lua.table <$> do
+            forM (uberModuleExports uber) \(fromName → name, expr) →
+              Lua.tableRowNV name <$> fromExp foreigns mempty modname expr
+        AsApplication modname ident → do
+          case List.lookup name (uberModuleExports uber) of
+            Just expr → do
+              entry ← fromExp foreigns mempty modname expr
+              pure $ Lua.functionCall entry []
+            _ → Oops.throw $ AppEntryPointNotFound modname ident
+         where
+          name = IR.identToName ident
+
+    pure $ DList.snoc bindings (Lua.Return (Lua.ann returnExp))
 
   pure . mconcat $
-    [ if usesPrimModule uber then [Fixture.prim] else empty
-    , if untag needsRuntimeLazy && usesRuntimeLazy uber
-        then pure Fixture.runtimeLazy
-        else empty
-    , DList.toList bindings
-    , [Lua.Return (Lua.ann returnExp)]
+    [ [Fixture.prim | usesPrimModule uber]
+    , [Fixture.runtimeLazy | untag needsRuntimeLazy && usesRuntimeLazy uber]
+    , [Fixture.objectUpdate | UsesObjectUpdate ← [usesObjectUpdate]]
+    , DList.toList chunk
     ]
 
 fromQName ∷ ModuleName → IR.Name → Lua.Name
@@ -149,17 +163,19 @@ fromExp foreigns topLevelNames modname ir = case ir of
     flip Lua.varIndex (Lua.Integer (fromIntegral index)) <$> go (IR.unAnn expr)
   IR.ObjectProp expr propName →
     flip Lua.varField (fromPropName propName) <$> go (IR.unAnn expr)
-  IR.ObjectUpdate _expr _patches →
-    Prelude.error "fromObjectUpdate is not implemented"
+  IR.ObjectUpdate expr propValues → do
+    add UsesObjectUpdate
+    obj ← go (IR.unAnn expr)
+    vals ←
+      Lua.table <$> for (toList propValues) \(propName, IR.unAnn → e) →
+        Lua.tableRowNV (fromPropName propName) <$> go e
+    pure $ Lua.functionCall (Lua.varName Fixture.objectUpdateName) [obj, vals]
   IR.Abs param expr → do
     e ← go $ IR.unAnn expr
     luaParam ←
       Lua.ParamNamed
         <$> case IR.unAnn param of
-          IR.ParamUnused → do
-            index ← get
-            modify' (+ 1)
-            pure $ Lua.unsafeName ("unused" <> show index)
+          IR.ParamUnused → uniqueName "unused"
           IR.ParamNamed name → pure (fromName name)
     pure $ Lua.functionDef [luaParam] [Lua.return e]
   IR.App expr param → do
@@ -226,6 +242,12 @@ fromIfThenElse cond thenExp elseExp = Lua.functionCall fun []
 
 --------------------------------------------------------------------------------
 -- Helpers ---------------------------------------------------------------------
+
+uniqueName ∷ MonadState Natural m ⇒ Text → m Lua.Name
+uniqueName prefix = do
+  index ← get
+  modify' (+ 1)
+  pure $ Lua.unsafeName (prefix <> show index)
 
 qualifyName ∷ ModuleName → Lua.Name → Lua.Name
 qualifyName modname = Name.join2 (fromModuleName modname)

@@ -1,0 +1,103 @@
+UberModule
+  { uberModuleBindings =
+    [ Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.TestRecordsUpdate", qnameName = Name "r"
+        }, LiteralObject
+        [
+          ( PropName "x", Identity ( LiteralInt 1 ) ),
+          ( PropName "y", Identity ( LiteralBool True ) ),
+          ( PropName "z", Identity
+            ( LiteralObject
+              [
+                ( PropName "z", Identity ( LiteralString "foo" ) ),
+                ( PropName "p", Identity ( LiteralChar 'a' ) )
+              ]
+            )
+          )
+        ]
+      )
+    ], uberModuleExports =
+    [
+      ( Name "r", Ref ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 ),
+      ( Name "test1", LiteralObject
+        [
+          ( PropName "x", Identity ( LiteralInt 2 ) ),
+          ( PropName "y", Identity
+            ( ObjectProp
+              ( Identity
+                ( Ref ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 )
+              )
+              ( PropName "y" )
+            )
+          ),
+          ( PropName "z", Identity
+            ( ObjectProp
+              ( Identity
+                ( Ref ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 )
+              )
+              ( PropName "z" )
+            )
+          )
+        ]
+      ),
+      ( Name "test2", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity
+          ( LiteralObject
+            [
+              ( PropName "x", Identity
+                ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) )
+              ),
+              ( PropName "y", Identity ( LiteralBool False ) ),
+              ( PropName "z", Identity
+                ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "z" ) )
+              )
+            ]
+          )
+        )
+      ),
+      ( Name "test3", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity
+          ( LiteralObject
+            [
+              ( PropName "x", Identity
+                ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) )
+              ),
+              ( PropName "y", Identity
+                ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "y" ) )
+              ),
+              ( PropName "z", Identity
+                ( LiteralObject
+                  [
+                    ( PropName "z", Identity
+                      ( ObjectProp
+                        ( Identity
+                          ( ObjectProp
+                            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+                            ( PropName "z" )
+                          )
+                        )
+                        ( PropName "z" )
+                      )
+                    ),
+                    ( PropName "p", Identity ( LiteralChar 'b' ) )
+                  ]
+                )
+              )
+            ]
+          )
+        )
+      ),
+      ( Name "test4", Abs
+        ( Identity ( ParamNamed ( Name "v" ) ) )
+        ( Identity
+          ( ObjectUpdate
+            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+            ( ( PropName "x", Identity ( LiteralInt 1 ) ) :| [] )
+          )
+        )
+      )
+    ]
+  }

@@ -132,7 +132,7 @@ binOp ∷ Gen Lua.Exp
 binOp = Lua.binOp <$> Gen.enumBounded <*> expression <*> expression
 
 table ∷ Gen Lua.Exp
-table = Lua.tableCtor <$> Gen.list (Range.linear 0 5) tableRow
+table = Lua.table <$> Gen.list (Range.linear 0 5) tableRow
 
 recursiveVar ∷ Gen Lua.Exp
 recursiveVar = do

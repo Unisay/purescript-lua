@@ -97,6 +97,7 @@ common shared
     , relude                       ^>=1.2
     , scientific                   ^>=0.3.7.0
     , shower                       ^>=0.2.0.3
+    , string-interpolate           ^>=0.3.2.1
     , tagged                       ^>=0.8.6.1
     , template-haskell             ^>=2.18
     , text                         ^>=1.2.5.0

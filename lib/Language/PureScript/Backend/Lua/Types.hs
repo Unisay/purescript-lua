@@ -272,9 +272,6 @@ functionDef params body = Function (ann <$> params) (ann <$> body)
 functionCall ∷ Exp → [Exp] → Exp
 functionCall f args = FunctionCall (ann f) (ann <$> args)
 
-tableCtor ∷ [TableRow] → Exp
-tableCtor = TableCtor . fmap ann
-
 unOp ∷ UnaryOp → Exp → Exp
 unOp op e = UnOp op (ann e)
 

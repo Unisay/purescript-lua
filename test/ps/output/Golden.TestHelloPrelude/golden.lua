@@ -1,5 +1,5 @@
 local Prim_I_undefined = nil
-local _S___runtime_lazy = function(name)
+local function _S___runtime_lazy(name)
   return function(init)
     return function()
       local state = 0
