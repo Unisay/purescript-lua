@@ -5,36 +5,8 @@ UberModule
         ( TyName "TySameName" )
         ( CtorName "CtorSameName" ) []
       ),
-      ( Name "test", Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity
-          ( Abs
-            ( Identity ( ParamNamed ( Name "v1" ) ) )
-            ( Identity
-              ( IfThenElse
-                ( Identity
-                  ( Eq
-                    ( Identity ( LiteralString "TySameName.CtorSameName" ) )
-                    ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ) )
-                  )
-                )
-                ( Identity
-                  ( IfThenElse
-                    ( Identity
-                      ( Eq
-                        ( Identity ( LiteralString "TySameName.CtorSameName" ) )
-                        ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v1" ) ) 0 ) ) ) )
-                      )
-                    )
-                    ( Identity ( LiteralBool True ) )
-                    ( Identity ( Exception "No patterns matched" ) )
-                  )
-                )
-                ( Identity ( Exception "No patterns matched" ) )
-              )
-            )
-          )
-        )
+      ( Name "test", Abs ( Identity ParamUnused )
+        ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralBool True ) ) ) )
       )
     ]
   }

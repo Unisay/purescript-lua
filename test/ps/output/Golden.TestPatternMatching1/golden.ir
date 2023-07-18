@@ -204,35 +204,13 @@ UberModule
       ( Name "fst", Abs
         ( Identity ( ParamNamed ( Name "v" ) ) )
         ( Identity
-          ( IfThenElse
-            ( Identity
-              ( Eq
-                ( Identity ( LiteralString "Tuple.T" ) )
-                ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ) )
-              )
-            )
-            ( Identity
-              ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "value0" ) )
-            )
-            ( Identity ( Exception "No patterns matched" ) )
-          )
+          ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "value0" ) )
         )
       ),
       ( Name "snd", Abs
         ( Identity ( ParamNamed ( Name "v" ) ) )
         ( Identity
-          ( IfThenElse
-            ( Identity
-              ( Eq
-                ( Identity ( LiteralString "Tuple.T" ) )
-                ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ) )
-              )
-            )
-            ( Identity
-              ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "value1" ) )
-            )
-            ( Identity ( Exception "No patterns matched" ) )
-          )
+          ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "value1" ) )
         )
       )
     ]

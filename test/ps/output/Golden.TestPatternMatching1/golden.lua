@@ -59,18 +59,6 @@ return {
       return { ["$ctor"] = "Tuple.T", value0 = value0, value1 = value1 }
     end
   end,
-  fst = function(v)
-    if "Tuple.T" == v["$ctor"] then
-      return v.value0
-    else
-      return error("No patterns matched")
-    end
-  end,
-  snd = function(v)
-    if "Tuple.T" == v["$ctor"] then
-      return v.value1
-    else
-      return error("No patterns matched")
-    end
-  end
+  fst = function(v) return v.value0 end,
+  snd = function(v) return v.value1 end
 }

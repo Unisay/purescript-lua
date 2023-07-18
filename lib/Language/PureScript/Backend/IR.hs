@@ -31,13 +31,12 @@ import Prelude hiding (identity)
 
 data Context = Context
   { contextModule ∷ Cfn.Module Cfn.Ann
-  , contextDataTypes ∷ DataTypes
+  , contextDataTypes ∷ Map TyName (AlgebraicType, Map CtorName [FieldName])
   , lastGeneratedNameIndex ∷ Integer
   , needsRuntimeLazy ∷ Any
   }
 
 type CfnExp = Cfn.Expr Cfn.Ann
-type DataTypes = Map TyName (AlgebraicType, Map CtorName [FieldName])
 
 newtype RepM a = RepM (StateT Context (Either CoreFnError) a)
   deriving newtype
@@ -111,23 +110,35 @@ mkReExports =
 mkForeign ∷ RepM [Name]
 mkForeign = identToName <<$>> gets (contextModule >>> Cfn.moduleForeign)
 
-collectDataTypes ∷ [Cfn.Bind Cfn.Ann] → DataTypes
-collectDataTypes binds =
-  Map.fromList $
-    List.groupBy
-      ((==) `on` fst)
-      [ ( mkTyName tyName
-        , (mkCtorName ctorName, mkFieldName <$> fields)
-        )
-      | bind ← binds
-      , Cfn.Constructor _ann tyName ctorName fields ← boundExp bind
+collectDataTypes
+  ∷ [Cfn.Bind Cfn.Ann] → Map TyName (AlgebraicType, Map CtorName [FieldName])
+collectDataTypes binds = Map.fromList do
+  primOrdering
+    : [ (ty, (algebraicType, Map.fromList (snd <$> ctors)))
+      | ctors ←
+          List.groupBy
+            ((==) `on` fst)
+            [ (mkTyName tyName, (mkCtorName ctorName, mkFieldName <$> fields))
+            | bind ← binds
+            , Cfn.Constructor _ann tyName ctorName fields ← boundExp bind
+            ]
+      , let ty = fst (Unsafe.head ctors) -- groupBy never makes an empty group
+      , let algebraicType = if length ctors == 1 then ProductType else SumType
       ]
-      <&> \ctors →
-        let ty ∷ TyName
-            ty = fst (Unsafe.head ctors) -- groupBy never makes an empty group
-            algebraicType = if length ctors == 1 then ProductType else SumType
-         in (ty, (algebraicType, Map.fromList (snd <$> ctors)))
  where
+  primOrdering ∷ (TyName, (AlgebraicType, Map CtorName [FieldName]))
+  primOrdering =
+    ( TyName "Ordering"
+    ,
+      ( SumType
+      , Map.fromList
+          [ (CtorName "LT", [])
+          , (CtorName "EQ", [])
+          , (CtorName "GT", [])
+          ]
+      )
+    )
+
   boundExp ∷ Cfn.Bind a → [Cfn.Expr a]
   boundExp = \case
     Cfn.Rec bindingGroup → snd <$> bindingGroup
@@ -209,20 +220,12 @@ mkConstructor
   → [PS.Ident]
   → RepM Exp
 mkConstructor ann properTyName properCtorName fields = do
-  Context {contextDataTypes} ← get
   let tyName = mkTyName properTyName
-  (algebraicTy, _ctors) ←
-    Map.lookup tyName contextDataTypes
-      & maybe (throwError (TypeNotDeclared tyName)) pure
-  if isNewtype ann
-    then pure identity
-    else
-      pure $
-        ctor
-          algebraicTy
-          tyName
-          (mkCtorName properCtorName)
-          (mkFieldName <$> fields)
+  algTy ← algebraicTy tyName
+  pure
+    if isNewtype ann
+      then identity
+      else ctor algTy tyName (mkCtorName properCtorName) (mkFieldName <$> fields)
 
 mkTyName ∷ PS.ProperName 'PS.TypeName → TyName
 mkTyName = TyName . PS.runProperName
@@ -445,7 +448,7 @@ mkCaseClauses = mkClauses mempty
                 ifThenElse (literalBool b `eq` expr)
                   <$> nextMatch history clause'
                   <*> nextClause history
-              PatCtor ty ctr → case Map.lookup expr history of
+              PatCtor algTy ty ctr → case Map.lookup expr history of
                 Just (ctr', True) →
                   if ctr' == ctr
                     then -- This constructor matched positively before,
@@ -460,12 +463,15 @@ mkCaseClauses = mkClauses mempty
                       -- proceed to the next clause.
                       nextClause history
                 _ →
-                  -- Either this constructor is matched for the first time,
-                  -- or other constructor didn't pass the match before.
-                  ifThenElse
-                    (literalString (ctorId ty ctr) `eq` reflectCtor expr)
-                    <$> nextMatch (history' True) clause'
-                    <*> nextClause (history' False)
+                  case algTy of
+                    ProductType → nextMatch (history' True) clause'
+                    SumType →
+                      -- Either this constructor is matched for the first time,
+                      -- or other constructor didn't pass the match before.
+                      ifThenElse
+                        (literalString (ctorId ty ctr) `eq` reflectCtor expr)
+                        <$> nextMatch (history' True) clause'
+                        <*> nextClause (history' False)
                  where
                   history' b = Map.insert expr (ctr, b) history
    where
@@ -520,7 +526,7 @@ data CaseClause = CaseClause
 
 data Pattern
   = PatAny
-  | PatCtor TyName CtorName
+  | PatCtor AlgebraicType TyName CtorName
   | PatInteger Integer
   | PatFloating Double
   | PatString Text
@@ -563,7 +569,7 @@ mkBinder matchExp = go mempty
           , matchBinds = [identToName name]
           , nestedMatches = mempty
           }
-    Cfn.ConstructorBinder ann tyName ctorName binders →
+    Cfn.ConstructorBinder ann qTypeName qCtorName binders →
       if isNewtype ann
         then case binders of
           [binder] → go stepsToFocus binder
@@ -573,13 +579,14 @@ mkBinder matchExp = go mempty
             for (zip [0 ..] binders) \(index ∷ Int, binder) →
               let prop = PropName ("value" <> show index)
                in go (TakeProp prop : stepsToFocus) binder
+
+          let tyName = mkTyName (Names.disqualify qTypeName)
+          algTy ← algebraicTy tyName
+          let ctrName = mkCtorName (Names.disqualify qCtorName)
           pure
             Match
               { matchExp
-              , matchPat =
-                  PatCtor
-                    (mkTyName (Names.disqualify tyName))
-                    (mkCtorName (Names.disqualify ctorName))
+              , matchPat = PatCtor algTy tyName ctrName
               , stepsToFocus
               , matchBinds = mempty
               , nestedMatches
@@ -685,6 +692,11 @@ isForeign ∷ Cfn.Ann → Bool
 isForeign = \case
   Just Cfn.IsForeign → True
   _ → False
+
+algebraicTy ∷ TyName → RepM AlgebraicType
+algebraicTy tyName =
+  gets (Map.lookup tyName . contextDataTypes)
+    >>= maybe (throwError (TypeNotDeclared tyName)) (pure . fst)
 
 --------------------------------------------------------------------------------
 -- Errors ----------------------------------------------------------------------
