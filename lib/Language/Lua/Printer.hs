@@ -1,9 +1,9 @@
-module Language.PureScript.Backend.Lua.Printer where
+module Language.Lua.Printer where
 
 import Data.List.NonEmpty qualified as NE
+import Language.Lua.Types
+import Language.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Lua.Name qualified as Lua
-import Language.PureScript.Backend.Lua.Types
-import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prettyprinter
   ( Doc
   , Pretty (pretty)

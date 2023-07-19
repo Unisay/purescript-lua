@@ -4,10 +4,10 @@ import Data.Text qualified as Text
 import Hedgehog (Gen, Range)
 import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
+import Language.Lua.Printer (printStatement)
+import Language.Lua.Types (ParamF (..))
+import Language.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Lua.Name (Name, unsafeName)
-import Language.PureScript.Backend.Lua.Printer (printStatement)
-import Language.PureScript.Backend.Lua.Types (ParamF (..))
-import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
 import Prelude hiding (local, return)

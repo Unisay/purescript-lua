@@ -7,9 +7,7 @@ import Data.Graph (Graph, Vertex, graphFromEdges, reachable)
 import Data.Map.Lazy qualified as Map
 import Data.Map.Merge.Lazy qualified as Map
 import Data.Set qualified as Set
-import Language.PureScript.Backend.Lua.Name (Name)
-import Language.PureScript.Backend.Lua.Name qualified as Name
-import Language.PureScript.Backend.Lua.Traversal
+import Language.Lua.Traversal
   ( Annotator (..)
   , Visitor (..)
   , annotateStatementInsideOutM
@@ -17,7 +15,9 @@ import Language.PureScript.Backend.Lua.Traversal
   , unAnnotateStatement
   , visitStatementM
   )
-import Language.PureScript.Backend.Lua.Types qualified as Lua
+import Language.Lua.Types qualified as Lua
+import Language.PureScript.Backend.Lua.Name (Name)
+import Language.PureScript.Backend.Lua.Name qualified as Name
 import Prelude hiding (exp)
 
 data DceMode = PreserveTopLevel | PreserveReturned

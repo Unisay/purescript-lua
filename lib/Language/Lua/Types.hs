@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Language.PureScript.Backend.Lua.Types where
+module Language.Lua.Types where
 
 import Language.PureScript.Backend.Lua.Name (Name)
 import Language.PureScript.Backend.Lua.Name qualified as Lua

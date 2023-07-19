@@ -121,6 +121,9 @@ library
   import:          shared
   hs-source-dirs:  lib
   exposed-modules:
+    Language.Lua.Printer
+    Language.Lua.Traversal
+    Language.Lua.Types
     Language.PureScript.Backend
     Language.PureScript.Backend.IR
     Language.PureScript.Backend.IR.DCE
@@ -134,9 +137,6 @@ library
     Language.PureScript.Backend.Lua.Linker.Foreign
     Language.PureScript.Backend.Lua.Name
     Language.PureScript.Backend.Lua.Optimizer
-    Language.PureScript.Backend.Lua.Printer
-    Language.PureScript.Backend.Lua.Traversal
-    Language.PureScript.Backend.Lua.Types
     Language.PureScript.Backend.Types
     Language.PureScript.CoreFn
     Language.PureScript.CoreFn.Expr

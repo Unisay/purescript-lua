@@ -3,14 +3,13 @@ module Language.PureScript.Backend.Lua.Optimizer where
 import Control.Monad.Trans.Accum (Accum, add, execAccum)
 import Data.List qualified as List
 import Data.Map qualified as Map
-import Language.PureScript.Backend.Lua.Name qualified as Lua
-import Language.PureScript.Backend.Lua.Traversal
+import Language.Lua.Traversal
   ( everywhereExp
   , everywhereInChunkM
   , everywhereStat
   , everywhereStatM
   )
-import Language.PureScript.Backend.Lua.Types
+import Language.Lua.Types
   ( Chunk
   , Exp
   , ExpF (..)
@@ -21,7 +20,8 @@ import Language.PureScript.Backend.Lua.Types
   , unAnn
   , pattern Ann
   )
-import Language.PureScript.Backend.Lua.Types qualified as Lua
+import Language.Lua.Types qualified as Lua
+import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Prelude hiding (return)
 
 optimizeChunk ∷ Chunk → Chunk

@@ -9,6 +9,7 @@ import Data.List qualified as List
 import Data.String qualified as String
 import Data.Tagged (Tagged (..))
 import Data.Text qualified as Text
+import Language.Lua.Printer qualified as Printer
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.Linker (LinkMode (..))
 import Language.PureScript.Backend.IR.Linker qualified as IR
@@ -16,7 +17,6 @@ import Language.PureScript.Backend.IR.Linker qualified as Linker
 import Language.PureScript.Backend.IR.Optimizer (optimizedUberModule)
 import Language.PureScript.Backend.Lua qualified as Lua
 import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
-import Language.PureScript.Backend.Lua.Printer qualified as Printer
 import Language.PureScript.Backend.Types (AppOrModule (..))
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Language.PureScript.Names (ModuleName)

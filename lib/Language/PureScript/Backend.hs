@@ -4,12 +4,12 @@ import Control.Monad.Oops (CouldBeAnyOf, Variant)
 import Control.Monad.Oops qualified as Oops
 import Data.Map qualified as Map
 import Data.Tagged (Tagged (..), untag)
+import Language.Lua.Types qualified as Lua
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.Linker qualified as Linker
 import Language.PureScript.Backend.IR.Optimizer (optimizedUberModule)
 import Language.PureScript.Backend.Lua qualified as Lua
 import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
-import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Types (AppOrModule (..), entryPointModule)
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Path (Abs, Dir, Path, SomeBase)

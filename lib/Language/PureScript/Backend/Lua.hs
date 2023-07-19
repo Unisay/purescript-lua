@@ -17,6 +17,8 @@ import Data.Set qualified as Set
 import Data.Tagged (Tagged (..), untag)
 import Data.Text qualified as Text
 import Data.Traversable (for)
+import Language.Lua.Types (ParamF (..))
+import Language.Lua.Types qualified as Lua
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Linker qualified as Linker
@@ -25,8 +27,6 @@ import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Linker.Foreign qualified as Foreign
 import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Language.PureScript.Backend.Lua.Name qualified as Name
-import Language.PureScript.Backend.Lua.Types (ParamF (..))
-import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Types (AppOrModule (..))
 import Language.PureScript.Names (ModuleName, runModuleName)
 import Language.PureScript.Names qualified as PS

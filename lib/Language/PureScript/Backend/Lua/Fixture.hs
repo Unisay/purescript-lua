@@ -3,9 +3,9 @@
 module Language.PureScript.Backend.Lua.Fixture where
 
 import Data.String.Interpolate (__i)
+import Language.Lua.Types hiding (var)
 import Language.PureScript.Backend.Lua.Name (Name, name)
 import Language.PureScript.Backend.Lua.Name qualified as Name
-import Language.PureScript.Backend.Lua.Types hiding (var)
 
 --------------------------------------------------------------------------------
 -- Hard-coded Lua pieces -------------------------------------------------------

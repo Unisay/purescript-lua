@@ -4,10 +4,10 @@ import Cli (Args (luaOutputFile))
 import Cli qualified
 import Control.Monad.Oops qualified as Oops
 import Data.Tagged (Tagged (..))
+import Language.Lua.Printer qualified as Printer
 import Language.PureScript.Backend qualified as Backend
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.Lua qualified as Lua
-import Language.PureScript.Backend.Lua.Printer qualified as Printer
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Language.PureScript.Names (runIdent, runModuleName)
 import Main.Utf8 qualified as Utf8

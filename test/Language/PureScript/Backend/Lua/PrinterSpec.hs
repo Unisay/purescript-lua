@@ -4,10 +4,10 @@
 module Language.PureScript.Backend.Lua.PrinterSpec where
 
 import Data.Text qualified as Text
+import Language.Lua.Printer qualified as Printer
+import Language.Lua.Types (ParamF (..))
+import Language.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Lua.Name qualified as Lua
-import Language.PureScript.Backend.Lua.Printer qualified as Printer
-import Language.PureScript.Backend.Lua.Types (ParamF (..))
-import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prettyprinter (Doc, defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
 import Test.Hspec (Spec, describe, it, shouldBe)

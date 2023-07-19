@@ -7,6 +7,8 @@ import Control.Monad.Trans.Accum (Accum, execAccum)
 import Hedgehog (annotateShow, forAll, (===))
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
+import Language.Lua.Types (ParamF (..))
+import Language.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Lua.DeadCodeEliminator
   ( DceMode (PreserveReturned)
   , MonadScopes (..)
@@ -15,8 +17,6 @@ import Language.PureScript.Backend.Lua.DeadCodeEliminator qualified as DCE
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Gen qualified as Gen
 import Language.PureScript.Backend.Lua.Name qualified as Lua
-import Language.PureScript.Backend.Lua.Types (ParamF (..))
-import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
 

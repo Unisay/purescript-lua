@@ -1,8 +1,8 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Language.PureScript.Backend.Lua.Traversal where
+module Language.Lua.Traversal where
 
-import Language.PureScript.Backend.Lua.Types
+import Language.Lua.Types
 import Prelude hiding (local)
 
 everywhereExp

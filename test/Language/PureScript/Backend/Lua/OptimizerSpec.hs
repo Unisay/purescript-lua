@@ -2,14 +2,14 @@
 
 module Language.PureScript.Backend.Lua.OptimizerSpec where
 
+import Language.Lua.Types (ParamF (..))
+import Language.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Lua.Name (name)
 import Language.PureScript.Backend.Lua.Optimizer
   ( pushDeclarationsDownTheInnerScope
   , removeScopeWhenInsideEmptyFunction
   , rewriteExpWithRule
   )
-import Language.PureScript.Backend.Lua.Types (ParamF (..))
-import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Shower (shower)
 import Test.Hspec (Spec, describe, it)
 import Test.Hspec.Expectations.Pretty (assertEqual)
