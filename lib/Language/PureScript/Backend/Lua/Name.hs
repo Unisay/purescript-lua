@@ -1,115 +1,18 @@
-{-# LANGUAGE TemplateHaskellQuotes #-}
-
 module Language.PureScript.Backend.Lua.Name
-  ( Name
-  , fromText
-  , toText
-  , name
-  , unsafeName
-  , makeSafe
+  ( module Reexport
   , specialNameType
   , specialNameCtor
   , join2
   ) where
 
-import Data.Char qualified as Char
-import Data.Set qualified as Set
-import Data.Text qualified as Text
-import Language.Haskell.TH.Quote (QuasiQuoter (..))
-import Prettyprinter (Pretty)
-import Prelude hiding (toText)
-
-newtype Name = Name {toText ∷ Text}
-  deriving newtype (Eq, Ord, Show, Pretty)
-
-name ∷ QuasiQuoter
-name =
-  QuasiQuoter
-    { quoteExp = \(s ∷ String) →
-        case fromText (fromString s) of
-          Nothing →
-            error "Language.PureScript.Backend.Lua.Name: invalid name"
-          Just (Name n) → ⟦Name n⟧
-    , quotePat =
-        const $
-          error "Language.PureScript.Backend.Lua.Name.quotePat: unsupported"
-    , quoteType =
-        const $
-          error "Language.PureScript.Backend.Lua.Name.quoteType: unsupported"
-    , quoteDec =
-        const $
-          error "Language.PureScript.Backend.Lua.Name.quoteDec: unsupported"
-    }
-
-fromText ∷ Text → Maybe Name
-fromText t =
-  case Text.strip t of
-    n
-      | Text.length n > 0
-      , checkFirst (Text.head n)
-      , Text.all checkRest (Text.tail n)
-      , Set.notMember n reservedNames →
-          Just (Name n)
-    _ → Nothing
- where
-  checkFirst c = Char.isAlpha c || c == '_'
-  checkRest c = Char.isDigit c || checkFirst c
-
-makeSafe ∷ HasCallStack ⇒ Text → Name
-makeSafe unsafe = unsafeName safest
- where
-  safest =
-    if safer `Set.member` reservedNames
-      then '_' `Text.cons` safer `Text.snoc` '_'
-      else safer
-  safer =
-    Text.replace "$" "_S_"
-      . Text.replace "." "_"
-      $ Text.replace "'" "Prime" unsafe
-
-unsafeName ∷ HasCallStack ⇒ Text → Name
-unsafeName n =
-  fromMaybe
-    ( error . unwords $
-        [ "Language.PureScript.Backend.Lua.Name.unsafeName:"
-        , "invalid name"
-        , show n
-        ]
-    )
-    (fromText n)
+import Language.Lua.Name as Reexport
+import Language.Lua.Name qualified as Name
 
 specialNameType ∷ Name
-specialNameType = Name "$type"
+specialNameType = Name.unsafeFromText "$type"
 
 specialNameCtor ∷ Name
-specialNameCtor = Name "$ctor"
-
-reservedNames ∷ Set Text
-reservedNames =
-  Set.fromList
-    [ "and"
-    , "break"
-    , "do"
-    , "else"
-    , "elseif"
-    , "end"
-    , "false"
-    , "for"
-    , "function"
-    , "goto"
-    , "if"
-    , "in"
-    , "local"
-    , "nil"
-    , "not"
-    , "or"
-    , "repeat"
-    , "return"
-    , "then"
-    , "true"
-    , "until"
-    , "while"
-    ]
+specialNameCtor = Name.unsafeFromText "$ctor"
 
 join2 ∷ Name → Name → Name
-join2 (Name a) (Name b) = Name (a <> "_I_" <> b)
+join2 a b = Name.unsafeFromText (Name.toText a <> "_I_" <> Name.toText b)

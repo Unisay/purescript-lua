@@ -3,8 +3,13 @@
 module Language.PureScript.Backend.Lua.Fixture where
 
 import Data.String.Interpolate (__i)
-import Language.Lua.Types hiding (var)
-import Language.PureScript.Backend.Lua.Name (Name, name)
+import Language.Lua.Name (Name, name)
+import Language.Lua.Types
+  ( ExpF (Nil)
+  , Statement
+  , StatementF (ForeignSourceCode)
+  , local1
+  )
 import Language.PureScript.Backend.Lua.Name qualified as Name
 
 --------------------------------------------------------------------------------

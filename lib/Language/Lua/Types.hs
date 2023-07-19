@@ -2,8 +2,8 @@
 
 module Language.Lua.Types where
 
-import Language.PureScript.Backend.Lua.Name (Name)
-import Language.PureScript.Backend.Lua.Name qualified as Lua
+import Language.Lua.Name (Name)
+import Language.Lua.Name qualified as Lua
 import Prettyprinter (Pretty)
 import Prelude hiding
   ( and

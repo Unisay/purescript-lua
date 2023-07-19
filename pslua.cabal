@@ -121,6 +121,7 @@ library
   import:          shared
   hs-source-dirs:  lib
   exposed-modules:
+    Language.Lua.Name
     Language.Lua.Printer
     Language.Lua.Traversal
     Language.Lua.Types
