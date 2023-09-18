@@ -25,8 +25,7 @@ import Options.Applicative
   , short
   , value
   )
-import Path (reldir, relfile)
-import Path.Posix (Dir, File, SomeBase (..), parseSomeDir, parseSomeFile)
+import Path (reldir, relfile, Dir, File, SomeBase (..), parseSomeDir, parseSomeFile)
 import Prettyprinter (Doc, annotate, flatAlt, indent, line, vsep, (<+>))
 import Prettyprinter qualified as PP
 import Prettyprinter.Render.Terminal (AnsiStyle, Color (..))

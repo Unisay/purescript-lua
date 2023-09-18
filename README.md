@@ -75,3 +75,61 @@ nix profile install 'github:Unisay/purescript-lua'
 ```
 
 will make `pslua` executable available for use.
+
+### Windows
+
+Nix build won't work on Windows so you'd first need to  install
+`cabal` and `ghc-9.2.8` (One way of installing those is [GHCUp](https://www.haskell.org/ghcup/)).
+
+Once the pre-requisites are available on your PATH
+you run
+
+```
+cabal install exe:pslua
+
+.... elided ....
+
+Installing   commutative-semigroups-0.1.0.1 (lib)
+Installing   primes-0.2.1.0 (all, legacy fallback)
+Installing   base16-bytestring-1.0.2.0 (lib)
+Installing   quiet-0.2 (lib)
+Completed    newtype-0.2.2.0 (lib)
+
+.... elided ....
+
+Starting     pslua-0.1.0.0 (exe:pslua)
+Building     pslua-0.1.0.0 (exe:pslua)
+Installing   pslua-0.1.0.0 (exe:pslua)
+Completed    pslua-0.1.0.0 (exe:pslua)
+Copying 'pslua.exe' to 'C:\cabal\bin\pslua.exe'
+```
+
+This will build and install executable `pslua.exe`
+
+```
+C:\cabal\bin\pslua --help
+pslua - a PureScript backend for Lua
+
+Usage: pslua.exe [--foreign-path FOREIGN-PATH] [--ps-output PS-PATH]
+                 [--lua-output-file LUA-OUT-FILE] [-e|--entry ENTRY]
+
+  Compile PureScript's CoreFn to Lua
+
+Available options:
+  --foreign-path FOREIGN-PATH
+                           Path to a directory containing foreign files.
+                           Default: foreign
+  --ps-output PS-PATH      Path to purs output directory.
+                           Default: output
+  --lua-output-file LUA-OUT-FILE
+                           Path to write compiled Lua file to.
+                           Default: main.lua
+  -e,--entry ENTRY         Where to start compilation.
+                           Could be one of the following formats:
+                           - Application format: <Module>.<binding>
+                             Example: Acme.App.main
+                           - Module format: <Module>
+                             Example: Acme.Lib
+                           Default: Main.main
+  -h,--help                Show this help text
+```
