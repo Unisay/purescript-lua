@@ -20,6 +20,7 @@
           (final: prev: {
             psluaProject = final.haskell-nix.project' {
               src = ./.;
+              compiler-nix-name = "ghc947";
               evalSystem = "x86_64-linux";
               modules = let prof = false;
               in [{
@@ -30,7 +31,6 @@
               }];
 
               name = "purescript-lua";
-              compiler-nix-name = "ghc928";
               crossPlatforms = p:
                 pkgs.lib.optionals pkgs.stdenv.hostPlatform.isx86_64
                 ([ p.mingwW64 ]
@@ -38,32 +38,13 @@
                   [ p.musl64 ]);
 
               shell = {
-                tools = let index-state = "2023-11-05T00:00:00Z";
-                in {
-                  cabal = {
-                    inherit index-state;
-                    version = "latest";
-                  };
-                  cabal-fmt = {
-                    inherit index-state;
-                    version = "latest";
-                  };
-                  fourmolu = {
-                    inherit index-state;
-                    version = "0.13.0.0";
-                  };
-                  hlint = {
-                    inherit index-state;
-                    version = "latest";
-                  };
-                  haskell-language-server = {
-                    inherit index-state;
-                    version = "latest";
-                  };
-                  nixfmt = {
-                    inherit index-state;
-                    version = "latest";
-                  };
+                tools = {
+                  cabal = { version = "latest"; };
+                  cabal-fmt = { version = "latest"; };
+                  fourmolu = { version = "0.13.0.0"; };
+                  hlint = { version = "latest"; };
+                  haskell-language-server = { version = "latest"; };
+                  nixfmt = { version = "latest"; };
                 };
                 buildInputs = with pkgs; [
                   cachix
