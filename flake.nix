@@ -3,16 +3,13 @@
     haskellNix.url = "github:input-output-hk/haskell.nix";
     nixpkgs.follows = "haskellNix/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    easy-ps = {
-      url = "github:justinwoo/easy-purescript-nix";
-      flake = false;
-    };
-
+    easy-purescript-nix.url = "github:justinwoo/easy-purescript-nix";
   };
-  outputs = { self, nixpkgs, flake-utils, haskellNix, easy-ps }:
+  outputs = { self, nixpkgs, flake-utils, haskellNix, easy-purescript-nix }:
     let supportedSystems = [ "x86_64-linux" ];
     in flake-utils.lib.eachSystem supportedSystems (system:
       let
+        easy-ps = easy-purescript-nix.packages.${system};
         pkgs = import nixpkgs {
           inherit system overlays;
           inherit (haskellNix) config;
@@ -21,10 +18,9 @@
         overlays = [
           haskellNix.overlay
           (final: prev: {
-            hixProject = final.haskell-nix.hix.project {
+            psluaProject = final.haskell-nix.project' {
               src = ./.;
               evalSystem = "x86_64-linux";
-              # index-state = "2023-06-28T00:00:00Z";
               modules = let prof = false;
               in [{
                 doHaddock = false;
@@ -32,10 +28,59 @@
                 enableProfiling = prof;
                 enableLibraryProfiling = prof;
               }];
+
+              name = "purescript-lua";
+              compiler-nix-name = "ghc928";
+              crossPlatforms = p:
+                pkgs.lib.optionals pkgs.stdenv.hostPlatform.isx86_64
+                ([ p.mingwW64 ]
+                  ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux
+                  [ p.musl64 ]);
+
+              shell = {
+                tools = let index-state = "2023-11-05T00:00:00Z";
+                in {
+                  cabal = {
+                    inherit index-state;
+                    version = "latest";
+                  };
+                  cabal-fmt = {
+                    inherit index-state;
+                    version = "latest";
+                  };
+                  fourmolu = {
+                    inherit index-state;
+                    version = "0.13.0.0";
+                  };
+                  hlint = {
+                    inherit index-state;
+                    version = "latest";
+                  };
+                  haskell-language-server = {
+                    inherit index-state;
+                    version = "latest";
+                  };
+                  nixfmt = {
+                    inherit index-state;
+                    version = "latest";
+                  };
+                };
+                buildInputs = with pkgs; [
+                  cachix
+                  lua53Packages.lua
+                  lua53Packages.luacheck
+                  easy-ps.purs-0_15_10
+                  easy-ps.spago
+                  treefmt
+                  upx
+                  yamlfmt
+                ];
+              };
+
             };
           })
         ];
-        flake = pkgs.hixProject.flake { };
+        flake = pkgs.psluaProject.flake { };
       in flake // {
         legacyPackages = pkgs;
         packages.default = flake.packages."pslua:exe:pslua";
