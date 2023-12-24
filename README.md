@@ -79,7 +79,7 @@ will make `pslua` executable available for use.
 ### Windows
 
 Nix build won't work on Windows so you'd first need to  install
-`cabal` and `ghc-9.4.7` (One way of installing those is [GHCUp](https://www.haskell.org/ghcup/)).
+`cabal` and `ghc-9.4.8` (One way of installing those is [GHCUp](https://www.haskell.org/ghcup/)).
 
 Once the pre-requisites are available on your PATH
 you run

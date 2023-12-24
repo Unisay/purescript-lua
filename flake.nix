@@ -20,7 +20,7 @@
           (final: prev: {
             psluaProject = final.haskell-nix.project' {
               src = ./.;
-              compiler-nix-name = "ghc947";
+              compiler-nix-name = "ghc948";
               evalSystem = "x86_64-linux";
               modules = let prof = false;
               in [{
