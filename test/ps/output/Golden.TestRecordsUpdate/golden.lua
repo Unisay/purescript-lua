@@ -17,14 +17,10 @@ local Golden_TestRecordsUpdate_I_r = {
 }
 return {
   r = Golden_TestRecordsUpdate_I_r,
-  test1 = {
-    x = 2,
-    y = Golden_TestRecordsUpdate_I_r.y,
-    z = Golden_TestRecordsUpdate_I_r.z
-  },
-  test2 = function(v) return { x = v.x, y = false, z = v.z } end,
+  test1 = _S___object_update(Golden_TestRecordsUpdate_I_r, { x = 2 }),
+  test2 = function(v) return _S___object_update(v, { y = false }) end,
   test3 = function(v)
-    return { x = v.x, y = v.y, z = { z = v.z.z, p = "b" } }
+    return _S___object_update(v, { z = _S___object_update(v.z, { p = "b" }) })
   end,
   test4 = function(v) return _S___object_update(v, { x = 1 }) end
 }

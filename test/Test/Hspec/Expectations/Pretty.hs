@@ -2,12 +2,12 @@ module Test.Hspec.Expectations.Pretty where
 
 import Control.Exception (throwIO)
 import Data.CallStack (SrcLoc, callStack)
-import Shower (shower)
 import Test.HUnit.Lang
   ( Assertion
   , FailureReason (ExpectedButGot)
   , HUnitFailure (HUnitFailure)
   )
+import Text.Pretty.Simple (pShow)
 
 shouldBe ∷ (HasCallStack, Eq a, Show a) ⇒ a → a → Assertion
 shouldBe expected actual = assertEqual "" actual expected
@@ -41,8 +41,8 @@ assertEqual preface expected actual =
   prefaceMsg
     | null preface = Nothing
     | otherwise = Just preface
-  expectedMsg = shower expected
-  actualMsg = shower actual
+  expectedMsg = toString $ pShow expected
+  actualMsg = toString $ pShow actual
 
 location ∷ HasCallStack ⇒ Maybe SrcLoc
 location = case reverse Data.CallStack.callStack of

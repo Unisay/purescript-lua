@@ -26,9 +26,9 @@ import Language.PureScript.Backend.IR.Types
   , refLocal0
   )
 import Language.PureScript.Names (ModuleName, moduleNameFromString)
-import Shower (shower)
 import Test.Hspec (Spec, describe, it)
 import Test.Hspec.Hedgehog.Extended (hedgehog, test)
+import Text.Pretty.Simple (pShow)
 
 spec ∷ Spec
 spec = describe "IR Dead Code Elimination" do
@@ -53,7 +53,7 @@ spec = describe "IR Dead Code Elimination" do
           expected
             { uberModuleBindings = topBinding_ "unused" : uberModuleBindings
             }
-    annotate $ shower unoptimized
+    annotate . toString $ pShow unoptimized
     expected === eliminateDeadCode unoptimized
 
   test "detects named parameter unused by an abs-bindings" do
@@ -102,7 +102,7 @@ spec = describe "IR Dead Code Elimination" do
                 (pure bindC)
                 (application (refLocal0 c) (refLocal0 a))
             )
-    annotate $ shower expr
+    annotate . toString $ pShow expr
     expected === dceExpression expr
 
   test "eliminates unused recursive let-bindings" do
@@ -117,7 +117,7 @@ spec = describe "IR Dead Code Elimination" do
             (RecursiveGroup ((a, refLocal0 b) :| [(b, refLocal0 a)]) :| [])
             (refLocal0 c)
         expected = refLocal0 c
-    annotate $ shower expr
+    annotate . toString $ pShow expr
     expected === dceExpression expr
 
 --------------------------------------------------------------------------------

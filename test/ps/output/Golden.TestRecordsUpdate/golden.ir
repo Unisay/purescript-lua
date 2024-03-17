@@ -20,73 +20,34 @@ UberModule
     ], uberModuleExports =
     [
       ( Name "r", Ref ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 ),
-      ( Name "test1", LiteralObject
-        [
-          ( PropName "x", Identity ( LiteralInt 2 ) ),
-          ( PropName "y", Identity
-            ( ObjectProp
-              ( Identity
-                ( Ref ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 )
-              )
-              ( PropName "y" )
-            )
-          ),
-          ( PropName "z", Identity
-            ( ObjectProp
-              ( Identity
-                ( Ref ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 )
-              )
-              ( PropName "z" )
-            )
-          )
-        ]
+      ( Name "test1", ObjectUpdate
+        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 ) )
+        ( ( PropName "x", Identity ( LiteralInt 2 ) ) :| [] )
       ),
       ( Name "test2", Abs
         ( Identity ( ParamNamed ( Name "v" ) ) )
         ( Identity
-          ( LiteralObject
-            [
-              ( PropName "x", Identity
-                ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) )
-              ),
-              ( PropName "y", Identity ( LiteralBool False ) ),
-              ( PropName "z", Identity
-                ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "z" ) )
-              )
-            ]
+          ( ObjectUpdate
+            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+            ( ( PropName "y", Identity ( LiteralBool False ) ) :| [] )
           )
         )
       ),
       ( Name "test3", Abs
         ( Identity ( ParamNamed ( Name "v" ) ) )
         ( Identity
-          ( LiteralObject
-            [
-              ( PropName "x", Identity
-                ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) )
-              ),
-              ( PropName "y", Identity
-                ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "y" ) )
-              ),
+          ( ObjectUpdate
+            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
+            (
               ( PropName "z", Identity
-                ( LiteralObject
-                  [
-                    ( PropName "z", Identity
-                      ( ObjectProp
-                        ( Identity
-                          ( ObjectProp
-                            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                            ( PropName "z" )
-                          )
-                        )
-                        ( PropName "z" )
-                      )
-                    ),
-                    ( PropName "p", Identity ( LiteralChar 'b' ) )
-                  ]
+                ( ObjectUpdate
+                  ( Identity
+                    ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "z" ) )
+                  )
+                  ( ( PropName "p", Identity ( LiteralChar 'b' ) ) :| [] )
                 )
-              )
-            ]
+              ) :| []
+            )
           )
         )
       ),

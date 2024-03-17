@@ -14,13 +14,12 @@
           inherit system overlays;
           inherit (haskellNix) config;
         };
-        hlib = pkgs.haskell.lib;
         overlays = [
           haskellNix.overlay
           (final: prev: {
             psluaProject = final.haskell-nix.project' {
               src = ./.;
-              compiler-nix-name = "ghc948";
+              compiler-nix-name = "ghc964";
               evalSystem = "x86_64-linux";
               modules = let prof = false;
               in [{
@@ -31,26 +30,21 @@
               }];
 
               name = "purescript-lua";
-              crossPlatforms = p:
-                pkgs.lib.optionals pkgs.stdenv.hostPlatform.isx86_64
-                ([ p.mingwW64 ]
-                  ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux
-                  [ p.musl64 ]);
 
               shell = {
                 tools = {
-                  cabal = { version = "latest"; };
-                  cabal-fmt = { version = "latest"; };
-                  fourmolu = { version = "0.13.0.0"; };
-                  hlint = { version = "latest"; };
-                  haskell-language-server = { version = "latest"; };
-                  nixfmt = { version = "latest"; };
+                  cabal = {};
+                  cabal-fmt = {};
+                  fourmolu = {};
+                  hlint = {};
+                  haskell-language-server = {};
+                  nixfmt = {};
                 };
                 buildInputs = with pkgs; [
                   cachix
                   lua53Packages.lua
                   lua53Packages.luacheck
-                  easy-ps.purs-0_15_10
+                  easy-ps.purs-0_15_15
                   easy-ps.spago
                   treefmt
                   upx
@@ -65,8 +59,7 @@
       in flake // {
         legacyPackages = pkgs;
         packages.default = flake.packages."pslua:exe:pslua";
-        packages.static =
-          flake.ciJobs.x86_64-unknown-linux-musl.packages."pslua:exe:pslua";
+        packages.static = flake.ciJobs.x86_64-unknown-linux-musl.packages."pslua:exe:pslua";
       });
 
   # --- Flake Local Nix Configuration ----------------------------

@@ -10,9 +10,9 @@ import Language.PureScript.Backend.Lua.Optimizer
   )
 import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
-import Shower (shower)
 import Test.Hspec (Spec, describe, it)
 import Test.Hspec.Expectations.Pretty (assertEqual)
+import Text.Pretty.Simple (pShow)
 
 spec ∷ Spec
 spec = describe "Lua AST Optimizer" do
@@ -36,7 +36,7 @@ spec = describe "Lua AST Optimizer" do
                       [Lua.return (Lua.varName [name|c|])]
                   )
               ]
-      assertEqual (shower original) expected $
+      assertEqual (toString $ pShow original) expected $
         rewriteExpWithRule removeScopeWhenInsideEmptyFunction original
 
     it "pushes declarations down into an inner scope" do
@@ -63,5 +63,5 @@ spec = describe "Lua AST Optimizer" do
                       ]
                   )
               ]
-      assertEqual (shower @Lua.Exp original) expected $
+      assertEqual (toString $ pShow @Lua.Exp original) expected $
         rewriteExpWithRule pushDeclarationsDownTheInnerScope original
