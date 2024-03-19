@@ -65,8 +65,17 @@ UberModule
           )
         )
       ),
-      ( Name "J", Ctor SumType ( TyName "M" ) ( CtorName "J" ) [ FieldName "value0" ] ),
-      ( Name "N", Ctor SumType ( TyName "M" ) ( CtorName "N" ) [] ),
+      ( Name "J", Ctor SumType
+        ( ModuleName "Golden.TestCaseStatements" )
+        ( TyName "M" )
+        ( CtorName "J" )
+        [ FieldName "value0" ]
+      ),
+      ( Name "N", Ctor SumType
+        ( ModuleName "Golden.TestCaseStatements" )
+        ( TyName "M" )
+        ( CtorName "N" ) []
+      ),
       ( Name "d", Abs
         ( Identity ( ParamNamed ( Name "m" ) ) )
         ( Identity
@@ -108,7 +117,7 @@ UberModule
                           ( IfThenElse
                             ( Identity
                               ( Eq
-                                ( Identity ( LiteralString "M.J" ) )
+                                ( Identity ( LiteralString "Golden.TestCaseStatements∷M.J" ) )
                                 ( Identity
                                   ( ReflectCtor ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) ) )
                                 )
@@ -118,7 +127,7 @@ UberModule
                               ( IfThenElse
                                 ( Identity
                                   ( Eq
-                                    ( Identity ( LiteralString "M.N" ) )
+                                    ( Identity ( LiteralString "Golden.TestCaseStatements∷M.N" ) )
                                     ( Identity
                                       ( ReflectCtor ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) ) )
                                     )

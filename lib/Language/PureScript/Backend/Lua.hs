@@ -149,12 +149,13 @@ fromExp foreigns topLevelNames modname ir = case ir of
     (`Lua.varField` Lua.unsafeName ("value" <> show i)) <$> go (IR.unAnn e)
   IR.Eq l r →
     Lua.equalTo <$> go (IR.unAnn l) <*> go (IR.unAnn r)
-  IR.Ctor _algebraicTy tyName ctorName fieldNames →
+  IR.Ctor _algebraicTy ctorModName ctorTyName ctorName fieldNames →
     pure $ foldr wrap value args
    where
     wrap name expr = Lua.functionDef [ParamNamed name] [Lua.return expr]
     value = Lua.table $ ctorRow : attributes
-    ctorRow = Lua.tableRowKV keyCtor (Lua.String (IR.ctorId tyName ctorName))
+    ctorId = IR.ctorId ctorModName ctorTyName ctorName
+    ctorRow = Lua.tableRowKV keyCtor (Lua.String ctorId)
     args = Name.unsafeName . IR.renderFieldName <$> fieldNames
     attributes = args <&> ap Lua.tableRowNV Lua.varName
   IR.ArrayLength e →

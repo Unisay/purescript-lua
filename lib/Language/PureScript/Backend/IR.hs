@@ -17,23 +17,26 @@ import Data.Traversable (for)
 import Language.PureScript.Backend.IR.Types
 import Language.PureScript.CoreFn qualified as Cfn
 import Language.PureScript.CoreFn.Laziness (applyLazinessTransform)
-import Language.PureScript.Names (ModuleName)
+import Language.PureScript.Names (ModuleName (..), runModuleName)
 import Language.PureScript.Names qualified as Names
 import Language.PureScript.Names qualified as PS
-import Language.PureScript.PSString
-  ( PSString
-  , decodeStringEither
-  )
+import Language.PureScript.PSString (PSString, decodeStringEither)
 import Numeric (showHex)
 import Relude.Extra (toFst)
 import Relude.Unsafe qualified as Unsafe
-import Prelude hiding (identity)
+import Text.Pretty.Simple (pShow)
+import Text.Show (Show (..))
+import Prelude hiding (identity, show)
 
 data Context = Context
-  { contextModule ∷ Cfn.Module Cfn.Ann
-  , contextDataTypes ∷ Map TyName (AlgebraicType, Map CtorName [FieldName])
-  , lastGeneratedNameIndex ∷ Integer
-  , needsRuntimeLazy ∷ Any
+  { contextModule
+      ∷ Cfn.Module Cfn.Ann
+  , contextDataTypes
+      ∷ Map (ModuleName, TyName) (AlgebraicType, Map CtorName [FieldName])
+  , lastGeneratedNameIndex
+      ∷ Integer
+  , needsRuntimeLazy
+      ∷ Any
   }
 
 type CfnExp = Cfn.Expr Cfn.Ann
@@ -64,12 +67,13 @@ runRepM ctx (RepM m) =
 
 mkModule
   ∷ Cfn.Module Cfn.Ann
+  → Map (ModuleName, TyName) (AlgebraicType, Map CtorName [FieldName])
   → Either CoreFnError (Tagged "needsRuntimeLazy" Bool, Module)
-mkModule cfnModule = do
+mkModule cfnModule contextDataTypes = do
   let ctx =
         Context
           { contextModule = cfnModule
-          , contextDataTypes = collectDataTypes (Cfn.moduleBindings cfnModule)
+          , contextDataTypes
           , lastGeneratedNameIndex = 0
           , needsRuntimeLazy = Any False
           }
@@ -88,7 +92,6 @@ mkModule cfnModule = do
         , moduleExports
         , moduleReExports
         , moduleForeigns
-        , dataTypes = contextDataTypes ctx
         }
 
 mkImports ∷ RepM [ModuleName]
@@ -110,35 +113,24 @@ mkReExports =
 mkForeign ∷ RepM [Name]
 mkForeign = identToName <<$>> gets (contextModule >>> Cfn.moduleForeign)
 
-collectDataTypes
-  ∷ [Cfn.Bind Cfn.Ann] → Map TyName (AlgebraicType, Map CtorName [FieldName])
-collectDataTypes binds = Map.fromList do
-  primOrdering
-    : [ (ty, (algebraicType, Map.fromList (snd <$> ctors)))
+collectDataDeclarations
+  ∷ Map ModuleName (Cfn.Module Cfn.Ann)
+  → Map (ModuleName, TyName) (AlgebraicType, Map CtorName [FieldName])
+collectDataDeclarations cfnModules = Map.unions do
+  Map.toList cfnModules <&> \(modName, cfnModule) →
+    Map.fromList
+      [ ((modName, ty), (algebraicType, Map.fromList (snd <$> ctors)))
       | ctors ←
           List.groupBy
             ((==) `on` fst)
             [ (mkTyName tyName, (mkCtorName ctorName, mkFieldName <$> fields))
-            | bind ← binds
+            | bind ← Cfn.moduleBindings cfnModule
             , Cfn.Constructor _ann tyName ctorName fields ← boundExp bind
             ]
       , let ty = fst (Unsafe.head ctors) -- groupBy never makes an empty group
       , let algebraicType = if length ctors == 1 then ProductType else SumType
       ]
  where
-  primOrdering ∷ (TyName, (AlgebraicType, Map CtorName [FieldName]))
-  primOrdering =
-    ( TyName "Ordering"
-    ,
-      ( SumType
-      , Map.fromList
-          [ (CtorName "LT", [])
-          , (CtorName "EQ", [])
-          , (CtorName "GT", [])
-          ]
-      )
-    )
-
   boundExp ∷ Cfn.Bind a → [Cfn.Expr a]
   boundExp = \case
     Cfn.Rec bindingGroup → snd <$> bindingGroup
@@ -166,7 +158,7 @@ mkGrouping = \case
     modname ← gets $ contextModule >>> Cfn.moduleName
     bindings ← writer $ applyLazinessTransform modname bindingGroup
     case NE.nonEmpty bindings of
-      Nothing → throwError EmptyBindingGroup
+      Nothing → throwContextualError EmptyBindingGroup
       Just bs →
         RecursiveGroup <$> for bs \((_ann, ident), expr) →
           (identToName ident,) <$> makeExp expr
@@ -191,7 +183,7 @@ makeExp cfnExpr =
     Cfn.Case _ann exprs alternatives →
       case (exprs,) <$> NE.nonEmpty alternatives of
         Just (es, as) → mkCase es as
-        Nothing → throwError $ EmptyCase cfnExpr
+        Nothing → throwContextualError $ EmptyCase cfnExpr
     Cfn.Let _ann binds exprs → do
       mkLet binds exprs
 
@@ -221,11 +213,18 @@ mkConstructor
   → RepM Exp
 mkConstructor ann properTyName properCtorName fields = do
   let tyName = mkTyName properTyName
-  algTy ← algebraicTy tyName
+  contextModuleName ← gets (Cfn.moduleName . contextModule)
+  algTy ← algebraicTy contextModuleName tyName
   pure
     if isNewtype ann
       then identity
-      else ctor algTy tyName (mkCtorName properCtorName) (mkFieldName <$> fields)
+      else
+        ctor
+          algTy
+          contextModuleName
+          tyName
+          (mkCtorName properCtorName)
+          (mkFieldName <$> fields)
 
 mkTyName ∷ PS.ProperName 'PS.TypeName → TyName
 mkTyName = TyName . PS.runProperName
@@ -246,7 +245,7 @@ mkObjectUpdate cfnExp props = do
   patch ← for props \(prop, cExpr) →
     (PropName (psStringToText prop),) <$> makeExp cExpr
   case NE.nonEmpty patch of
-    Nothing → throwError EmptyObjectUpdate
+    Nothing → throwContextualError EmptyObjectUpdate
     Just ps → pure $ objectUpdate expr ps
 
 mkAbstraction ∷ PS.Ident → CfnExp → RepM Exp
@@ -279,7 +278,7 @@ mkLet ∷ [Cfn.Bind Cfn.Ann] → CfnExp → RepM Exp
 mkLet binds expr = do
   groupings ∷ NonEmpty (Grouping (Name, Exp)) ←
     NE.nonEmpty binds
-      & maybe (throwError LetWithoutBinds) (traverse mkGrouping)
+      & maybe (throwContextualError LetWithoutBinds) (traverse mkGrouping)
   lets groupings <$> makeExp expr
 
 psStringToText ∷ PSString → Text
@@ -448,7 +447,7 @@ mkCaseClauses = mkClauses mempty
                 ifThenElse (literalBool b `eq` expr)
                   <$> nextMatch history clause'
                   <*> nextClause history
-              PatCtor algTy ty ctr → case Map.lookup expr history of
+              PatCtor algTy mn ty ctr → case Map.lookup expr history of
                 Just (ctr', True) →
                   if ctr' == ctr
                     then -- This constructor matched positively before,
@@ -469,7 +468,7 @@ mkCaseClauses = mkClauses mempty
                       -- Either this constructor is matched for the first time,
                       -- or other constructor didn't pass the match before.
                       ifThenElse
-                        (literalString (ctorId ty ctr) `eq` reflectCtor expr)
+                        (literalString (ctorId mn ty ctr) `eq` reflectCtor expr)
                         <$> nextMatch (history' True) clause'
                         <*> nextClause (history' False)
                  where
@@ -526,7 +525,7 @@ data CaseClause = CaseClause
 
 data Pattern
   = PatAny
-  | PatCtor AlgebraicType TyName CtorName
+  | PatCtor AlgebraicType ModuleName TyName CtorName
   | PatInteger Integer
   | PatFloating Double
   | PatString Text
@@ -573,20 +572,26 @@ mkBinder matchExp = go mempty
       if isNewtype ann
         then case binders of
           [binder] → go stepsToFocus binder
-          _ → throwError NewtypeCtorBinderHasUnexpectedNumberOfNestedBinders
+          _ →
+            throwContextualError
+              NewtypeCtorBinderHasUnexpectedNumberOfNestedBinders
         else do
           nestedMatches ←
             for (zip [0 ..] binders) \(index ∷ Int, binder) →
-              let prop = PropName ("value" <> show index)
+              let prop = PropName ("value" <> toText (show index))
                in go (TakeProp prop : stepsToFocus) binder
 
-          let tyName = mkTyName (Names.disqualify qTypeName)
-          algTy ← algebraicTy tyName
+          let qualifiedTypeName = mkQualified mkTyName qTypeName
+          Context {contextModule} ← get
+          let contextModuleName = Cfn.moduleName contextModule
+          (tyName, algTy) ← case qualifiedTypeName of
+            Imported modName tyName → (tyName,) <$> algebraicTy modName tyName
+            Local tyName → (tyName,) <$> algebraicTy contextModuleName tyName
           let ctrName = mkCtorName (Names.disqualify qCtorName)
           pure
             Match
               { matchExp
-              , matchPat = PatCtor algTy tyName ctrName
+              , matchPat = PatCtor algTy contextModuleName tyName ctrName
               , stepsToFocus
               , matchBinds = mempty
               , nestedMatches
@@ -646,13 +651,12 @@ mkBinder matchExp = go mempty
 
 type MatchHistory = Map Exp (CtorName, Bool)
 
-alternativeToClauses
-  ∷ [Exp] → Cfn.CaseAlternative Cfn.Ann → RepM CaseClause
+alternativeToClauses ∷ [Exp] → Cfn.CaseAlternative Cfn.Ann → RepM CaseClause
 alternativeToClauses
   localRefs
   Cfn.CaseAlternative {caseAlternativeBinders, caseAlternativeResult} = do
     unless (length localRefs == length caseAlternativeBinders) do
-      throwError $
+      throwContextualError $
         CaseBindersNumberMismatch
           (Tagged $ length localRefs)
           (Tagged $ length caseAlternativeBinders)
@@ -681,7 +685,7 @@ generateName prefix =
   Name <$> do
     ctx@Context {lastGeneratedNameIndex} ← get
     put $ ctx {lastGeneratedNameIndex = lastGeneratedNameIndex + 1}
-    pure $ prefix <> show lastGeneratedNameIndex
+    pure $ prefix <> toText (show lastGeneratedNameIndex)
 
 isNewtype ∷ Cfn.Ann → Bool
 isNewtype = \case
@@ -693,24 +697,70 @@ isForeign = \case
   Just Cfn.IsForeign → True
   _ → False
 
-algebraicTy ∷ TyName → RepM AlgebraicType
-algebraicTy tyName =
-  gets (Map.lookup tyName . contextDataTypes)
-    >>= maybe (throwError (TypeNotDeclared tyName)) (pure . fst)
+algebraicTy ∷ ModuleName → TyName → RepM AlgebraicType
+algebraicTy modName tyName = do
+  Context {contextDataTypes} ← get
+  case Map.lookup (modName, tyName) contextDataTypes of
+    Just (algTy, _ctorFields) → pure algTy
+    Nothing → throwContextualError $ TypeNotDeclared contextDataTypes tyName
 
 --------------------------------------------------------------------------------
 -- Errors ----------------------------------------------------------------------
 
-data CoreFnError
+throwContextualError ∷ CoreFnErrorReason → RepM a
+throwContextualError e = do
+  currentModule ← gets (contextModule >>> Cfn.moduleName)
+  throwError $ CoreFnError currentModule e
+
+data CoreFnError = CoreFnError
+  { currentModule ∷ ModuleName
+  , reason ∷ CoreFnErrorReason
+  }
+
+instance Show CoreFnError where
+  show CoreFnError {currentModule, reason} =
+    "in module "
+      <> toString (runModuleName currentModule)
+      <> ": "
+      <> show reason
+
+data CoreFnErrorReason
   = EmptyExportList
   | EmptyObjectUpdate
   | NoDeclarations
   | LetWithoutBinds
   | EmptyCase (Cfn.Expr Cfn.Ann)
   | EmptyBindingGroup
-  | TypeNotDeclared TyName
   | NewtypeCtorBinderHasUnexpectedNumberOfNestedBinders
-  | CaseBindersNumberMismatch
-      (Tagged "expressions" Int)
-      (Tagged "binders" Int)
-  deriving stock (Show)
+  | CaseBindersNumberMismatch (Tagged "expressions" Int) (Tagged "binders" Int)
+  | TypeNotDeclared
+      (Map (ModuleName, TyName) (AlgebraicType, Map CtorName [FieldName]))
+      TyName
+
+instance Show CoreFnErrorReason where
+  show = \case
+    EmptyExportList →
+      "Empty export list"
+    EmptyObjectUpdate →
+      "Empty object update"
+    NoDeclarations →
+      "No declarations"
+    LetWithoutBinds →
+      "Let without binds"
+    EmptyCase _ →
+      "Empty case"
+    EmptyBindingGroup →
+      "Empty binding group"
+    NewtypeCtorBinderHasUnexpectedNumberOfNestedBinders →
+      "Newtype constructor binder has unexpected number of nested binders"
+    CaseBindersNumberMismatch (Tagged exprs) (Tagged binders) →
+      "Number of expressions ("
+        <> show exprs
+        <> ") and binders ("
+        <> show binders
+        <> ") in case alternative mismatch"
+    TypeNotDeclared decls tyName →
+      "Type not declared: "
+        <> show tyName
+        <> ".\n Known types: "
+        <> toString (pShow decls)

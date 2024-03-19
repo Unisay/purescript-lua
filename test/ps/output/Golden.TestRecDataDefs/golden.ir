@@ -4,12 +4,14 @@ UberModule
       ( QName
         { qnameModuleName = ModuleName "Golden.TestRecDataDefs", qnameName = Name "A"
         }, Ctor SumType
+        ( ModuleName "Golden.TestRecDataDefs" )
         ( TyName "A" )
         ( CtorName "A" ) []
       ), Standalone
       ( QName
         { qnameModuleName = ModuleName "Golden.TestRecDataDefs", qnameName = Name "AB"
         }, Ctor SumType
+        ( ModuleName "Golden.TestRecDataDefs" )
         ( TyName "A" )
         ( CtorName "AB" )
         [ FieldName "value0" ]
@@ -17,12 +19,14 @@ UberModule
       ( QName
         { qnameModuleName = ModuleName "Golden.TestRecDataDefs", qnameName = Name "B"
         }, Ctor SumType
+        ( ModuleName "Golden.TestRecDataDefs" )
         ( TyName "B" )
         ( CtorName "B" ) []
       ), Standalone
       ( QName
         { qnameModuleName = ModuleName "Golden.TestRecDataDefs", qnameName = Name "BA"
         }, Ctor SumType
+        ( ModuleName "Golden.TestRecDataDefs" )
         ( TyName "B" )
         ( CtorName "BA" )
         [ FieldName "value0" ]

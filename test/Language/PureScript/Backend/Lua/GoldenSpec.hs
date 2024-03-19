@@ -179,9 +179,10 @@ compileCorefn outputDir uberModuleName = do
       & Oops.runOops
       & liftIO
 
+  let dataDecls = IR.collectDataDeclarations cfnModules
   modules ←
     forM (toList cfnModules) $
-      either (fail . show) (pure . snd) . IR.mkModule
+      either (fail . show) (pure . snd) . (`IR.mkModule` dataDecls)
   let uberModule = Linker.makeUberModule (LinkAsModule uberModuleName) modules
   pure $ optimizedUberModule uberModule
 

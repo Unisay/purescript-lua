@@ -19,7 +19,6 @@ data Module = Module
   , moduleReExports ∷ Map ModuleName [Name]
   , moduleForeigns ∷ [Name]
   , modulePath ∷ FilePath
-  , dataTypes ∷ Map TyName (AlgebraicType, Map CtorName [FieldName])
   }
 
 data Grouping a
@@ -56,7 +55,7 @@ data RawExp (n ∷ Type → Type)
   | LiteralBool Bool
   | LiteralArray [Annotated n RawExp]
   | LiteralObject [(PropName, Annotated n RawExp)]
-  | Ctor AlgebraicType TyName CtorName [FieldName]
+  | Ctor AlgebraicType ModuleName TyName CtorName [FieldName]
   | ReflectCtor (Annotated n RawExp)
   | Eq (Annotated n RawExp) (Annotated n RawExp)
   | DataArgumentByIndex Natural (Annotated n RawExp)
@@ -112,8 +111,13 @@ isRecursiveLiteral = \case
 data AlgebraicType = SumType | ProductType
   deriving stock (Generic, Eq, Ord, Show, Enum, Bounded)
 
-ctorId ∷ TyName → CtorName → Text
-ctorId tyName ctorName = renderTyName tyName <> "." <> renderCtorName ctorName
+ctorId ∷ ModuleName → TyName → CtorName → Text
+ctorId modName tyName ctorName =
+  runModuleName modName
+    <> "∷"
+    <> renderTyName tyName
+    <> "."
+    <> renderCtorName ctorName
 
 --------------------------------------------------------------------------------
 -- Names -----------------------------------------------------------------------
@@ -181,7 +185,7 @@ objectProp o = ObjectProp (pure o)
 objectUpdate ∷ Exp → NonEmpty (PropName, Exp) → Exp
 objectUpdate e ps = ObjectUpdate (pure e) (pure <<$>> ps)
 
-ctor ∷ AlgebraicType → TyName → CtorName → [FieldName] → Exp
+ctor ∷ AlgebraicType → ModuleName → TyName → CtorName → [FieldName] → Exp
 ctor = Ctor
 
 abstraction ∷ Applicative n ⇒ Parameter → RawExp n → RawExp n
@@ -315,7 +319,7 @@ annotateExpM around annotateExp annotateParam annotateName =
     Let binds body →
       Let <$> traverse (traverse (bitraverse annLetName ann)) binds <*> ann body
     IfThenElse i t e → IfThenElse <$> ann i <*> ann t <*> ann e
-    Ctor aty ty ctr fs → pure $ Ctor aty ty ctr fs
+    Ctor mn aty ty ctr fs → pure $ Ctor mn aty ty ctr fs
     Exception m → pure $ Exception m
     ForeignImport m p → pure $ ForeignImport m p
  where
@@ -496,8 +500,12 @@ countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
             countFreeRefs' minIndexes' . unAnn . snd <$> toList recBinds
            where
             minIndexes' =
-              foldr (\name → Map.insertWith (+) name 1) minIndexes $
-                Local . runIdentity . fst <$> recBinds
+              foldr
+                ( \(qName, _) →
+                    Map.insertWith (+) (Local (runIdentity qName)) 1
+                )
+                minIndexes
+                recBinds
     App (unAnn → argument) (unAnn → function) →
       go argument <> go function
     LiteralArray as →

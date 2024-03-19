@@ -313,7 +313,7 @@ deannotateExp = \case
   Ref qname index → Ref qname index
   Let binds body → Let (bimap (pure . snd) de <<$>> binds) (de body)
   IfThenElse i t e → IfThenElse (de i) (de t) (de e)
-  Ctor aty ty ctor fs → Ctor aty ty ctor fs
+  Ctor mn aty ty ctor fs → Ctor mn aty ty ctor fs
   Exception m → Exception m
   ForeignImport m p → ForeignImport m p
  where

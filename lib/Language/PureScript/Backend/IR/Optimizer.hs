@@ -128,8 +128,8 @@ renameShadowedNamesInExpr scope = go
       body' = renameShadowedNamesInExpr scope' <$> body
     IR.IfThenElse i t e →
       IR.IfThenElse (go <$> i) (go <$> t) (go <$> e)
-    IR.Ctor aty ty ctr fs →
-      IR.Ctor aty ty ctr fs
+    IR.Ctor aty mn ty ctr fs →
+      IR.Ctor aty mn ty ctr fs
     IR.Exception m →
       IR.Exception m
     IR.ForeignImport m p →

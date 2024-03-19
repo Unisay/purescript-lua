@@ -205,7 +205,6 @@ wrapInModule e =
     , moduleReExports = Map.empty
     , moduleForeigns = []
     , modulePath = "Main.purs"
-    , dataTypes = Map.empty
     }
 
 let1 ∷ Name → Exp → Exp → Exp

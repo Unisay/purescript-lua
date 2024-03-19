@@ -1,27 +1,53 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "U", Ctor ProductType ( TyName "Unit" ) ( CtorName "U" ) [] ),
+      ( Name "U", Ctor ProductType
+        ( ModuleName "Golden.TestDataDeclarations1" )
+        ( TyName "Unit" )
+        ( CtorName "U" ) []
+      ),
       ( Name "P3", Ctor ProductType
+        ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TProduct" )
         ( CtorName "P3" )
         [ FieldName "value0", FieldName "value1", FieldName "value2" ]
       ),
       ( Name "PF", Ctor ProductType
+        ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TProductWithFields" )
         ( CtorName "PF" )
         [ FieldName "value0" ]
       ),
-      ( Name "S0", Ctor SumType ( TyName "TSum" ) ( CtorName "S0" ) [] ),
-      ( Name "S1", Ctor SumType ( TyName "TSum" ) ( CtorName "S1" ) [ FieldName "value0" ] ),
+      ( Name "S0", Ctor SumType
+        ( ModuleName "Golden.TestDataDeclarations1" )
+        ( TyName "TSum" )
+        ( CtorName "S0" ) []
+      ),
+      ( Name "S1", Ctor SumType
+        ( ModuleName "Golden.TestDataDeclarations1" )
+        ( TyName "TSum" )
+        ( CtorName "S1" )
+        [ FieldName "value0" ]
+      ),
       ( Name "S2", Ctor SumType
+        ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TSum" )
         ( CtorName "S2" )
         [ FieldName "value0", FieldName "value1" ]
       ),
-      ( Name "Nop", Ctor SumType ( TyName "Rec" ) ( CtorName "Nop" ) [] ),
-      ( Name "More", Ctor SumType ( TyName "Rec" ) ( CtorName "More" ) [ FieldName "value0" ] ),
+      ( Name "Nop", Ctor SumType
+        ( ModuleName "Golden.TestDataDeclarations1" )
+        ( TyName "Rec" )
+        ( CtorName "Nop" ) []
+      ),
+      ( Name "More", Ctor SumType
+        ( ModuleName "Golden.TestDataDeclarations1" )
+        ( TyName "Rec" )
+        ( CtorName "More" )
+        [ FieldName "value0" ]
+      ),
       ( Name "CtorSameName", Ctor ProductType
+        ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TySameName" )
         ( CtorName "CtorSameName" ) []
       )

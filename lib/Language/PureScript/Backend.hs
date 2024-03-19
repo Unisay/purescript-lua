@@ -29,13 +29,14 @@ compileModules
 compileModules outputDir foreignDir appOrModule = do
   cfnModules ←
     CoreFn.readModuleRecursively outputDir (entryPointModule appOrModule)
+  let dataDecls = IR.collectDataDeclarations cfnModules
   irResults ← forM (Map.toList cfnModules) \(_psModuleName, cfnModule) →
-    Oops.hoistEither $ IR.mkModule cfnModule
+    Oops.hoistEither $ IR.mkModule cfnModule dataDecls
   let (needsRuntimeLazys, irModules) = unzip irResults
   let uberModule =
         Linker.makeUberModule (linkerMode appOrModule) irModules
           & optimizedUberModule
-  let needsRuntimeLazy = Tagged (or (untag <$> needsRuntimeLazys))
+  let needsRuntimeLazy = Tagged (any untag needsRuntimeLazys)
 
   Lua.fromUberModule foreignDir needsRuntimeLazy appOrModule uberModule
     <&> optimizeChunk

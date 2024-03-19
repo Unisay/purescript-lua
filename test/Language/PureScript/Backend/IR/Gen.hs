@@ -84,6 +84,7 @@ ctor ∷ MonadGen m ⇒ m IR.Exp
 ctor =
   IR.ctor
     <$> Gen.enumBounded
+    <*> moduleName
     <*> tyName
     <*> ctorName
     <*> Gen.list (Range.linear 0 10) fieldName

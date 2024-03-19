@@ -80,7 +80,7 @@ handleCoreFnError
   → ExceptT (Oops.Variant e) IO a
 handleCoreFnError =
   Oops.catch \(e ∷ IR.CoreFnError) →
-    die $ "CoreFn contains an unexpected value: " <> show e
+    die $ "CoreFn contains an unexpected value " <> show e
 
 handleLuaError
   ∷ ExceptT (Oops.Variant (Lua.Error ': e)) IO a

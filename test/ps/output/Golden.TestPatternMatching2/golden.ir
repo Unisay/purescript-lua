@@ -1,14 +1,25 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "Zero", Ctor SumType ( TyName "N" ) ( CtorName "Zero" ) [] ),
-      ( Name "Succ", Ctor SumType ( TyName "N" ) ( CtorName "Succ" ) [ FieldName "value0" ] ),
+      ( Name "Zero", Ctor SumType
+        ( ModuleName "Golden.TestPatternMatching2" )
+        ( TyName "N" )
+        ( CtorName "Zero" ) []
+      ),
+      ( Name "Succ", Ctor SumType
+        ( ModuleName "Golden.TestPatternMatching2" )
+        ( TyName "N" )
+        ( CtorName "Succ" )
+        [ FieldName "value0" ]
+      ),
       ( Name "Add", Ctor SumType
+        ( ModuleName "Golden.TestPatternMatching2" )
         ( TyName "N" )
         ( CtorName "Add" )
         [ FieldName "value0", FieldName "value1" ]
       ),
       ( Name "Mul", Ctor SumType
+        ( ModuleName "Golden.TestPatternMatching2" )
         ( TyName "N" )
         ( CtorName "Mul" )
         [ FieldName "value0", FieldName "value1" ]
@@ -19,7 +30,7 @@ UberModule
           ( IfThenElse
             ( Identity
               ( Eq
-                ( Identity ( LiteralString "N.Add" ) )
+                ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Add" ) )
                 ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) ) )
               )
             )
@@ -27,7 +38,7 @@ UberModule
               ( IfThenElse
                 ( Identity
                   ( Eq
-                    ( Identity ( LiteralString "N.Zero" ) )
+                    ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Zero" ) )
                     ( Identity
                       ( ReflectCtor
                         ( Identity
@@ -44,7 +55,7 @@ UberModule
                   ( IfThenElse
                     ( Identity
                       ( Eq
-                        ( Identity ( LiteralString "N.Add" ) )
+                        ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Add" ) )
                         ( Identity
                           ( ReflectCtor
                             ( Identity
@@ -62,7 +73,7 @@ UberModule
                       ( IfThenElse
                         ( Identity
                           ( Eq
-                            ( Identity ( LiteralString "N.Mul" ) )
+                            ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Mul" ) )
                             ( Identity
                               ( ReflectCtor
                                 ( Identity
@@ -85,7 +96,7 @@ UberModule
                   ( IfThenElse
                     ( Identity
                       ( Eq
-                        ( Identity ( LiteralString "N.Mul" ) )
+                        ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Mul" ) )
                         ( Identity
                           ( ReflectCtor
                             ( Identity
@@ -103,7 +114,7 @@ UberModule
                       ( IfThenElse
                         ( Identity
                           ( Eq
-                            ( Identity ( LiteralString "N.Add" ) )
+                            ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Add" ) )
                             ( Identity
                               ( ReflectCtor
                                 ( Identity
@@ -121,7 +132,7 @@ UberModule
                           ( IfThenElse
                             ( Identity
                               ( Eq
-                                ( Identity ( LiteralString "N.Zero" ) )
+                                ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Zero" ) )
                                 ( Identity
                                   ( ReflectCtor
                                     ( Identity

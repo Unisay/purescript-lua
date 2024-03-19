@@ -2,6 +2,7 @@ UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
       ( Name "CtorSameName", Ctor ProductType
+        ( ModuleName "Golden.TestDataDeclarations2" )
         ( TyName "TySameName" )
         ( CtorName "CtorSameName" ) []
       ),

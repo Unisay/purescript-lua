@@ -1,5 +1,5 @@
 let upstream =
-      https://github.com/Unisay/purescript-lua-package-sets/releases/download/psc-0.15.9-20230706/packages.dhall
-        sha256:de2604dd3797c479420a154955209e008fe2cd3fc8452a0bd4b32a2ca00a2ff6
+      https://github.com/Unisay/purescript-lua-package-sets/releases/download/psc-0.15.15-20240316/packages.dhall
+        sha256:7b06cd9f2f8872b6c04b22a5af74511a94bbfaaa0ee64e936e28a09ad08d4995
 
 in  upstream
