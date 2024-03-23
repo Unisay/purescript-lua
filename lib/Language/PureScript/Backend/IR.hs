@@ -584,14 +584,17 @@ mkBinder matchExp = go mempty
           let qualifiedTypeName = mkQualified mkTyName qTypeName
           Context {contextModule} ← get
           let contextModuleName = Cfn.moduleName contextModule
-          (tyName, algTy) ← case qualifiedTypeName of
-            Imported modName tyName → (tyName,) <$> algebraicTy modName tyName
-            Local tyName → (tyName,) <$> algebraicTy contextModuleName tyName
+          (modName, tyName, algTy) ← case qualifiedTypeName of
+            Imported modName tyName →
+              (modName,tyName,) <$> algebraicTy modName tyName
+            Local tyName →
+              (contextModuleName,tyName,)
+                <$> algebraicTy contextModuleName tyName
           let ctrName = mkCtorName (Names.disqualify qCtorName)
           pure
             Match
               { matchExp
-              , matchPat = PatCtor algTy contextModuleName tyName ctrName
+              , matchPat = PatCtor algTy modName tyName ctrName
               , stepsToFocus
               , matchBinds = mempty
               , nestedMatches

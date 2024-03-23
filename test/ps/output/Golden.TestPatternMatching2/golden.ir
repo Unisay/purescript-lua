@@ -1,5 +1,51 @@
 UberModule
-  { uberModuleBindings = [], uberModuleExports =
+  { uberModuleBindings =
+    [ RecursiveGroup
+      (
+        ( QName
+          { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "bat"
+          }, Abs
+          ( Identity ( ParamNamed ( Name "n" ) ) )
+          ( Identity
+            ( IfThenElse
+              ( Identity
+                ( Eq
+                  ( Identity ( LiteralString "Golden.TestPatternMatching1∷N.Zero" ) )
+                  ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) ) ) )
+                )
+              )
+              ( Identity ( LiteralInt 1 ) )
+              ( Identity
+                ( IfThenElse
+                  ( Identity
+                    ( Eq
+                      ( Identity ( LiteralString "Golden.TestPatternMatching1∷N.Succ" ) )
+                      ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) ) ) )
+                    )
+                  )
+                  ( Identity
+                    ( App
+                      ( Identity
+                        ( Ref
+                          ( Imported ( ModuleName "Golden.TestPatternMatching2" ) ( Name "bat" ) ) 0
+                        )
+                      )
+                      ( Identity
+                        ( ObjectProp
+                          ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) )
+                          ( PropName "value0" )
+                        )
+                      )
+                    )
+                  )
+                  ( Identity ( Exception "No patterns matched" ) )
+                )
+              )
+            )
+          )
+        ) :| []
+      )
+    ], uberModuleExports =
     [
       ( Name "Zero", Ctor SumType
         ( ModuleName "Golden.TestPatternMatching2" )
@@ -158,6 +204,7 @@ UberModule
             ( Identity ( LiteralInt 6 ) )
           )
         )
-      )
+      ),
+      ( Name "bat", Ref ( Imported ( ModuleName "Golden.TestPatternMatching2" ) ( Name "bat" ) ) 0 )
     ]
   }
