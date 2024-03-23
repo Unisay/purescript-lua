@@ -42,8 +42,8 @@
                 };
                 buildInputs = with pkgs; [
                   cachix
-                  lua53Packages.lua
-                  lua53Packages.luacheck
+                  lua51Packages.lua
+                  lua51Packages.luacheck
                   easy-ps.purs-0_15_15
                   easy-ps.spago
                   treefmt

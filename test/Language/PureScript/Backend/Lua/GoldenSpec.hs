@@ -131,7 +131,7 @@ spec = do
                 fromString . List.unwords $
                   [ "luacheck"
                   , "--quiet"
-                  , "--std lua53"
+                  , "--std min"
                   , "--no-color"
                   , "--no-unused" -- TODO: harden eventually
                   , "--no-max-line-length"
