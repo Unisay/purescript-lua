@@ -43,7 +43,7 @@ printStatement = \case
     printIfThenElse predicate (unAnn <$> thenBlock) (unAnn <$> elseBlock)
   Lua.Return (Ann expr) →
     "return" <+> printedExp expr
-  Lua.ForeignSourceCode code →
+  Lua.ForeignSourceStat code →
     pretty code
 
 printAssign ∷ Lua.Var → Lua.Exp → ADoc
@@ -76,6 +76,7 @@ printExp = \case
         (printExp prefix)
         (printExp . unAnn <$> args)
     )
+  Lua.ForeignSourceExp code → (PrecAtom, pretty code)
 
 printUnaryOp ∷ Lua.UnaryOp → PADoc → PADoc
 printUnaryOp op (_, a) = (prec op, pretty (sym op) <> parens a)

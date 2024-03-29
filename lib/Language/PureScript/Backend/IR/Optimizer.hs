@@ -35,15 +35,11 @@ optimizedUberModule =
   renameShadowedNames . idempotently (DCE.eliminateDeadCode . optimizeModule)
 
 renameShadowedNames ∷ UberModule → UberModule
-renameShadowedNames UberModule {..} =
-  UberModule
-    { uberModuleBindings = uberModuleBindings'
-    , uberModuleExports = uberModuleExports'
+renameShadowedNames uberModule =
+  uberModule
+    { uberModuleExports =
+        renameShadowedNamesInExpr mempty <<$>> uberModuleExports uberModule
     }
- where
-  uberModuleBindings' ∷ [Grouping (QName, Exp)] = uberModuleBindings
-  uberModuleExports' ∷ [(Name, Exp)] =
-    renameShadowedNamesInExpr mempty <<$>> uberModuleExports
 
 type RenamesInScope = Map Name [Name]
 
@@ -132,8 +128,8 @@ renameShadowedNamesInExpr scope = go
       IR.Ctor aty mn ty ctr fs
     IR.Exception m →
       IR.Exception m
-    IR.ForeignImport m p →
-      IR.ForeignImport m p
+    IR.ForeignImport m p ns →
+      IR.ForeignImport m p ns
    where
     withScopedName ∷ Exp → Map Name [Name] → Name → (Name, Map Name [Name])
     withScopedName e sc name = case Map.lookup name sc of
@@ -159,9 +155,9 @@ idempotently = fix $ \i f a →
   let a' = f a
    in if a' == a then a else i f a'
 
---  in if a' == a
---       then trace ("\n\nFIXPOINT\n" <> {- shower a' <> -} "\n") a
---       else trace ("\n\nRETRYING\n" <> {- shower a' <> -} "\n") $ i f a'
+-- in if a' == a
+--   then trace ("\n\nFIXPOINT\n" <> {- shower a' <> -} "\n") a
+--   else trace ("\n\nRETRYING\n" <> {- shower a' <> -} "\n") $ i f a'
 
 optimizeModule ∷ UberModule → UberModule
 optimizeModule UberModule {..} =

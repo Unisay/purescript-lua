@@ -3,7 +3,8 @@ UberModule
     [ Standalone
       ( QName
         { qnameModuleName = ModuleName "Effect", qnameName = Name "foreign" }, ForeignImport
-        ( ModuleName "Effect" ) ".spago/effect/v4.0.0/src/Effect.purs"
+        ( ModuleName "Effect" ) ".spago/effect/v4.1.0/src/Effect.purs"
+        [ Name "pureE", Name "bindE", Name "untilE", Name "whileE", Name "forE", Name "foreachE" ]
       ), Standalone
       ( QName
         { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "pure" }, Abs
@@ -406,7 +407,8 @@ UberModule
                   ( ObjectProp
                     ( Identity
                       ( ForeignImport
-                        ( ModuleName "Data.Unit" ) ".spago/prelude/v6.0.2/src/Data/Unit.purs"
+                        ( ModuleName "Data.Unit" ) ".spago/prelude/v7.1.0/src/Data/Unit.purs"
+                        [ Name "unit" ]
                       )
                     )
                     ( PropName "unit" )

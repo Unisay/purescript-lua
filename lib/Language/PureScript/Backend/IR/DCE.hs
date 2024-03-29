@@ -315,7 +315,7 @@ deannotateExp = \case
   IfThenElse i t e → IfThenElse (de i) (de t) (de e)
   Ctor mn aty ty ctor fs → Ctor mn aty ty ctor fs
   Exception m → Exception m
-  ForeignImport m p → ForeignImport m p
+  ForeignImport m p ns → ForeignImport m p ns
  where
   de ∷ (a, AExp) → Identity Exp
   de = pure . deannotateExp . snd

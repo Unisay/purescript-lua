@@ -3,7 +3,10 @@ UberModule
     [
       ( Name "foo", ObjectProp
         ( Identity
-          ( ForeignImport ( ModuleName "Golden.TestForeign" ) "golden/Golden/TestForeign.purs" )
+          ( ForeignImport
+            ( ModuleName "Golden.TestForeign" ) "golden/Golden/TestForeign.purs"
+            [ Name "foo" ]
+          )
         )
         ( PropName "foo" )
       )

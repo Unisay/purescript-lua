@@ -33,7 +33,7 @@ readModuleRecursively
   ⇒ Tagged "output" (SomeBase Dir)
   → PS.ModuleName
   → ExceptT (Oops.Variant e) IO (Map PS.ModuleName (Cfn.Module Cfn.Ann))
-readModuleRecursively output = recurse mempty . pure
+readModuleRecursively output moduleName = recurse mempty [moduleName]
  where
   recurse
     ∷ Map PS.ModuleName (Cfn.Module Cfn.Ann)

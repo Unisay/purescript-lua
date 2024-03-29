@@ -5,6 +5,7 @@ module Language.PureScript.Backend.Lua.Name
   , fromText
   , toText
   , name
+  , parser
   , unsafeName
   , makeSafe
   , specialNameType
@@ -17,6 +18,8 @@ import Data.Set qualified as Set
 import Data.Text qualified as Text
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
 import Prettyprinter (Pretty)
+import Text.Megaparsec qualified as M
+import Text.Megaparsec.Char qualified as M
 import Prelude hiding (toText)
 
 newtype Name = Name {toText ∷ Text}
@@ -54,6 +57,13 @@ fromText t =
  where
   checkFirst c = Char.isAlpha c || c == '_'
   checkRest c = Char.isDigit c || checkFirst c
+
+parser ∷ M.Parsec Void Text Name
+parser =
+  Name <$> do
+    c ← M.letterChar <|> M.char '_'
+    cs ← M.many (M.alphaNumChar <|> M.char '_')
+    pure $ Text.pack (c : cs)
 
 makeSafe ∷ HasCallStack ⇒ Text → Name
 makeSafe unsafe = unsafeName safest

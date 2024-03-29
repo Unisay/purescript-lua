@@ -7,6 +7,7 @@ module Language.PureScript.Backend.Lua
   , Error (..)
   ) where
 
+import Control.Arrow (left)
 import Control.Monad (ap)
 import Control.Monad.Oops (CouldBe, Variant)
 import Control.Monad.Oops qualified as Oops
@@ -30,7 +31,7 @@ import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Types (AppOrModule (..))
 import Language.PureScript.Names (ModuleName, runModuleName)
 import Language.PureScript.Names qualified as PS
-import Path (Abs, Dir, Path, toFilePath)
+import Path (Abs, Dir, Path)
 import Prelude hiding (exp, local)
 
 type LuaM e a =
@@ -220,13 +221,19 @@ fromExp foreigns topLevelNames modname ir = case ir of
     fromIfThenElse <$> go cond <*> go th <*> go el
   IR.Exception msg →
     pure $ Lua.error msg
-  IR.ForeignImport _moduleName path → do
-    filePath ←
+  IR.ForeignImport _moduleName path (map fromName → names) → do
+    Foreign.Source {header, exports} ←
       Oops.hoistEither =<< liftIO do
-        Foreign.resolveForModule path (untag foreigns)
-          <&> bimap LinkerErrorForeign toFilePath
-    Lua.thunks . pure . Lua.ForeignSourceCode . Text.strip . decodeUtf8
-      <$> liftIO (readFileBS filePath)
+        left LinkerErrorForeign
+          <$> Foreign.parseForeignSource (untag foreigns) path
+    let foreignHeader = Lua.ForeignSourceStat <$> header
+    let foreignExports ∷ [Lua.TableRow] =
+          [ Lua.tableRowNV name (Lua.ForeignSourceExp src)
+          | (name, src) ← toList exports
+          , name `elem` names
+          ]
+    pure . Lua.thunks $
+      maybe id (:) foreignHeader [Lua.return (Lua.table foreignExports)]
  where
   go ∷ IR.Exp → LuaM e Lua.Exp
   go = fromExp foreigns topLevelNames modname

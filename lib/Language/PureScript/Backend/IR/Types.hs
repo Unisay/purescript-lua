@@ -69,7 +69,7 @@ data RawExp (n ∷ Type → Type)
   | Let (NonEmpty (Grouping (n Name, Annotated n RawExp))) (Annotated n RawExp)
   | IfThenElse (Annotated n RawExp) (Annotated n RawExp) (Annotated n RawExp)
   | Exception Text
-  | ForeignImport ModuleName FilePath
+  | ForeignImport ModuleName FilePath [Name]
 
 type Exp = RawExp Identity
 
@@ -321,7 +321,7 @@ annotateExpM around annotateExp annotateParam annotateName =
     IfThenElse i t e → IfThenElse <$> ann i <*> ann t <*> ann e
     Ctor mn aty ty ctr fs → pure $ Ctor mn aty ty ctr fs
     Exception m → pure $ Exception m
-    ForeignImport m p → pure $ ForeignImport m p
+    ForeignImport m p ns → pure $ ForeignImport m p ns
  where
   ann ∷ Identity (RawExp Identity) → m (b, RawExp ((,) b))
   ann (unAnn → expr) =

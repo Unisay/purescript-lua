@@ -54,7 +54,7 @@ eliminateDeadCode dceMode chunk = do
           node (Lua.IfThenElse (dceExpression i) (dceChunk t) (dceChunk e))
       Lua.Return exp →
         Just $ node (Lua.Return (dceExpression exp))
-      Lua.ForeignSourceCode {} →
+      Lua.ForeignSourceStat {} →
         Just vstat
    where
     node = (Node key scopes,)
@@ -82,6 +82,8 @@ eliminateDeadCode dceMode chunk = do
         dce (Lua.Var (dceVar v))
       Lua.FunctionCall e es →
         dce (Lua.FunctionCall (dceExpression e) (dceExpression <$> es))
+      Lua.ForeignSourceExp _src →
+        indexedExp
    where
     dce = (Node key scope,)
 
@@ -202,6 +204,8 @@ expressionAdjacencyList (Node key _scope, expr) =
       DList.cons
         ("FunctionCall", key, keyOf (nodeOf e) : map (keyOf . nodeOf) params)
         (expressionAdjacencyList e <> foldMap expressionAdjacencyList params)
+    Lua.ForeignSourceExp _src →
+      pure ("ForeignSourceExp", key, [])
 
 paramsAdjacencyList ∷ Key → ANode Lua.ParamF → DList (Label, Key, [Key])
 paramsAdjacencyList fnKey (Node key _scopes, param) =

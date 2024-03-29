@@ -67,7 +67,7 @@ everywhereStatM f g = go
       elseBranch ← forM eb (go . unAnn)
       f $ ifThenElse predicate thenBranch elseBranch
     Return (Ann e) → f . Return . ann =<< goe e
-    ForeignSourceCode src → f $ ForeignSourceCode src
+    ForeignSourceStat src → f $ ForeignSourceStat src
 
 --------------------------------------------------------------------------------
 -- Annotating ------------------------------------------------------------------
@@ -123,7 +123,7 @@ annotateStatementInsideOutM annotator@Annotator {..} stat =
       iElse ← traverse goS eb
       annotateStat $ IfThenElse iPred iThen iElse
     Return e → annotateStat . Return =<< goE e
-    ForeignSourceCode src → annotateStat $ ForeignSourceCode src
+    ForeignSourceStat src → annotateStat $ ForeignSourceStat src
  where
   goS = annotateStatementInsideOutM annotator
   goE = annotateExpInsideOutM annotator
@@ -157,6 +157,7 @@ annotateExpInsideOutM annotator@Annotator {..} expf =
     Integer i → annotateExp $ Integer i
     Float f → annotateExp $ Float f
     String s → annotateExp $ String s
+    ForeignSourceExp src → annotateExp $ ForeignSourceExp src
  where
   goS = annotateStatementInsideOutM annotator
   goE = annotateExpInsideOutM annotator

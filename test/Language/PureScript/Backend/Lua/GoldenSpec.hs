@@ -87,15 +87,13 @@ spec = do
       corefns ← runIO $ collectGoldenCorefns psOutputPath
       it "Finds some corefn files" $ corefns `shouldNotBe` mempty
       for_ corefns \corefn → do
-        let moduleName =
-              parent corefn
-                & dirname
-                & FilePath.dropTrailingPathSeparator
-                . toFilePath
-                & PS.ModuleName
+        let modulePath = parent corefn
+            moduleName =
+              PS.ModuleName
                 . toText
-
-            modulePath = parent corefn
+                . FilePath.dropTrailingPathSeparator
+                . toFilePath
+                $ dirname modulePath
         -- IR golden
         let irGolden = modulePath </> $(mkRelFile "golden.ir")
         let irActual = modulePath </> $(mkRelFile "actual.ir")

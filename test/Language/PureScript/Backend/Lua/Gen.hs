@@ -47,7 +47,7 @@ recursiveStatements = [(2, ifThenElse)]
 
 foreignSourceCode ∷ Gen Lua.Statement
 foreignSourceCode =
-  Lua.ForeignSourceCode
+  Lua.ForeignSourceStat
     . renderStrict
     . layoutPretty defaultLayoutOptions
     . printStatement

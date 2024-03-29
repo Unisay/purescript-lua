@@ -68,7 +68,7 @@ rewriteExpWithRule rule = everywhereExp rule identity
 pushDeclarationsDownTheInnerScope ∷ RewriteRule
 pushDeclarationsDownTheInnerScope = \case
   Function outerArgs outerBody
-    | lastStatement ← List.last outerBody
+    | Just lastStatement ← viaNonEmpty last outerBody
     , Ann (Return (Ann (Function innerArgs innerBody))) ← lastStatement
     , declarations ← unAnn <$> List.init outerBody
     , not (null declarations)

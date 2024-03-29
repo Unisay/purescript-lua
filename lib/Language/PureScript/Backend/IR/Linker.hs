@@ -70,7 +70,7 @@ foreignBindings Module {moduleName, modulePath, moduleForeigns} =
   foreignModuleBinding =
     [ Standalone
       ( QName moduleName foreignName
-      , ForeignImport moduleName modulePath
+      , ForeignImport moduleName modulePath moduleForeigns
       )
     | not (null moduleForeigns)
     ]
@@ -122,8 +122,7 @@ qualifyTopRefs moduleName = go
           RecursiveGroup recBinds →
             RecursiveGroup ((go topNames' <$>) <<$>> recBinds)
            where
-            topNames' =
-              foldr (Map.adjust (+ 1)) topNames (unAnn . fst <$> recBinds)
+            topNames' = foldr (Map.adjust (+ 1) . unAnn . fst) topNames recBinds
         qualifyBody = go topNames'
          where
           topNames' = foldr (Map.adjust (+ 1) . unAnn) topNames boundNames

@@ -18,9 +18,8 @@ runtimeLazyName = [name|_S___runtime_lazy|]
 
 runtimeLazy ∷ Statement
 runtimeLazy =
-  ForeignSourceCode
-    [__i|
-      local function #{Name.toText runtimeLazyName}(name)
+  ForeignSourceStat
+    [__i| local function #{Name.toText runtimeLazyName}(name)
         return function(init)
           return function()
             local state = 0
@@ -47,7 +46,7 @@ objectUpdateName = [name|_S___object_update|]
 
 objectUpdate ∷ Statement
 objectUpdate =
-  ForeignSourceCode
+  ForeignSourceStat
     [__i|
       local function #{Name.toText objectUpdateName}(o, patches)
         local o_copy = {}

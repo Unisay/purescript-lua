@@ -8,6 +8,7 @@ import Language.PureScript.Backend.Lua.DeadCodeEliminatorSpec qualified as LuaDc
 import Language.PureScript.Backend.Lua.GoldenSpec qualified as Golden
 import Language.PureScript.Backend.Lua.OptimizerSpec qualified as LuaOptimizer
 import Language.PureScript.Backend.Lua.PrinterSpec qualified as Printer
+import Language.PureScript.Backend.Lua.Linker.Foreign.Spec qualified as LuaLinkerForeign
 import Test.Hspec (hspec)
 
 main ∷ IO ()
@@ -20,3 +21,4 @@ main = hspec do
   IROptimizer.spec
   LuaOptimizer.spec
   Printer.spec
+  LuaLinkerForeign.spec

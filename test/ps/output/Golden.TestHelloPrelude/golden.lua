@@ -1,79 +1,32 @@
 local Prim_I_undefined = nil
 local function _S___runtime_lazy(name)
-  return function(init)
-    return function()
-      local state = 0
-      local val = nil
-      if state == 2 then
-        return val
-      else
-        if state == 1 then
-          return error(name .. " was needed before it finished initializing")
-        else
-          state = 1
-          val = init()
-          state = 2
-          return val
-        end
-      end
-    end
-  end
-end
+       return function(init)
+         return function()
+           local state = 0
+           local val = nil
+           if state == 2 then
+             return val
+           else
+             if state == 1 then
+               return error(name .. " was needed before it finished initializing")
+             else
+               state = 1
+               val = init()
+               state = 2
+               return val
+             end
+           end
+         end
+       end
+     end
 local Effect_I_foreign = (function()
   return {
-
-    pureE = function(a)
-      return function()
-        return a
-      end
-    end
-
-    , bindE = function(a)
-      return function(f)
-        return function()
-          return f(a())()
-        end
-      end
-    end
-
-    , untilE = function(f)
-      return function()
-        while not f() do end
-      end
-    end
-
-    , whileE = function(f)
-      return function(a)
-        return function()
-          while f() do
-            a()
-          end
-        end
-      end
-    end
-
-    , forE = function(lo)
-      return function(hi)
-        return function(f)
-          return function()
-            for i = lo, hi do
-              f(i)()
-            end
-          end
-        end
-      end
-    end
-
-    , foreachE = function(as)
-      return function(f)
-        return function()
-          for i, v in ipairs(as) do
-            f(v)()
-          end
-        end
-      end
-    end
-
+    pureE = function(a)    return function()      return a    end  end,
+    bindE = function(a)    return function(f)      return function()        return f(a())()      end    end  end,
+    untilE = function(f)    return function()      while not f() do      end    end  end,
+    whileE = function(f)    return function(a)      return function()        while f() do          a()        end      end    end  end,
+    forE = function(lo)    return function(hi)      return function(f)        return function()          for i = lo, hi do            f(i)()          end        end      end    end  end,
+    foreachE = function(as)    return function(f)      return function()        for i, v in ipairs(as) do          f(v)()        end      end    end  end
   }
 end)()
 local Control_Applicative_I_pure = function(dict) return dict.pure end
@@ -129,7 +82,7 @@ end)
 return {
   main = (function(dictApplicative)
     return Control_Applicative_I_pure(dictApplicative)(((function()
-      return {unit = nil}
+      return { unit = nil }
     end)()).unit)
   end)(Effect_I_applicativeEffect)
 }

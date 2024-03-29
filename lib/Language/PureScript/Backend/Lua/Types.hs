@@ -193,6 +193,7 @@ data ExpF ann
   | BinOp BinaryOp (Annotated ann ExpF) (Annotated ann ExpF)
   | Var (Annotated ann VarF)
   | FunctionCall (Annotated ann ExpF) [Annotated ann ExpF]
+  | ForeignSourceExp Text
 
 type Exp = ExpF ()
 
@@ -211,7 +212,7 @@ data StatementF ann
       [Annotated ann StatementF]
       -- ^ else block
   | Return (Annotated ann ExpF)
-  | ForeignSourceCode Text
+  | ForeignSourceStat Text
 
 type Statement = StatementF ()
 
