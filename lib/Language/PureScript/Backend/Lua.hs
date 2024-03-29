@@ -227,13 +227,15 @@ fromExp foreigns topLevelNames modname ir = case ir of
         left LinkerErrorForeign
           <$> Foreign.parseForeignSource (untag foreigns) path
     let foreignHeader = Lua.ForeignSourceStat <$> header
-    let foreignExports ∷ [Lua.TableRow] =
-          [ Lua.tableRowNV name (Lua.ForeignSourceExp src)
-          | (name, src) ← toList exports
-          , name `elem` names
-          ]
-    pure . Lua.thunks $
-      maybe id (:) foreignHeader [Lua.return (Lua.table foreignExports)]
+    let foreignExports ∷ Lua.Exp =
+          Lua.table
+            [ Lua.tableRowNV name (Lua.ForeignSourceExp src)
+            | (name, src) ← toList exports
+            , name `elem` names
+            ]
+    pure case foreignHeader of
+      Nothing → foreignExports
+      Just fh → Lua.thunks (fh : [Lua.return foreignExports])
  where
   go ∷ IR.Exp → LuaM e Lua.Exp
   go = fromExp foreigns topLevelNames modname

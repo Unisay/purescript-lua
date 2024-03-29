@@ -16,9 +16,15 @@ import Language.PureScript.Backend.Lua.Types
   , ExpF (..)
   , Statement
   , StatementF (Local, Return)
+  , TableRow
+  , TableRowF (..)
+  , VarF (..)
+  , ann
   , functionDef
   , return
+  , table
   , unAnn
+  , varField
   , pattern Ann
   )
 import Language.PureScript.Backend.Lua.Types qualified as Lua
@@ -54,6 +60,7 @@ rewriteRulesInOrder ∷ [RewriteRule]
 rewriteRulesInOrder =
   [ pushDeclarationsDownTheInnerScope
   , removeScopeWhenInsideEmptyFunction
+  , reduceTableDefinitionAccessor
   -- , collapseNestedFunctions
   ]
 
@@ -87,16 +94,30 @@ pushDeclarationsDownTheInnerScope = \case
     Local _ _ → True
     _ → False
 
-{- collapseNestedFunctions :: RewriteRule
+{-
+collapseNestedFunctions :: RewriteRule
 collapseNestedFunctions = \case
   Function outerArgs [Return (Function innerArgs innerBody)] ->
     Function (outerArgs <> innerArgs) innerBody
   e -> e
- -}
+-}
+
 removeScopeWhenInsideEmptyFunction ∷ RewriteRule
 removeScopeWhenInsideEmptyFunction = \case
   Function
     outerArgs
     [Ann (Return (Ann (FunctionCall (Ann (Function [] body)) [])))] →
       Function outerArgs body
+  e → e
+
+-- | Rewrites '{ foo = 1, bar = 2 }.foo' to '1'
+reduceTableDefinitionAccessor ∷ RewriteRule
+reduceTableDefinitionAccessor = \case
+  Var (Ann (VarField (Ann (TableCtor rows)) accessedField)) →
+    fromMaybe Nil $
+      listToMaybe
+        [ fieldValue
+        | (_ann, TableRowNV tableField (Ann fieldValue)) ← rows
+        , tableField == accessedField
+        ]
   e → e

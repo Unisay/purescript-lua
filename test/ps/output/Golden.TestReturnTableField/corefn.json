@@ -1,0 +1,1 @@
+{"builtWith":"0.15.15","comments":[],"decls":[],"exports":["u"],"foreign":["u"],"imports":[{"annotation":{"meta":null,"sourceSpan":{"end":[4,22],"start":[1,1]}},"moduleName":["Prim"]}],"moduleName":["Golden","TestReturnTableField"],"modulePath":"golden/Golden/TestReturnTableField.purs","reExports":{},"sourceSpan":{"end":[4,22],"start":[1,1]}}
