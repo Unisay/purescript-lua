@@ -11,6 +11,7 @@ module Language.PureScript.Backend.Lua.Name
   , specialNameType
   , specialNameCtor
   , join2
+  , reserved
   ) where
 
 import Data.Char qualified as Char
@@ -51,7 +52,7 @@ fromText t =
       | Text.length n > 0
       , checkFirst (Text.head n)
       , Text.all checkRest (Text.tail n)
-      , Set.notMember n reservedNames →
+      , Set.notMember n reserved →
           Just (Name n)
     _ → Nothing
  where
@@ -69,13 +70,12 @@ makeSafe ∷ HasCallStack ⇒ Text → Name
 makeSafe unsafe = unsafeName safest
  where
   safest =
-    if safer `Set.member` reservedNames
+    if safer `Set.member` reserved
       then '_' `Text.cons` safer `Text.snoc` '_'
       else safer
   safer =
-    Text.replace "$" "_S_"
-      . Text.replace "." "_"
-      $ Text.replace "'" "Prime" unsafe
+    Text.replace "$" "_S_" . Text.replace "." "_" $
+      Text.replace "'" "Prime" unsafe
 
 unsafeName ∷ HasCallStack ⇒ Text → Name
 unsafeName n =
@@ -94,8 +94,8 @@ specialNameType = Name "$type"
 specialNameCtor ∷ Name
 specialNameCtor = Name "$ctor"
 
-reservedNames ∷ Set Text
-reservedNames =
+reserved ∷ Set Text
+reserved =
   Set.fromList
     [ "and"
     , "break"

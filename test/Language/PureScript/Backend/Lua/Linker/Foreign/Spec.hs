@@ -7,8 +7,9 @@ module Language.PureScript.Backend.Lua.Linker.Foreign.Spec where
 
 import Data.List.NonEmpty qualified as NE
 import Data.String.Interpolate (__i)
+import Language.PureScript.Backend.Lua.Key (Key (..))
 import Language.PureScript.Backend.Lua.Linker.Foreign
-import Language.PureScript.Backend.Lua.Name (Name, unsafeName)
+import Language.PureScript.Backend.Lua.Name (unsafeName)
 import Path (relfile, toFilePath, (</>))
 import Path.IO (withSystemTempDir)
 import Test.HUnit (Assertion)
@@ -65,13 +66,18 @@ rawExports =
     return {
       foo = (42),
       bar = ("ok"),
-      baz = (function(unused) return zoo end)
+      baz = (function(unused) return zoo end),
+      [ "if"]= (function() return "if" end),
     }
   |]
 
-parsedExports ∷ NE.NonEmpty (Name, Text)
+parsedExports ∷ NE.NonEmpty (Key, Text)
 parsedExports =
-  (unsafeName "foo", "42")
-    :| [ (unsafeName "bar", "\"ok\"")
-       , (unsafeName "baz", "function(unused) return zoo end")
+  (unsafeKey "foo", "42")
+    :| [ (unsafeKey "bar", "\"ok\"")
+       , (unsafeKey "baz", "function(unused) return zoo end")
+       , (KeyReserved "if", "function() return \"if\" end")
        ]
+
+unsafeKey ∷ Text → Key
+unsafeKey = KeyName . unsafeName

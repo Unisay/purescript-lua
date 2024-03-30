@@ -23,6 +23,7 @@ import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Linker qualified as Linker
 import Language.PureScript.Backend.IR.Query (usesPrimModule, usesRuntimeLazy)
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
+import Language.PureScript.Backend.Lua.Key qualified as Key
 import Language.PureScript.Backend.Lua.Linker.Foreign qualified as Foreign
 import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Language.PureScript.Backend.Lua.Name qualified as Name
@@ -230,7 +231,10 @@ fromExp foreigns topLevelNames modname ir = case ir of
     let foreignExports ∷ Lua.Exp =
           Lua.table
             [ Lua.tableRowNV name (Lua.ForeignSourceExp src)
-            | (name, src) ← toList exports
+            | (key, src) ← toList exports
+            -- Export tables can contain Lua-reserved words as keys
+            -- for example: `{ ["for"] = 42 }`
+            , let name = Key.toSafeName key
             , name `elem` names
             ]
     pure case foreignHeader of

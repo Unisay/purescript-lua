@@ -15,8 +15,8 @@ import Data.DList (DList)
 import Data.DList qualified as DL
 import Data.String qualified as String
 import Data.Text qualified as Text
-import Language.PureScript.Backend.Lua.Name (Name)
-import Language.PureScript.Backend.Lua.Name qualified as Name
+import Language.PureScript.Backend.Lua.Key (Key)
+import Language.PureScript.Backend.Lua.Key qualified as Key
 import Path (Abs, Dir, File, Path, toFilePath, (</>))
 import Path qualified
 import Path.IO qualified as Path
@@ -27,7 +27,7 @@ import Text.Megaparsec.Char qualified as MP
 import Text.Show (Show (..))
 import Prelude hiding (show)
 
-data Source = Source {header ∷ Maybe Text, exports ∷ NonEmpty (Name, Text)}
+data Source = Source {header ∷ Maybe Text, exports ∷ NonEmpty (Key, Text)}
   deriving stock (Eq, Show)
 
 {- | Parse a foreign source file which has to be in the following format:
@@ -84,7 +84,7 @@ parseForeignSource foreigns path = runExceptT do
 
 type Parser = Parsec Void Text
 
-moduleParser ∷ Parser (NonEmpty (Name, Text))
+moduleParser ∷ Parser (NonEmpty (Key, Text))
 moduleParser = do
   MP.string "return" *> MP.space1
   char '{'
@@ -92,15 +92,15 @@ moduleParser = do
   char '}'
   pure exports
 
-foreignExport ∷ Parser (Name, Text)
+foreignExport ∷ Parser (Key, Text)
 foreignExport = do
-  exportName ← Name.parser <* MP.space1
+  exportKey ← Key.parser
   char '='
-  exportValue ← valueParser <* MP.space
-  pure (exportName, toText exportValue)
+  exportValue ← valueParser
+  pure (exportKey, toText exportValue)
 
 valueParser ∷ Parser String
-valueParser = char '(' *> go 0 DL.empty
+valueParser = char '(' *> go 0 DL.empty <* MP.space
  where
   go ∷ Int → DList Char → Parser String
   go numToClose value = do
