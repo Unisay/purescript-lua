@@ -16,15 +16,11 @@ import Language.PureScript.Backend.Lua.Types
   , ExpF (..)
   , Statement
   , StatementF (Local, Return)
-  , TableRow
   , TableRowF (..)
   , VarF (..)
-  , ann
   , functionDef
   , return
-  , table
   , unAnn
-  , varField
   , pattern Ann
   )
 import Language.PureScript.Backend.Lua.Types qualified as Lua
