@@ -30,13 +30,7 @@ spec = do
     it "parses file" do
       foreignSource ← withSystemTempDir "foreigns" \foreigns → do
         let path = toFilePath $ foreigns </> [relfile|Foo.lua|]
-        writeFile
-          path
-          [__i|
-            local boo = "boo"
-            local zoo = "boo" .. "zoo"
-            #{rawExports}
-          |]
+        writeFile path $ rawHeader <> "\n" <> rawExports
         parseForeignSource foreigns path
       case foreignSource of
         Left err → fail $ show err
@@ -56,6 +50,9 @@ shouldParse p s e =
 rawHeader ∷ String
 rawHeader =
   [__i|
+    function foo()
+      return 42
+    end
     local boo = "boo"
     local zoo = "boo" .. "zoo"
   |]

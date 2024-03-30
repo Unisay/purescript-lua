@@ -57,7 +57,7 @@ parseForeignSource foreigns path = runExceptT do
       pure $ Source header parsed
  where
   isReturn ∷ Text → Bool
-  isReturn = Text.isPrefixOf "return" . Text.stripStart
+  isReturn = Text.isPrefixOf "return"
 
   resolveForModule ∷ FilePath → Path Abs Dir → ExceptT Error IO (Path Abs File)
   resolveForModule modulePath foreignBaseDir = do
