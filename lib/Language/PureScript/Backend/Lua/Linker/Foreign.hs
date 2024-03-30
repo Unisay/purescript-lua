@@ -50,7 +50,7 @@ parseForeignSource foreigns path = runExceptT do
   filePath ← toFilePath <$> resolveForModule path foreigns
   src ← Text.strip . decodeUtf8 <$> liftIO (readFileBS filePath)
   let (headerLines, returnStat) = break isReturn (Text.lines src)
-  case Megaparsec.parse moduleParser filePath (fold returnStat) of
+  case Megaparsec.parse moduleParser filePath (unlines returnStat) of
     Left err → throwE $ ForeignErrorParse filePath err
     Right parsed → do
       let header = guarded (not . Text.null) (Text.strip (unlines headerLines))

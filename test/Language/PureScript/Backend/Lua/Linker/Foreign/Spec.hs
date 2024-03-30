@@ -66,7 +66,9 @@ rawExports =
     return {
       foo = (42),
       bar = ("ok"),
-      baz = (function(unused) return zoo end),
+      baz = (function(unused)
+        return zoo
+      end),
       [ "if"]= (function() return "if" end),
     }
   |]
@@ -75,7 +77,7 @@ parsedExports ∷ NE.NonEmpty (Key, Text)
 parsedExports =
   (unsafeKey "foo", "42")
     :| [ (unsafeKey "bar", "\"ok\"")
-       , (unsafeKey "baz", "function(unused) return zoo end")
+       , (unsafeKey "baz", "function(unused)\n    return zoo\n  end")
        , (KeyReserved "if", "function() return \"if\" end")
        ]
 
