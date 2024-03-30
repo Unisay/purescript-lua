@@ -164,7 +164,7 @@ fromExp foreigns topLevelNames modname ir = case ir of
     Lua.hash <$> go (IR.unAnn e)
   IR.ArrayIndex expr index →
     flip Lua.varIndex (Lua.Integer (fromIntegral index)) <$> go (IR.unAnn expr)
-  IR.ObjectProp expr propName →
+  IR.ObjectProp expr propName → do
     flip Lua.varField (fromPropName propName) <$> go (IR.unAnn expr)
   IR.ObjectUpdate expr propValues → do
     add UsesObjectUpdate
@@ -232,9 +232,9 @@ fromExp foreigns topLevelNames modname ir = case ir of
           Lua.table
             [ Lua.tableRowNV name (Lua.ForeignSourceExp src)
             | (key, src) ← toList exports
-            -- Export tables can contain Lua-reserved words as keys
+            , -- Export tables can contain Lua-reserved words as keys
             -- for example: `{ ["for"] = 42 }`
-            , let name = Key.toSafeName key
+            let name = Key.toSafeName key
             , name `elem` names
             ]
     pure case foreignHeader of

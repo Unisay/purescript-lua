@@ -5,14 +5,12 @@ module Language.PureScript.Backend.IR
 
 import Control.Monad.Error.Class (MonadError (throwError))
 import Control.Monad.Writer.Class (MonadWriter (..))
-import Data.Char qualified as Char
 import Data.Foldable (foldrM)
 import Data.List qualified as List
 import Data.List.NonEmpty ((<|))
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Lazy qualified as Map
 import Data.Tagged (Tagged (Tagged))
-import Data.Text qualified as Text
 import Data.Traversable (for)
 import Language.PureScript.Backend.IR.Types
 import Language.PureScript.CoreFn qualified as Cfn
@@ -20,8 +18,11 @@ import Language.PureScript.CoreFn.Laziness (applyLazinessTransform)
 import Language.PureScript.Names (ModuleName (..), runModuleName)
 import Language.PureScript.Names qualified as Names
 import Language.PureScript.Names qualified as PS
-import Language.PureScript.PSString (PSString, decodeStringEither)
-import Numeric (showHex)
+import Language.PureScript.PSString
+  ( PSString
+  , decodeString
+  , decodeStringEscaping
+  )
 import Relude.Extra (toFst)
 import Relude.Unsafe qualified as Unsafe
 import Text.Pretty.Simple (pShow)
@@ -194,7 +195,7 @@ mkLiteral = \case
   Cfn.NumericLiteral (Right d) →
     pure $ literalFloat d
   Cfn.StringLiteral s →
-    pure $ literalString $ psStringToText s
+    pure $ literalString $ decodeStringEscaping s
   Cfn.CharLiteral c →
     pure $ literalChar c
   Cfn.BooleanLiteral b →
@@ -202,8 +203,7 @@ mkLiteral = \case
   Cfn.ArrayLiteral exprs →
     literalArray <$> traverse makeExp exprs
   Cfn.ObjectLiteral kvs →
-    let props = first (PropName . psStringToText) <$> kvs
-     in literalObject <$> traverse (traverse makeExp) props
+    literalObject <$> traverse (bitraverse mkPropName makeExp) kvs
 
 mkConstructor
   ∷ Cfn.Ann
@@ -235,15 +235,20 @@ mkCtorName = CtorName . PS.runProperName
 mkFieldName ∷ PS.Ident → FieldName
 mkFieldName = FieldName . PS.runIdent
 
+mkPropName ∷ PSString → RepM PropName
+mkPropName str = case decodeString str of
+  Left err → throwContextualError $ UnicodeDecodeError err
+  Right decodedString → pure $ PropName decodedString
+
 mkAccessor ∷ PSString → CfnExp → RepM Exp
-mkAccessor prop cfnExpr =
-  makeExp cfnExpr <&> \expr → objectProp expr (PropName (psStringToText prop))
+mkAccessor prop cfnExpr = do
+  propName ← mkPropName prop
+  makeExp cfnExpr <&> \expr → objectProp expr propName
 
 mkObjectUpdate ∷ CfnExp → [(PSString, CfnExp)] → RepM Exp
 mkObjectUpdate cfnExp props = do
   expr ← makeExp cfnExp
-  patch ← for props \(prop, cExpr) →
-    (PropName (psStringToText prop),) <$> makeExp cExpr
+  patch ← traverse (bitraverse mkPropName makeExp) props
   case NE.nonEmpty patch of
     Nothing → throwContextualError EmptyObjectUpdate
     Just ps → pure $ objectUpdate expr ps
@@ -280,54 +285,6 @@ mkLet binds expr = do
     NE.nonEmpty binds
       & maybe (throwContextualError LetWithoutBinds) (traverse mkGrouping)
   lets groupings <$> makeExp expr
-
-psStringToText ∷ PSString → Text
-psStringToText = foldMap encodeChar . decodeStringEither
- where
-  encodeChar ∷ Either Word16 Char → Text
-  encodeChar (Left c) = "\\x" <> showHex' 6 c
-  encodeChar (Right c)
-    | c == '\t' = "\\t"
-    | c == '\r' = "\\r"
-    | c == '\n' = "\\n"
-    | c == '"' = "\\\""
-    | c == '\'' = "\\\'"
-    | c == '\\' = "\\\\"
-    | shouldPrint c = Text.singleton c
-    | otherwise = "\\x" <> showHex' 6 (Char.ord c)
-
-  -- Note we do not use Data.Char.isPrint here because that includes things
-  -- like zero-width spaces and combining punctuation marks, which could be
-  -- confusing to print unescaped.
-  shouldPrint ∷ Char → Bool
-  -- The standard space character, U+20 SPACE, is the only space char we should
-  -- print without escaping
-  shouldPrint ' ' = True
-  shouldPrint c =
-    Char.generalCategory c
-      `elem` [ Char.UppercaseLetter
-             , Char.LowercaseLetter
-             , Char.TitlecaseLetter
-             , Char.OtherLetter
-             , Char.DecimalNumber
-             , Char.LetterNumber
-             , Char.OtherNumber
-             , Char.ConnectorPunctuation
-             , Char.DashPunctuation
-             , Char.OpenPunctuation
-             , Char.ClosePunctuation
-             , Char.InitialQuote
-             , Char.FinalQuote
-             , Char.OtherPunctuation
-             , Char.MathSymbol
-             , Char.CurrencySymbol
-             , Char.ModifierSymbol
-             , Char.OtherSymbol
-             ]
-  showHex' ∷ Enum a ⇒ Int → a → Text
-  showHex' width c =
-    let hs = showHex (fromEnum c) ""
-     in Text.pack (replicate (width - length hs) '0' <> hs)
 
 --------------------------------------------------------------------------------
 -- Case statements are compiled to a decision trees (nested if/else's) ---------
@@ -606,7 +563,7 @@ mkBinder matchExp = go mempty
         Cfn.NumericLiteral (Right d) →
           pure $ matchWhole $ PatFloating d
         Cfn.StringLiteral s →
-          pure $ matchWhole $ PatString (psStringToText s)
+          pure $ matchWhole $ PatString (decodeStringEscaping s)
         Cfn.CharLiteral c →
           pure $ matchWhole $ PatChar c
         Cfn.BooleanLiteral b →
@@ -625,8 +582,9 @@ mkBinder matchExp = go mempty
               }
         Cfn.ObjectLiteral kvs → do
           nestedMatches ←
-            for kvs \(PropName . psStringToText → prop, binder) →
-              go (TakeProp prop : stepsToFocus) binder
+            for kvs \(prop, binder) → do
+              propName ← mkPropName prop
+              go (TakeProp propName : stepsToFocus) binder
           pure
             Match
               { matchExp
@@ -739,6 +697,7 @@ data CoreFnErrorReason
   | TypeNotDeclared
       (Map (ModuleName, TyName) (AlgebraicType, Map CtorName [FieldName]))
       TyName
+  | UnicodeDecodeError UnicodeException
 
 instance Show CoreFnErrorReason where
   show = \case
@@ -767,3 +726,5 @@ instance Show CoreFnErrorReason where
         <> show tyName
         <> ".\n Known types: "
         <> toString (pShow decls)
+    UnicodeDecodeError e →
+      "Unicode decode error: " <> displayException e

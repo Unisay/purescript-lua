@@ -4,7 +4,7 @@ module Language.PureScript.PSString
   , decodeString
   , decodeStringEither
   , decodeStringWithReplacement
-  , prettyPrintString
+  , decodeStringEscaping
   , prettyPrintStringJS
   , mkString
   ) where
@@ -90,9 +90,9 @@ decodeStringEither = unfoldr decode . toUTF16CodeUnits
 Attempt to decode a PSString as UTF-16 text. This will fail (returning
 Nothing) if the argument contains lone surrogates.
 -}
-decodeString ∷ PSString → Maybe Text
+decodeString ∷ PSString → Either UnicodeException Text
 decodeString =
-  rightToMaybe . decodeEither . BS.pack . concatMap unpair . toUTF16CodeUnits
+  decodeEither . BS.pack . concatMap unpair . toUTF16CodeUnits
  where
   unpair w = [highByte w, lowByte w]
 
@@ -124,7 +124,7 @@ instance IsString PSString where
 
 instance A.ToJSON PSString where
   toJSON str =
-    case decodeString str of
+    case rightToMaybe (decodeString str) of
       Just t → A.toJSON t
       Nothing → A.toJSON (toUTF16CodeUnits str)
 
@@ -149,10 +149,10 @@ instance A.FromJSON PSString where
         b
 
 {- |
-Pretty print a PSString, using PureScript escape sequences.
+Decode a PSString as UTF-16, using PureScript escape sequences.
 -}
-prettyPrintString ∷ PSString → Text
-prettyPrintString s = "\"" <> foldMap encodeChar (decodeStringEither s) <> "\""
+decodeStringEscaping ∷ PSString → Text
+decodeStringEscaping s = foldMap encodeChar (decodeStringEither s)
  where
   encodeChar ∷ Either Word16 Char → Text
   encodeChar (Left c) = "\\x" <> showHex' 6 c
@@ -194,7 +194,6 @@ prettyPrintString s = "\"" <> foldMap encodeChar (decodeStringEither s) <> "\""
              , Char.ModifierSymbol
              , Char.OtherSymbol
              ]
-
 {- |
 Pretty print a PSString, using JavaScript escape sequences. Intended for
 use in compiled JS output.
