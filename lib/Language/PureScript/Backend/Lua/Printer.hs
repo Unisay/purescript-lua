@@ -76,7 +76,7 @@ printExp = \case
         (printExp prefix)
         (printExp . unAnn <$> args)
     )
-  Lua.ForeignSourceExp code → (PrecAtom, pretty code)
+  Lua.ForeignSourceExp code → (PrecFunction, pretty code)
 
 printUnaryOp ∷ Lua.UnaryOp → PADoc → PADoc
 printUnaryOp op (_, a) = (prec op, pretty (sym op) <> parens a)
