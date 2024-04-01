@@ -31,9 +31,9 @@ spec = do
           f = [Lua.name|foo|]
       renderedExpression (Lua.varField e f) `shouldBe` "({ foo = 1 }).foo"
 
-  it "Assignment" do
-    let s = Lua.assign (Lua.VarName [Lua.name|foo|]) (Lua.Boolean True)
-    renderedStatement s `shouldBe` "foo = true"
+    it "Assignment" do
+      let s = Lua.assign (Lua.VarName [Lua.name|foo|]) (Lua.Boolean True)
+      renderedStatement s `shouldBe` "foo = true"
 
   describe "Local declaration" do
     it "without a value" do
@@ -114,6 +114,16 @@ spec = do
           , "  return aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
           , "end"
           ]
+    it "function application" do
+      let expr =
+            Lua.functionCall
+              ( Lua.functionDef
+                  [ParamNamed [Lua.name|a|], ParamNamed [Lua.name|b|]]
+                  [Lua.return (Lua.varName [Lua.name|a|])]
+              )
+              [Lua.Integer 1, Lua.Integer 2]
+      renderedExpression expr
+        `shouldBe` "(function(a, b) return a end)(1, 2)"
 
   describe "expression" do
     describe "unary" do

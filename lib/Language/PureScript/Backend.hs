@@ -15,6 +15,11 @@ import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Path (Abs, Dir, Path, SomeBase)
 import Prelude hiding (show)
 
+data CompilationResult = CompilationResult
+  { ir ∷ Linker.UberModule
+  , lua ∷ Lua.Chunk
+  }
+
 compileModules
   ∷ e
     `CouldBeAnyOf` '[ CoreFn.ModuleNotFound
@@ -25,7 +30,7 @@ compileModules
   ⇒ Tagged "output" (SomeBase Dir)
   → Tagged "foreign" (Path Abs Dir)
   → AppOrModule
-  → ExceptT (Variant e) IO Lua.Chunk
+  → ExceptT (Variant e) IO CompilationResult
 compileModules outputDir foreignDir appOrModule = do
   cfnModules ←
     CoreFn.readModuleRecursively outputDir (entryPointModule appOrModule)
@@ -38,8 +43,10 @@ compileModules outputDir foreignDir appOrModule = do
           & optimizedUberModule
   let needsRuntimeLazy = Tagged (any untag needsRuntimeLazys)
 
-  Lua.fromUberModule foreignDir needsRuntimeLazy appOrModule uberModule
-    <&> optimizeChunk
+  unoptimizedChunk ←
+    Lua.fromUberModule foreignDir needsRuntimeLazy appOrModule uberModule
+  pure
+    CompilationResult {lua = optimizeChunk unoptimizedChunk, ir = uberModule}
 
 linkerMode ∷ AppOrModule → Linker.LinkMode
 linkerMode = \case

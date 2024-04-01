@@ -13,6 +13,7 @@ import Options.Applicative
   ( Parser
   , eitherReader
   , execParser
+  , flag
   , fullDesc
   , header
   , helpDoc
@@ -25,7 +26,15 @@ import Options.Applicative
   , short
   , value
   )
-import Path (reldir, relfile, Dir, File, SomeBase (..), parseSomeDir, parseSomeFile)
+import Path
+  ( Dir
+  , File
+  , SomeBase (..)
+  , parseSomeDir
+  , parseSomeFile
+  , reldir
+  , relfile
+  )
 import Prettyprinter (Doc, annotate, flatAlt, indent, line, vsep, (<+>))
 import Prettyprinter qualified as PP
 import Prettyprinter.Render.Terminal (AnsiStyle, Color (..))
@@ -35,51 +44,69 @@ data Args = Args
   { foreignPath ∷ Tagged "foreign" (SomeBase Dir)
   , psOutputPath ∷ Tagged "output" (SomeBase Dir)
   , luaOutputFile ∷ Tagged "output-lua" (SomeBase File)
+  , outputIR ∷ Maybe ExtraOutput
+  , outputLuaAst ∷ Maybe ExtraOutput
   , appOrModule ∷ AppOrModule
   }
   deriving stock (Show)
 
+data ExtraOutput = OutputIR | OutputLuaAst
+  deriving stock (Eq, Show)
+
 options ∷ Parser Args
 options = do
   foreignPath ←
-    option
-      (eitherReader (bimap displayException Tagged . parseSomeDir))
-      ( fold
-          [ metavar "FOREIGN-PATH"
-          , long "foreign-path"
-          , value $ Tagged $ Rel [reldir|foreign|]
-          , helpDoc . Just $
-              "Path to a directory containing foreign files."
-                <> linebreak
-                <> bold "Default: foreign"
-          ]
-      )
+    option (eitherReader (bimap displayException Tagged . parseSomeDir)) $
+      fold
+        [ metavar "FOREIGN-PATH"
+        , long "foreign-path"
+        , value $ Tagged $ Rel [reldir|foreign|]
+        , helpDoc . Just $
+            "Path to a directory containing foreign files."
+              <> linebreak
+              <> bold "Default: foreign"
+        ]
+
   psOutputPath ←
-    option
-      (eitherReader (bimap displayException Tagged . parseSomeDir))
-      ( fold
-          [ metavar "PS-PATH"
-          , long "ps-output"
-          , value $ Tagged $ Rel [reldir|output|]
-          , helpDoc . Just $
-              "Path to purs output directory."
-                <> linebreak
-                <> bold "Default: output"
-          ]
-      )
+    option (eitherReader (bimap displayException Tagged . parseSomeDir)) $
+      fold
+        [ metavar "PS-PATH"
+        , long "ps-output"
+        , value $ Tagged $ Rel [reldir|output|]
+        , helpDoc . Just $
+            "Path to purs output directory."
+              <> linebreak
+              <> bold "Default: output"
+        ]
+
   luaOutputFile ←
-    option
-      (eitherReader (bimap displayException Tagged . parseSomeFile))
-      ( fold
-          [ metavar "LUA-OUT-FILE"
-          , long "lua-output-file"
-          , value $ Tagged $ Rel [relfile|main.lua|]
-          , helpDoc . Just $
-              "Path to write compiled Lua file to."
-                <> linebreak
-                <> bold "Default: main.lua"
-          ]
-      )
+    option (eitherReader (bimap displayException Tagged . parseSomeFile)) $
+      fold
+        [ metavar "LUA-OUT-FILE"
+        , long "lua-output-file"
+        , value $ Tagged $ Rel [relfile|main.lua|]
+        , helpDoc . Just $
+            "Path to write compiled Lua file to."
+              <> linebreak
+              <> bold "Default: main.lua"
+        ]
+
+  outputLuaAst ←
+    flag Nothing (Just OutputLuaAst) . fold $
+      [ long "output-lua-ast"
+      , helpDoc . Just $
+          "Output Lua AST."
+            <> linebreak
+            <> bold "Default: false"
+      ]
+  outputIR ←
+    flag Nothing (Just OutputIR) . fold $
+      [ long "output-ir"
+      , helpDoc . Just $
+          "Output IR."
+            <> linebreak
+            <> bold "Default: false"
+      ]
   appOrModule ←
     option (eitherReader parseAppOrModule) . fold $
       [ metavar "ENTRY"

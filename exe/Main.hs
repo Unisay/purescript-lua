@@ -1,9 +1,10 @@
 module Main where
 
-import Cli (Args (luaOutputFile))
+import Cli (Args (luaOutputFile), ExtraOutput (..))
 import Cli qualified
 import Control.Monad.Oops qualified as Oops
 import Data.Tagged (Tagged (..))
+import Language.PureScript.Backend (CompilationResult (..))
 import Language.PureScript.Backend qualified as Backend
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.Lua qualified as Lua
@@ -11,16 +12,19 @@ import Language.PureScript.Backend.Lua.Printer qualified as Printer
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Language.PureScript.Names (runIdent, runModuleName)
 import Main.Utf8 qualified as Utf8
-import Path (Abs, Dir, Path, SomeBase (..), toFilePath)
+import Path (Abs, Dir, Path, SomeBase (..), replaceExtension, toFilePath)
 import Path.IO qualified as Path
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderIO)
+import Text.Pretty.Simple (pHPrint)
 
 main ∷ IO ()
 main = Utf8.withUtf8 do
   Cli.Args
     { foreignPath
     , luaOutputFile
+    , outputIR
+    , outputLuaAst
     , psOutputPath
     , appOrModule
     } ←
@@ -37,9 +41,10 @@ main = Utf8.withUtf8 do
       Path.Abs a → pure a
       Path.Rel r → Path.makeAbsolute r
 
-  putTextLn "Compiling modules:"
+  let extraOutputs = catMaybes [outputLuaAst, outputIR]
 
-  luaChunk ←
+  CompilationResult {lua, ir} ← do
+    putTextLn "PS Lua: compiling ..."
     Backend.compileModules psOutputPath foreignDir appOrModule
       & handleModuleNotFoundError
       & handleModuleDecodingError
@@ -50,7 +55,17 @@ main = Utf8.withUtf8 do
   let outputFile = toFilePath luaOutput
   withFile outputFile WriteMode \h →
     renderIO h . layoutPretty defaultLayoutOptions $
-      Printer.printLuaChunk luaChunk
+      Printer.printLuaChunk lua
+
+  when (OutputIR `elem` extraOutputs) do
+    irOutputFile ← toFilePath <$> replaceExtension ".ir" luaOutput
+    withFile irOutputFile WriteMode (`pHPrint` ir)
+    putTextLn $ "Wrote IR to " <> toText irOutputFile
+
+  when (OutputLuaAst `elem` extraOutputs) do
+    luaAstOutputFile ← toFilePath <$> replaceExtension ".lua-ast" luaOutput
+    withFile luaAstOutputFile WriteMode (`pHPrint` lua)
+    putTextLn $ "Wrote Lua AST to " <> toText luaAstOutputFile
 
   putTextLn $ "Wrote linked modules to " <> toText outputFile
 
