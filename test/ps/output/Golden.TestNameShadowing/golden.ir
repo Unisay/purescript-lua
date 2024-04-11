@@ -2,135 +2,78 @@ UberModule
   { uberModuleBindings =
     [ Standalone
       ( QName
-        { qnameModuleName = ModuleName "Golden.TestNameShadowing", qnameName = Name "f" }, Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity
-          ( Abs
-            ( Identity ( ParamNamed ( Name "v1" ) ) )
-            ( Identity
-              ( IfThenElse
-                ( Identity
-                  ( Eq ( Identity ( LiteralInt 1 ) ) ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) )
-                )
-                ( Identity ( LiteralInt 1 ) )
-                ( Identity
-                  ( IfThenElse
-                    ( Identity
-                      ( Eq
-                        ( Identity ( LiteralInt 1 ) )
-                        ( Identity ( Ref ( Local ( Name "v1" ) ) 0 ) )
-                      )
-                    )
-                    ( Identity ( LiteralInt 2 ) )
-                    ( Identity ( LiteralInt 3 ) )
-                  )
-                )
-              )
+        { qnameModuleName = ModuleName "Golden.TestNameShadowing", qnameName = Name "f"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( Abs Nothing
+          ( ParamNamed Nothing ( Name "v1" ) )
+          ( IfThenElse Nothing
+            ( Eq Nothing ( LiteralInt Nothing 1 ) ( Ref Nothing ( Local ( Name "v" ) ) 0 ) )
+            ( LiteralInt Nothing 1 )
+            ( IfThenElse Nothing
+              ( Eq Nothing ( LiteralInt Nothing 1 ) ( Ref Nothing ( Local ( Name "v1" ) ) 0 ) )
+              ( LiteralInt Nothing 2 )
+              ( LiteralInt Nothing 3 )
             )
           )
         )
       )
     ], uberModuleExports =
     [
-      ( Name "b", Abs
-        ( Identity ( ParamNamed ( Name "x" ) ) )
-        ( Identity
-          ( Abs
-            ( Identity ( ParamNamed ( Name "x1" ) ) )
-            ( Identity
-              ( App
-                ( Identity
-                  ( App
-                    ( Identity
-                      ( Ref ( Imported ( ModuleName "Golden.TestNameShadowing" ) ( Name "f" ) ) 0 )
-                    )
-                    ( Identity
-                      ( App
-                        ( Identity
-                          ( App
-                            ( Identity
-                              ( Ref
-                                ( Imported
-                                  ( ModuleName "Golden.TestNameShadowing" )
-                                  ( Name "f" )
-                                ) 0
-                              )
-                            )
-                            ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
-                          )
-                        )
-                        ( Identity ( Ref ( Local ( Name "x1" ) ) 0 ) )
-                      )
-                    )
+      ( Name "b", Abs Nothing
+        ( ParamNamed Nothing ( Name "x" ) )
+        ( Abs Nothing
+          ( ParamNamed Nothing ( Name "x1" ) )
+          ( App Nothing
+            ( App Nothing
+              ( Ref Nothing ( Imported ( ModuleName "Golden.TestNameShadowing" ) ( Name "f" ) ) 0 )
+              ( App Nothing
+                ( App Nothing
+                  ( Ref Nothing
+                    ( Imported ( ModuleName "Golden.TestNameShadowing" ) ( Name "f" ) ) 0
                   )
+                  ( Ref Nothing ( Local ( Name "x" ) ) 0 )
                 )
-                ( Identity
-                  ( App
-                    ( Identity
-                      ( Abs
-                        ( Identity ( ParamNamed ( Name "x2" ) ) )
-                        ( Identity
-                          ( App
-                            ( Identity
-                              ( App
-                                ( Identity
-                                  ( Ref
-                                    ( Imported
-                                      ( ModuleName "Golden.TestNameShadowing" )
-                                      ( Name "f" )
-                                    ) 0
-                                  )
-                                )
-                                ( Identity ( Ref ( Local ( Name "x2" ) ) 0 ) )
-                              )
-                            )
-                            ( Identity ( LiteralInt 1 ) )
-                          )
-                        )
-                      )
+                ( Ref Nothing ( Local ( Name "x1" ) ) 0 )
+              )
+            )
+            ( App Nothing
+              ( Abs Nothing
+                ( ParamNamed Nothing ( Name "x2" ) )
+                ( App Nothing
+                  ( App Nothing
+                    ( Ref Nothing
+                      ( Imported ( ModuleName "Golden.TestNameShadowing" ) ( Name "f" ) ) 0
                     )
-                    ( Identity ( LiteralInt 42 ) )
+                    ( Ref Nothing ( Local ( Name "x2" ) ) 0 )
                   )
+                  ( LiteralInt Nothing 1 )
                 )
               )
+              ( LiteralInt Nothing 42 )
             )
           )
         )
       ),
-      ( Name "c", Abs
-        ( Identity ( ParamNamed ( Name "x" ) ) )
-        ( Identity
-          ( App
-            ( Identity
-              ( Abs
-                ( Identity ( ParamNamed ( Name "y" ) ) )
-                ( Identity
-                  ( Abs
-                    ( Identity ( ParamNamed ( Name "x1" ) ) )
-                    ( Identity
-                      ( App
-                        ( Identity
-                          ( App
-                            ( Identity
-                              ( Ref
-                                ( Imported
-                                  ( ModuleName "Golden.TestNameShadowing" )
-                                  ( Name "f" )
-                                ) 0
-                              )
-                            )
-                            ( Identity ( Ref ( Local ( Name "x1" ) ) 0 ) )
-                          )
-                        )
-                        ( Identity ( Ref ( Local ( Name "y" ) ) 0 ) )
-                      )
-                    )
+      ( Name "c", Abs Nothing
+        ( ParamNamed Nothing ( Name "x" ) )
+        ( App Nothing
+          ( Abs Nothing
+            ( ParamNamed Nothing ( Name "y" ) )
+            ( Abs Nothing
+              ( ParamNamed Nothing ( Name "x1" ) )
+              ( App Nothing
+                ( App Nothing
+                  ( Ref Nothing
+                    ( Imported ( ModuleName "Golden.TestNameShadowing" ) ( Name "f" ) ) 0
                   )
+                  ( Ref Nothing ( Local ( Name "x1" ) ) 0 )
                 )
+                ( Ref Nothing ( Local ( Name "y" ) ) 0 )
               )
             )
-            ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
           )
+          ( Ref Nothing ( Local ( Name "x" ) ) 0 )
         )
       )
     ]

@@ -4,207 +4,143 @@ UberModule
       (
         ( QName
           { qnameModuleName = ModuleName "Golden.TestPatternMatching2", qnameName = Name "bat"
-          }, Abs
-          ( Identity ( ParamNamed ( Name "n" ) ) )
-          ( Identity
-            ( IfThenElse
-              ( Identity
-                ( Eq
-                  ( Identity ( LiteralString "Golden.TestPatternMatching1∷N.Zero" ) )
-                  ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) ) ) )
+          }, Abs Nothing
+          ( ParamNamed Nothing ( Name "n" ) )
+          ( IfThenElse Nothing
+            ( Eq Nothing
+              ( LiteralString Nothing "Golden.TestPatternMatching1∷N.Zero" )
+              ( ReflectCtor Nothing ( Ref Nothing ( Local ( Name "n" ) ) 0 ) )
+            )
+            ( LiteralInt Nothing 1 )
+            ( IfThenElse Nothing
+              ( Eq Nothing
+                ( LiteralString Nothing "Golden.TestPatternMatching1∷N.Succ" )
+                ( ReflectCtor Nothing ( Ref Nothing ( Local ( Name "n" ) ) 0 ) )
+              )
+              ( App Nothing
+                ( Ref Nothing
+                  ( Imported ( ModuleName "Golden.TestPatternMatching2" ) ( Name "bat" ) ) 0
+                )
+                ( ObjectProp Nothing
+                  ( Ref Nothing ( Local ( Name "n" ) ) 0 )
+                  ( PropName "value0" )
                 )
               )
-              ( Identity ( LiteralInt 1 ) )
-              ( Identity
-                ( IfThenElse
-                  ( Identity
-                    ( Eq
-                      ( Identity ( LiteralString "Golden.TestPatternMatching1∷N.Succ" ) )
-                      ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) ) ) )
-                    )
-                  )
-                  ( Identity
-                    ( App
-                      ( Identity
-                        ( Ref
-                          ( Imported ( ModuleName "Golden.TestPatternMatching2" ) ( Name "bat" ) ) 0
-                        )
-                      )
-                      ( Identity
-                        ( ObjectProp
-                          ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) )
-                          ( PropName "value0" )
-                        )
-                      )
-                    )
-                  )
-                  ( Identity ( Exception "No patterns matched" ) )
-                )
-              )
+              ( Exception Nothing "No patterns matched" )
             )
           )
         ) :| []
       )
     ], uberModuleExports =
     [
-      ( Name "Zero", Ctor SumType
+      ( Name "Zero", Ctor Nothing SumType
         ( ModuleName "Golden.TestPatternMatching2" )
         ( TyName "N" )
         ( CtorName "Zero" ) []
       ),
-      ( Name "Succ", Ctor SumType
+      ( Name "Succ", Ctor Nothing SumType
         ( ModuleName "Golden.TestPatternMatching2" )
         ( TyName "N" )
         ( CtorName "Succ" )
         [ FieldName "value0" ]
       ),
-      ( Name "Add", Ctor SumType
+      ( Name "Add", Ctor Nothing SumType
         ( ModuleName "Golden.TestPatternMatching2" )
         ( TyName "N" )
         ( CtorName "Add" )
         [ FieldName "value0", FieldName "value1" ]
       ),
-      ( Name "Mul", Ctor SumType
+      ( Name "Mul", Ctor Nothing SumType
         ( ModuleName "Golden.TestPatternMatching2" )
         ( TyName "N" )
         ( CtorName "Mul" )
         [ FieldName "value0", FieldName "value1" ]
       ),
-      ( Name "pat", Abs
-        ( Identity ( ParamNamed ( Name "e" ) ) )
-        ( Identity
-          ( IfThenElse
-            ( Identity
-              ( Eq
-                ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Add" ) )
-                ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) ) )
-              )
-            )
-            ( Identity
-              ( IfThenElse
-                ( Identity
-                  ( Eq
-                    ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Zero" ) )
-                    ( Identity
-                      ( ReflectCtor
-                        ( Identity
-                          ( ObjectProp
-                            ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                            ( PropName "value1" )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-                ( Identity
-                  ( IfThenElse
-                    ( Identity
-                      ( Eq
-                        ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Add" ) )
-                        ( Identity
-                          ( ReflectCtor
-                            ( Identity
-                              ( ObjectProp
-                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                ( PropName "value0" )
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                    ( Identity ( LiteralInt 1 ) )
-                    ( Identity
-                      ( IfThenElse
-                        ( Identity
-                          ( Eq
-                            ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Mul" ) )
-                            ( Identity
-                              ( ReflectCtor
-                                ( Identity
-                                  ( ObjectProp
-                                    ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                    ( PropName "value0" )
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
-                        ( Identity ( LiteralInt 2 ) )
-                        ( Identity ( LiteralInt 5 ) )
-                      )
-                    )
-                  )
-                )
-                ( Identity
-                  ( IfThenElse
-                    ( Identity
-                      ( Eq
-                        ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Mul" ) )
-                        ( Identity
-                          ( ReflectCtor
-                            ( Identity
-                              ( ObjectProp
-                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                ( PropName "value1" )
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                    ( Identity ( LiteralInt 3 ) )
-                    ( Identity
-                      ( IfThenElse
-                        ( Identity
-                          ( Eq
-                            ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Add" ) )
-                            ( Identity
-                              ( ReflectCtor
-                                ( Identity
-                                  ( ObjectProp
-                                    ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                    ( PropName "value1" )
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
-                        ( Identity ( LiteralInt 4 ) )
-                        ( Identity
-                          ( IfThenElse
-                            ( Identity
-                              ( Eq
-                                ( Identity ( LiteralString "Golden.TestPatternMatching2∷N.Zero" ) )
-                                ( Identity
-                                  ( ReflectCtor
-                                    ( Identity
-                                      ( ObjectProp
-                                        ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                        ( PropName "value1" )
-                                      )
-                                    )
-                                  )
-                                )
-                              )
-                            )
-                            ( Identity ( LiteralInt 5 ) )
-                            ( Identity ( LiteralInt 6 ) )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-            ( Identity ( LiteralInt 6 ) )
+      ( Name "pat", Abs Nothing
+        ( ParamNamed Nothing ( Name "e" ) )
+        ( IfThenElse Nothing
+          ( Eq Nothing
+            ( LiteralString Nothing "Golden.TestPatternMatching2∷N.Add" )
+            ( ReflectCtor Nothing ( Ref Nothing ( Local ( Name "e" ) ) 0 ) )
           )
+          ( IfThenElse Nothing
+            ( Eq Nothing
+              ( LiteralString Nothing "Golden.TestPatternMatching2∷N.Zero" )
+              ( ReflectCtor Nothing
+                ( ObjectProp Nothing
+                  ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                  ( PropName "value1" )
+                )
+              )
+            )
+            ( IfThenElse Nothing
+              ( Eq Nothing
+                ( LiteralString Nothing "Golden.TestPatternMatching2∷N.Add" )
+                ( ReflectCtor Nothing
+                  ( ObjectProp Nothing
+                    ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                    ( PropName "value0" )
+                  )
+                )
+              )
+              ( LiteralInt Nothing 1 )
+              ( IfThenElse Nothing
+                ( Eq Nothing
+                  ( LiteralString Nothing "Golden.TestPatternMatching2∷N.Mul" )
+                  ( ReflectCtor Nothing
+                    ( ObjectProp Nothing
+                      ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                      ( PropName "value0" )
+                    )
+                  )
+                )
+                ( LiteralInt Nothing 2 )
+                ( LiteralInt Nothing 5 )
+              )
+            )
+            ( IfThenElse Nothing
+              ( Eq Nothing
+                ( LiteralString Nothing "Golden.TestPatternMatching2∷N.Mul" )
+                ( ReflectCtor Nothing
+                  ( ObjectProp Nothing
+                    ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                    ( PropName "value1" )
+                  )
+                )
+              )
+              ( LiteralInt Nothing 3 )
+              ( IfThenElse Nothing
+                ( Eq Nothing
+                  ( LiteralString Nothing "Golden.TestPatternMatching2∷N.Add" )
+                  ( ReflectCtor Nothing
+                    ( ObjectProp Nothing
+                      ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                      ( PropName "value1" )
+                    )
+                  )
+                )
+                ( LiteralInt Nothing 4 )
+                ( IfThenElse Nothing
+                  ( Eq Nothing
+                    ( LiteralString Nothing "Golden.TestPatternMatching2∷N.Zero" )
+                    ( ReflectCtor Nothing
+                      ( ObjectProp Nothing
+                        ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                        ( PropName "value1" )
+                      )
+                    )
+                  )
+                  ( LiteralInt Nothing 5 )
+                  ( LiteralInt Nothing 6 )
+                )
+              )
+            )
+          )
+          ( LiteralInt Nothing 6 )
         )
       ),
-      ( Name "bat", Ref ( Imported ( ModuleName "Golden.TestPatternMatching2" ) ( Name "bat" ) ) 0 )
+      ( Name "bat", Ref Nothing
+        ( Imported ( ModuleName "Golden.TestPatternMatching2" ) ( Name "bat" ) ) 0
+      )
     ]
   }

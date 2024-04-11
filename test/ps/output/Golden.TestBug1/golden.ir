@@ -1,36 +1,24 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "test", App
-        ( Identity
-          ( Abs
-            ( Identity ( ParamNamed ( Name "v" ) ) )
-            ( Identity
-              ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "elem" ) )
-            )
-          )
+      ( Name "test", App Nothing
+        ( Abs Nothing
+          ( ParamNamed Nothing ( Name "v" ) )
+          ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( PropName "elem" ) )
         )
-        ( Identity
-          ( App
-            ( Identity
-              ( Abs
-                ( Identity ( ParamNamed ( Name "r" ) ) )
-                ( Identity
-                  ( LiteralObject
-                    [
-                      ( PropName "elem", Identity
-                        ( ObjectProp
-                          ( Identity ( Ref ( Local ( Name "r" ) ) 0 ) )
-                          ( PropName "elem" )
-                        )
-                      )
-                    ]
-                  )
+        ( App Nothing
+          ( Abs Nothing
+            ( ParamNamed Nothing ( Name "r" ) )
+            ( LiteralObject Nothing
+              [
+                ( PropName "elem", ObjectProp Nothing
+                  ( Ref Nothing ( Local ( Name "r" ) ) 0 )
+                  ( PropName "elem" )
                 )
-              )
+              ]
             )
-            ( Identity ( LiteralObject [ ( PropName "elem", Identity ( LiteralInt 1 ) ) ] ) )
           )
+          ( LiteralObject Nothing [ ( PropName "elem", LiteralInt Nothing 1 ) ] )
         )
       )
     ]

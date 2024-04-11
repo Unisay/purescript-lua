@@ -1,2 +1,2 @@
 UberModule
-  { uberModuleBindings = [], uberModuleExports = [ ( Name "binding2", LiteralInt 2 ) ] }
+  { uberModuleBindings = [], uberModuleExports = [ ( Name "binding2", LiteralInt Nothing 2 ) ] }

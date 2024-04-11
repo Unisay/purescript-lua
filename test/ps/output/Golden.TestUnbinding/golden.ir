@@ -3,33 +3,25 @@ UberModule
     [ Standalone
       ( QName
         { qnameModuleName = ModuleName "Golden.TestUnbinding", qnameName = Name "f"
-        }, Abs ( Identity ParamUnused )
-        ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralInt 3 ) ) ) )
+        }, Abs Nothing ( ParamUnused Nothing )
+        ( Abs Nothing ( ParamUnused Nothing ) ( LiteralInt Nothing 3 ) )
       )
     ], uberModuleExports =
     [
-      ( Name "a", LiteralInt 1 ),
-      ( Name "b", LiteralInt 2 ),
-      ( Name "f", Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 ),
-      ( Name "c", App
-        ( Identity
-          ( App
-            ( Identity ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 ) )
-            ( Identity ( LiteralInt 1 ) )
-          )
+      ( Name "a", LiteralInt Nothing 1 ),
+      ( Name "b", LiteralInt Nothing 2 ),
+      ( Name "f", Ref Nothing ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 ),
+      ( Name "c", App Nothing
+        ( App Nothing
+          ( Ref Nothing ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 )
+          ( LiteralInt Nothing 1 )
         )
-        ( Identity
-          ( App
-            ( Identity
-              ( App
-                ( Identity
-                  ( Ref ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 )
-                )
-                ( Identity ( LiteralInt 2 ) )
-              )
-            )
-            ( Identity ( LiteralInt 1 ) )
+        ( App Nothing
+          ( App Nothing
+            ( Ref Nothing ( Imported ( ModuleName "Golden.TestUnbinding" ) ( Name "f" ) ) 0 )
+            ( LiteralInt Nothing 2 )
           )
+          ( LiteralInt Nothing 1 )
         )
       )
     ]

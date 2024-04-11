@@ -5,6 +5,7 @@ import Hedgehog (MonadGen)
 import Hedgehog.Corpus qualified as Corpus
 import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
+import Language.PureScript.Backend.IR.Types (noAnn)
 import Language.PureScript.Backend.IR.Types qualified as IR
 import Language.PureScript.Names (ModuleName, moduleNameFromString)
 import Prelude hiding (exp)
@@ -55,17 +56,17 @@ exp =
       )
     ]
 
-binding ∷ MonadGen m ⇒ m (IR.Grouping (IR.Name, IR.Exp))
+binding ∷ MonadGen m ⇒ m IR.Binding
 binding = Gen.frequency [(8, standaloneBinding), (2, recursiveBinding)]
 
-namedExp ∷ MonadGen m ⇒ m (IR.Name, IR.Exp)
-namedExp = (,) <$> name <*> exp
+namedExp ∷ MonadGen m ⇒ m (IR.Ann, IR.Name, IR.Exp)
+namedExp = (noAnn,,) <$> name <*> exp
 
-recursiveBinding ∷ MonadGen m ⇒ m (IR.Grouping (IR.Name, IR.Exp))
+recursiveBinding ∷ MonadGen m ⇒ m IR.Binding
 recursiveBinding =
   IR.RecursiveGroup <$> Gen.nonEmpty (Range.linear 1 5) namedExp
 
-standaloneBinding ∷ MonadGen m ⇒ m (IR.Grouping (IR.Name, IR.Exp))
+standaloneBinding ∷ MonadGen m ⇒ m IR.Binding
 standaloneBinding = IR.Standalone <$> namedExp
 
 nonRecursiveExp ∷ MonadGen m ⇒ m IR.Exp
@@ -100,20 +101,20 @@ literalNonRecursiveExp =
 scalarExp ∷ MonadGen m ⇒ m IR.Exp
 scalarExp =
   Gen.choice
-    [ IR.LiteralInt <$> Gen.integral (Range.exponential 0 1000)
-    , IR.LiteralString <$> Gen.text (Range.linear 0 10) Gen.unicode
-    , IR.LiteralBool <$> Gen.bool
-    , IR.LiteralChar <$> Gen.unicode
-    , IR.LiteralFloat
+    [ IR.literalInt <$> Gen.integral (Range.exponential 0 1000)
+    , IR.literalString <$> Gen.text (Range.linear 0 10) Gen.unicode
+    , IR.literalBool <$> Gen.bool
+    , IR.literalChar <$> Gen.unicode
+    , IR.literalFloat
         <$> Gen.double
           (Range.exponentialFloat 0 1000000000000000000)
     ]
 
-parameter ∷ MonadGen m ⇒ m IR.Parameter
+parameter ∷ MonadGen m ⇒ m (IR.Parameter IR.Ann)
 parameter =
   Gen.frequency
-    [ (1, pure IR.ParamUnused)
-    , (9, IR.ParamNamed <$> name)
+    [ (1, pure (IR.ParamUnused noAnn))
+    , (9, IR.ParamNamed noAnn <$> name)
     ]
 
 qualified ∷ MonadGen m ⇒ m a → m (IR.Qualified a)

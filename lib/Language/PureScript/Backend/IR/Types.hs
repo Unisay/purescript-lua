@@ -7,13 +7,21 @@ import Data.Deriving (deriveEq1, deriveOrd1)
 import Data.Map qualified as Map
 import Data.MonoidMap (MonoidMap)
 import Data.MonoidMap qualified as MMap
+import Language.PureScript.Backend.IR.Inliner qualified as Inliner
 import Language.PureScript.Names (ModuleName, runModuleName)
 import Quiet (Quiet (..))
 import Prelude hiding (show)
 
+type Ann = Maybe Inliner.Annotation
+
+noAnn ∷ Ann
+noAnn = Nothing
+
+type Exp = RawExp Ann
+
 data Module = Module
   { moduleName ∷ ModuleName
-  , moduleBindings ∷ [Grouping (Name, Exp)]
+  , moduleBindings ∷ [Binding]
   , moduleImports ∷ [ModuleName]
   , moduleExports ∷ [Name]
   , moduleReExports ∷ Map ModuleName [Name]
@@ -21,9 +29,7 @@ data Module = Module
   , modulePath ∷ FilePath
   }
 
-data Grouping a
-  = Standalone a
-  | RecursiveGroup (NonEmpty a)
+data Grouping a = Standalone a | RecursiveGroup (NonEmpty a)
   deriving stock (Show, Eq, Ord, Functor, Foldable, Traversable)
 
 listGrouping ∷ Grouping a → [a]
@@ -31,10 +37,12 @@ listGrouping = \case
   Standalone a → [a]
   RecursiveGroup as → toList as
 
-groupingNames ∷ Grouping (name, exp) → [name]
-groupingNames = fmap fst . listGrouping
+type Binding = Grouping (Ann, Name, Exp)
 
-bindingExprs ∷ Grouping (name, Exp) → [Exp]
+bindingNames ∷ Grouping (ann, name, exp) → [name]
+bindingNames = (\(_ann, name, _exp) → name) <<$>> listGrouping
+
+bindingExprs ∷ Grouping (name, RawExp ann) → [RawExp ann]
 bindingExprs = fmap snd . listGrouping
 
 newtype Info = Info {refsFree ∷ Map (Qualified Name) Natural}
@@ -45,55 +53,73 @@ instance Semigroup Info where
 instance Monoid Info where
   mempty = Info mempty
 
-type Annotated n f = n (f n)
+data RawExp ann
+  = LiteralInt ann Integer
+  | LiteralFloat ann Double
+  | LiteralString ann Text
+  | LiteralChar ann Char
+  | LiteralBool ann Bool
+  | LiteralArray ann [RawExp ann]
+  | LiteralObject ann [(PropName, RawExp ann)]
+  | Ctor ann AlgebraicType ModuleName TyName CtorName [FieldName]
+  | ReflectCtor ann (RawExp ann)
+  | Eq ann (RawExp ann) (RawExp ann)
+  | DataArgumentByIndex ann Natural (RawExp ann)
+  | ArrayLength ann (RawExp ann)
+  | ArrayIndex ann (RawExp ann) Natural
+  | ObjectProp ann (RawExp ann) PropName
+  | ObjectUpdate ann (RawExp ann) (NonEmpty (PropName, RawExp ann))
+  | Abs ann (Parameter ann) (RawExp ann)
+  | App ann (RawExp ann) (RawExp ann)
+  | Ref ann (Qualified Name) Index
+  | Let ann (NonEmpty (Grouping (ann, Name, RawExp ann))) (RawExp ann)
+  | IfThenElse ann (RawExp ann) (RawExp ann) (RawExp ann)
+  | Exception ann Text
+  | ForeignImport ann ModuleName FilePath [Name]
 
-data RawExp (n ∷ Type → Type)
-  = LiteralInt Integer
-  | LiteralFloat Double
-  | LiteralString Text
-  | LiteralChar Char
-  | LiteralBool Bool
-  | LiteralArray [Annotated n RawExp]
-  | LiteralObject [(PropName, Annotated n RawExp)]
-  | Ctor AlgebraicType ModuleName TyName CtorName [FieldName]
-  | ReflectCtor (Annotated n RawExp)
-  | Eq (Annotated n RawExp) (Annotated n RawExp)
-  | DataArgumentByIndex Natural (Annotated n RawExp)
-  | ArrayLength (Annotated n RawExp)
-  | ArrayIndex (Annotated n RawExp) Natural
-  | ObjectProp (Annotated n RawExp) PropName
-  | ObjectUpdate (Annotated n RawExp) (NonEmpty (PropName, Annotated n RawExp))
-  | Abs (n Parameter) (Annotated n RawExp)
-  | App (Annotated n RawExp) (Annotated n RawExp)
-  | Ref (Qualified Name) Index
-  | Let (NonEmpty (Grouping (n Name, Annotated n RawExp))) (Annotated n RawExp)
-  | IfThenElse (Annotated n RawExp) (Annotated n RawExp) (Annotated n RawExp)
-  | Exception Text
-  | ForeignImport ModuleName FilePath [Name]
+deriving stock instance Show ann ⇒ Show (RawExp ann)
+deriving stock instance Eq ann ⇒ Eq (RawExp ann)
+deriving stock instance Ord ann ⇒ Ord (RawExp ann)
 
-type Exp = RawExp Identity
-
-deriving stock instance Show Exp
-deriving stock instance Eq Exp
-deriving stock instance Ord Exp
-
-unAnn ∷ ∀ {a}. Identity a → a
-unAnn = runIdentity
+getAnn ∷ RawExp ann → ann
+getAnn = \case
+  LiteralInt ann _ → ann
+  LiteralFloat ann _ → ann
+  LiteralString ann _ → ann
+  LiteralChar ann _ → ann
+  LiteralBool ann _ → ann
+  LiteralArray ann _ → ann
+  LiteralObject ann _ → ann
+  Ctor ann _ _ _ _ _ → ann
+  ReflectCtor ann _ → ann
+  Eq ann _ _ → ann
+  DataArgumentByIndex ann _ _ → ann
+  ArrayLength ann _ → ann
+  ArrayIndex ann _ _ → ann
+  ObjectProp ann _ _ → ann
+  ObjectUpdate ann _ _ → ann
+  Abs ann _ _ → ann
+  App ann _ _ → ann
+  Ref ann _ _ → ann
+  Let ann _ _ → ann
+  IfThenElse ann _ _ _ → ann
+  Exception ann _ → ann
+  ForeignImport ann _ _ _ → ann
 
 newtype Index = Index {unIndex ∷ Natural}
   deriving newtype (Show, Eq, Ord, Num, Enum, Real, Integral)
 
-data Parameter = ParamUnused | ParamNamed Name
+data Parameter ann = ParamUnused ann | ParamNamed ann Name
   deriving stock (Show, Eq, Ord)
 
-paramName ∷ Parameter → Maybe Name
-paramName ParamUnused = Nothing
-paramName (ParamNamed name) = Just name
+paramName ∷ Parameter ann → Maybe Name
+paramName (ParamUnused _ann) = Nothing
+paramName (ParamNamed _ann name) = Just name
 
-isLiteral ∷ Exp → Bool
+isLiteral ∷ RawExp ann → Bool
 isLiteral = (||) <$> isNonRecursiveLiteral <*> isRecursiveLiteral
 
-isNonRecursiveLiteral ∷ Exp → Bool
+isNonRecursiveLiteral ∷ RawExp ann → Bool
 isNonRecursiveLiteral = \case
   LiteralInt {} → True
   LiteralFloat {} → True
@@ -102,7 +128,7 @@ isNonRecursiveLiteral = \case
   LiteralBool {} → True
   _ → False
 
-isRecursiveLiteral ∷ Exp → Bool
+isRecursiveLiteral ∷ RawExp ann → Bool
 isRecursiveLiteral = \case
   LiteralArray {} → True
   LiteralObject {} → True
@@ -172,207 +198,249 @@ deriving stock instance Show Module
 
 deriving stock instance Eq Module
 
-deriving stock instance Ord Module
+instance Ord Module where
+  compare a b = compare (moduleName a) (moduleName b)
 
 -- Constructors for expresssions -----------------------------------------------
 
-arrayIndex ∷ Applicative n ⇒ RawExp n → Natural → RawExp n
-arrayIndex e = ArrayIndex (pure e)
+arrayIndex ∷ Exp → Natural → Exp
+arrayIndex = ArrayIndex noAnn
 
-objectProp ∷ Applicative n ⇒ RawExp n → PropName → RawExp n
-objectProp o = ObjectProp (pure o)
+objectProp ∷ Exp → PropName → Exp
+objectProp = ObjectProp noAnn
 
 objectUpdate ∷ Exp → NonEmpty (PropName, Exp) → Exp
-objectUpdate e ps = ObjectUpdate (pure e) (pure <<$>> ps)
+objectUpdate = ObjectUpdate noAnn
 
 ctor ∷ AlgebraicType → ModuleName → TyName → CtorName → [FieldName] → Exp
-ctor = Ctor
+ctor = Ctor noAnn
 
-abstraction ∷ Applicative n ⇒ Parameter → RawExp n → RawExp n
-abstraction p e = Abs (pure p) (pure e)
+abstraction ∷ Parameter Ann → Exp → Exp
+abstraction = Abs noAnn
 
 identity ∷ Exp
-identity = abstraction (ParamNamed name) (refLocal name 0) where name = Name "x"
+identity =
+  let name = Name "x"
+   in abstraction (paramNamed name) (refLocal name 0)
 
-lets
-  ∷ Applicative n ⇒ NonEmpty (Grouping (Name, RawExp n)) → RawExp n → RawExp n
-lets binds body = Let (bimap pure pure <<$>> binds) (pure body)
+lets ∷ NonEmpty Binding → Exp → Exp
+lets = Let noAnn
 
-application ∷ Applicative n ⇒ RawExp n → RawExp n → RawExp n
-application a b = App (pure a) (pure b)
+application ∷ Exp → Exp → Exp
+application = App noAnn
 
-ref ∷ Qualified Name → Index → RawExp n
+paramNamed ∷ Name → Parameter Ann
+paramNamed = ParamNamed noAnn
+
+paramUnused ∷ Parameter Ann
+paramUnused = ParamUnused noAnn
+
+ref ∷ Qualified Name → Index → Exp
 ref qname index =
   case qname of
     Local name → refLocal name index
     Imported modname name → refImported modname name index
 
-refLocal ∷ Name → Index → RawExp n
-refLocal name = Ref (Local name)
+refLocal ∷ Name → Index → Exp
+refLocal = Ref noAnn . Local
 
-refLocal0 ∷ Name → RawExp n
+refLocal0 ∷ Name → Exp
 refLocal0 name = refLocal name (Index 0)
 
-refImported ∷ ModuleName → Name → Index → RawExp n
-refImported modname name = Ref (Imported modname name)
+refImported ∷ ModuleName → Name → Index → Exp
+refImported modname name = Ref noAnn (Imported modname name)
 
-ifThenElse ∷ Applicative n ⇒ RawExp n → RawExp n → RawExp n → RawExp n
-ifThenElse i t e = IfThenElse (pure i) (pure t) (pure e)
+ifThenElse ∷ Exp → Exp → Exp → Exp
+ifThenElse = IfThenElse noAnn
 
-exception ∷ Text → RawExp n
-exception = Exception
+exception ∷ Text → Exp
+exception = Exception noAnn
 
 --------------------------------------------------------------------------------
 -- Constructors for primitive operations ---------------------------------------
 
-eq ∷ Applicative n ⇒ RawExp n → RawExp n → RawExp n
-eq a b = Eq (pure a) (pure b)
+eq ∷ Exp → Exp → Exp
+eq = Eq noAnn
 
-arrayLength ∷ Applicative n ⇒ RawExp n → RawExp n
-arrayLength = ArrayLength . pure
+arrayLength ∷ Exp → Exp
+arrayLength = ArrayLength noAnn
 
-reflectCtor ∷ Applicative n ⇒ RawExp n → RawExp n
-reflectCtor = ReflectCtor . pure
+reflectCtor ∷ Exp → Exp
+reflectCtor = ReflectCtor noAnn
 
-dataArgumentByIndex ∷ Applicative n ⇒ Natural → RawExp n → RawExp n
-dataArgumentByIndex n e = DataArgumentByIndex n (pure e)
+dataArgumentByIndex ∷ Natural → Exp → Exp
+dataArgumentByIndex = DataArgumentByIndex noAnn
 
 --------------------------------------------------------------------------------
 -- Constructors for literals ---------------------------------------------------
 
-literalBool ∷ Bool → RawExp n
-literalBool = LiteralBool
+literalBool ∷ Bool → Exp
+literalBool = LiteralBool noAnn
 
-asLiteralBool ∷ Prism' (RawExp n) Bool
-asLiteralBool = prism' literalBool \case
-  LiteralBool b → Just b
-  _ → Nothing
+literalInt ∷ Integer → Exp
+literalInt = LiteralInt noAnn
 
-literalInt ∷ Integer → RawExp n
-literalInt = LiteralInt
-
-asLiteralInt ∷ Prism' (RawExp n) Integer
+asLiteralInt ∷ Prism' Exp Integer
 asLiteralInt = prism' literalInt \case
-  LiteralInt i → Just i
+  LiteralInt _ann i → Just i
   _ → Nothing
 
-literalFloat ∷ Double → RawExp n
-literalFloat = LiteralFloat
+literalFloat ∷ Double → Exp
+literalFloat = LiteralFloat noAnn
 
-asLiteralFloat ∷ Prism' (RawExp n) Double
+asLiteralFloat ∷ Prism' Exp Double
 asLiteralFloat = prism' literalFloat \case
-  LiteralFloat f → Just f
+  LiteralFloat _ann f → Just f
   _ → Nothing
 
-literalString ∷ Text → RawExp n
-literalString = LiteralString
+literalString ∷ Text → Exp
+literalString = LiteralString noAnn
 
-asLiteralString ∷ Prism' (RawExp n) Text
+asLiteralString ∷ Prism' Exp Text
 asLiteralString = prism' literalString \case
-  LiteralString s → Just s
+  LiteralString _ann s → Just s
   _ → Nothing
 
-literalChar ∷ Char → RawExp n
-literalChar = LiteralChar
+literalChar ∷ Char → Exp
+literalChar = LiteralChar noAnn
 
-asLiteralChar ∷ Prism' (RawExp n) Char
+asLiteralChar ∷ Prism' Exp Char
 asLiteralChar = prism' literalChar \case
-  LiteralChar c → Just c
+  LiteralChar _ann c → Just c
   _ → Nothing
 
-literalArray ∷ Applicative n ⇒ [RawExp n] → RawExp n
-literalArray = LiteralArray . fmap pure
+literalArray ∷ [Exp] → Exp
+literalArray = LiteralArray noAnn
 
-literalObject ∷ Applicative n ⇒ [(PropName, RawExp n)] → RawExp n
-literalObject ps = LiteralObject (pure <<$>> ps)
+literalObject ∷ [(PropName, Exp)] → Exp
+literalObject = LiteralObject noAnn
 
 --------------------------------------------------------------------------------
 -- Traversals ------------------------------------------------------------------
 
 annotateExpM
-  ∷ ∀ b m
-   . Applicative m
+  ∷ ∀ ann ann' m
+   . Monad m
   ⇒ (∀ x. m x → m x)
-  → (RawExp Identity → m b)
-  → (Parameter → m b)
-  → (Name → m b)
-  → (RawExp Identity → m (RawExp ((,) b)))
+  → (RawExp ann → m ann')
+  → (Parameter ann → m (Parameter ann'))
+  → (ann → Name → m ann')
+  → (RawExp ann → m (RawExp ann'))
 annotateExpM around annotateExp annotateParam annotateName =
-  around . \case
-    LiteralInt i → pure $ LiteralInt i
-    LiteralFloat f → pure $ LiteralFloat f
-    LiteralString s → pure $ LiteralString s
-    LiteralChar c → pure $ LiteralChar c
-    LiteralBool b → pure $ LiteralBool b
-    LiteralArray as → LiteralArray <$> traverse ann as
-    LiteralObject ps → LiteralObject <$> traverse (traverse ann) ps
-    ReflectCtor a → ReflectCtor <$> ann a
-    Eq a b → Eq <$> ann a <*> ann b
-    DataArgumentByIndex index a → DataArgumentByIndex index <$> ann a
-    ArrayLength a → ArrayLength <$> ann a
-    ArrayIndex a index → flip ArrayIndex index <$> ann a
-    ObjectProp a prop → flip ObjectProp prop <$> ann a
-    ObjectUpdate a ps → ObjectUpdate <$> ann a <*> traverse (traverse ann) ps
-    Abs param body → Abs <$> annParam param <*> ann body
-    App a b → App <$> ann a <*> ann b
-    Ref qname index → pure $ Ref qname index
-    Let binds body →
-      Let <$> traverse (traverse (bitraverse annLetName ann)) binds <*> ann body
-    IfThenElse i t e → IfThenElse <$> ann i <*> ann t <*> ann e
-    Ctor mn aty ty ctr fs → pure $ Ctor mn aty ty ctr fs
-    Exception m → pure $ Exception m
-    ForeignImport m p ns → pure $ ForeignImport m p ns
+  around . \expr → do
+    ann ← annotateExp expr
+    case expr of
+      LiteralInt _ann i →
+        pure $ LiteralInt ann i
+      LiteralFloat _ann f →
+        pure $ LiteralFloat ann f
+      LiteralString _ann s →
+        pure $ LiteralString ann s
+      LiteralChar _ann c →
+        pure $ LiteralChar ann c
+      LiteralBool _ann b →
+        pure $ LiteralBool ann b
+      LiteralArray _ann elems → do
+        elems' ← traverse mkAnn elems
+        pure $ LiteralArray ann elems'
+      LiteralObject _ann props → do
+        props' ← traverse (traverse mkAnn) props
+        pure $ LiteralObject ann props'
+      ReflectCtor _ann a → do
+        a' ← mkAnn a
+        pure $ ReflectCtor ann a'
+      Eq _ann a b → do
+        a' ← mkAnn a
+        b' ← mkAnn b
+        pure $ Eq ann a' b'
+      DataArgumentByIndex _ann index a → do
+        a' ← mkAnn a
+        pure $ DataArgumentByIndex ann index a'
+      ArrayLength _ann a → do
+        a' ← mkAnn a
+        pure $ ArrayLength ann a'
+      ArrayIndex _ann a index → do
+        a' ← mkAnn a
+        pure $ ArrayIndex ann a' index
+      ObjectProp _ann a prop → do
+        a' ← mkAnn a
+        pure $ ObjectProp ann a' prop
+      ObjectUpdate _ann a props → do
+        a' ← mkAnn a
+        props' ← traverse (traverse mkAnn) props
+        pure $ ObjectUpdate ann a' props'
+      Abs _ann param body → do
+        body' ← mkAnn body
+        param' ← annotateParam param
+        pure $ Abs ann param' body'
+      App _ann a b → do
+        a' ← mkAnn a
+        b' ← mkAnn b
+        pure $ App ann a' b'
+      Ref _ann qname index → pure $ Ref ann qname index
+      Let _ann binds body → do
+        binds' ←
+          forM binds $
+            traverse \(a, n, e) → do
+              n' ← annotateName a n
+              e' ← mkAnn e
+              pure (n', n, e')
+        body' ← mkAnn body
+        pure $ Let ann binds' body'
+      IfThenElse _ann i t e → do
+        i' ← mkAnn i
+        t' ← mkAnn t
+        e' ← mkAnn e
+        pure $ IfThenElse ann i' t' e'
+      Ctor _ann mn aty ty ctr fs → pure $ Ctor ann mn aty ty ctr fs
+      Exception _ann m → pure $ Exception ann m
+      ForeignImport _ann m p ns → pure $ ForeignImport ann m p ns
  where
-  ann ∷ Identity (RawExp Identity) → m (b, RawExp ((,) b))
-  ann (unAnn → expr) =
-    (,)
-      <$> annotateExp expr
-      <*> annotateExpM around annotateExp annotateParam annotateName expr
-
-  annParam ∷ Identity Parameter → m (b, Parameter)
-  annParam (unAnn → param) = (,param) <$> annotateParam param
-
-  annLetName ∷ Identity Name → m (b, Name)
-  annLetName (unAnn → name) = (,name) <$> annotateName name
+  mkAnn ∷ RawExp ann → m (RawExp ann')
+  mkAnn = annotateExpM around annotateExp annotateParam annotateName
 
 traverseExpBottomUp
-  ∷ ∀ n m
-   . (Monad m, Traversable n)
-  ⇒ (RawExp n → m (RawExp n))
-  → (RawExp n → m (RawExp n))
+  ∷ ∀ ann m
+   . Monad m
+  ⇒ (RawExp ann → m (RawExp ann))
+  → (RawExp ann → m (RawExp ann))
 traverseExpBottomUp visit = go
  where
-  go ∷ RawExp n → m (RawExp n)
+  go ∷ RawExp ann → m (RawExp ann)
   go e =
     visit =<< case e of
-      LiteralArray as →
-        LiteralArray <$> traverse (traverse go) as
-      LiteralObject props →
-        LiteralObject <$> traverse (traverse (traverse go)) props
-      ReflectCtor a →
-        ReflectCtor <$> traverse go a
-      DataArgumentByIndex idx a →
-        DataArgumentByIndex idx <$> traverse go a
-      Eq a b →
-        Eq <$> traverse go a <*> traverse go b
-      ArrayLength a →
-        ArrayLength <$> traverse go a
-      ArrayIndex a idx →
-        flip ArrayIndex idx <$> traverse go a
-      ObjectProp a prp →
-        flip ObjectProp prp <$> traverse go a
-      ObjectUpdate a ps →
-        ObjectUpdate <$> traverse go a <*> traverse (traverse (traverse go)) ps
-      App a b →
-        App <$> traverse go a <*> traverse go b
-      Abs arg a →
-        Abs arg <$> traverse go a
-      Let bs body →
-        Let
-          <$> traverse (traverse (traverse (traverse go))) bs
-          <*> traverse go body
-      IfThenElse p th el →
-        IfThenElse <$> traverse go p <*> traverse go th <*> traverse go el
+      LiteralArray ann as →
+        LiteralArray ann <$> traverse go as
+      LiteralObject ann props →
+        LiteralObject ann <$> traverse (traverse go) props
+      ReflectCtor ann a →
+        ReflectCtor ann <$> go a
+      DataArgumentByIndex ann idx a →
+        DataArgumentByIndex ann idx <$> go a
+      Eq ann a b →
+        Eq ann <$> go a <*> go b
+      ArrayLength ann a →
+        ArrayLength ann <$> go a
+      ArrayIndex ann a idx → do
+        a' ← go a
+        pure $ ArrayIndex ann a' idx
+      ObjectProp ann a prp → do
+        a' ← go a
+        pure $ ObjectProp ann a' prp
+      ObjectUpdate ann a ps →
+        ObjectUpdate ann
+          <$> go a
+          <*> traverse (traverse go) ps
+      App ann a b →
+        App ann <$> go a <*> go b
+      Abs ann arg a →
+        Abs ann arg <$> go a
+      Let ann bs body →
+        Let ann
+          <$> traverse (traverse (\(a, n, expr) → (a,n,) <$> go expr)) bs
+          <*> go body
+      IfThenElse ann p th el →
+        IfThenElse ann <$> go p <*> go th <*> go el
       _ → pure e
 
 data RewriteMod = Recurse | Stop
@@ -403,10 +471,14 @@ instance Alternative Rewritten where
   NoChange <|> a = a
   a <|> _ = a
 
-type RewriteRule = RewriteRuleM Identity Identity
-type RewriteRuleM m n = RawExp n → m (Rewritten (RawExp n))
+type RewriteRule ann = RewriteRuleM Identity ann
+type RewriteRuleM m ann = RawExp ann → m (Rewritten (RawExp ann))
 
-thenRewrite ∷ Monad m ⇒ RewriteRuleM m n → RewriteRuleM m n → RewriteRuleM m n
+thenRewrite
+  ∷ Monad m
+  ⇒ RewriteRuleM m ann
+  → RewriteRuleM m ann
+  → RewriteRuleM m ann
 thenRewrite rewrite1 rewrite2 e =
   rewrite1 e >>= \case
     Rewritten m' e' → do
@@ -415,12 +487,10 @@ thenRewrite rewrite1 rewrite2 e =
         Rewritten m'' e'' → Rewritten (m' <> m'') e''
     NoChange → rewrite2 e
 
-rewriteExpTopDown
-  ∷ Traversable n ⇒ RewriteRuleM Identity n → RawExp n → RawExp n
+rewriteExpTopDown ∷ RewriteRuleM Identity ann → RawExp ann → RawExp ann
 rewriteExpTopDown rewrite = runIdentity . rewriteExpTopDownM rewrite
 
-rewriteExpTopDownM
-  ∷ (Monad m, Traversable n) ⇒ RewriteRuleM m n → RawExp n → m (RawExp n)
+rewriteExpTopDownM ∷ Monad m ⇒ RewriteRuleM m ann → RawExp ann → m (RawExp ann)
 rewriteExpTopDownM rewrite = visit
  where
   visit expression =
@@ -430,103 +500,97 @@ rewriteExpTopDownM rewrite = visit
       Rewritten Recurse expression' → descendInto expression'
 
   descendInto e = case e of
-    LiteralArray as →
-      LiteralArray <$> traverse (traverse visit) as
-    LiteralObject props →
-      LiteralObject <$> traverse (traverse (traverse visit)) props
-    ReflectCtor a →
-      ReflectCtor <$> traverse visit a
-    DataArgumentByIndex idx a →
-      DataArgumentByIndex idx <$> traverse visit a
-    Eq a b →
-      Eq <$> traverse visit a <*> traverse visit b
-    ArrayLength a →
-      ArrayLength <$> traverse visit a
-    ArrayIndex a indx →
-      flip ArrayIndex indx <$> traverse visit a
-    ObjectProp a prop →
-      flip ObjectProp prop <$> traverse visit a
-    ObjectUpdate a patches →
-      ObjectUpdate
-        <$> traverse visit a
-        <*> traverse (traverse (traverse visit)) patches
-    App a b →
-      App <$> traverse visit a <*> traverse visit b
-    Abs param expr →
-      Abs param <$> traverse visit expr
-    Let binds body →
-      Let
-        <$> traverse (traverse (traverse (traverse visit))) binds
-        <*> traverse visit body
-    IfThenElse p th el →
-      IfThenElse
-        <$> traverse visit p
-        <*> traverse visit th
-        <*> traverse visit el
+    LiteralArray ann as →
+      LiteralArray ann <$> traverse visit as
+    LiteralObject ann props →
+      LiteralObject ann <$> traverse (traverse visit) props
+    ReflectCtor ann a →
+      ReflectCtor ann <$> visit a
+    DataArgumentByIndex ann idx a →
+      DataArgumentByIndex ann idx <$> visit a
+    Eq ann a b →
+      Eq ann <$> visit a <*> visit b
+    ArrayLength ann a →
+      ArrayLength ann <$> visit a
+    ArrayIndex ann a indx →
+      visit a <&> \expr → ArrayIndex ann expr indx
+    ObjectProp ann a prop →
+      visit a <&> \expr → ObjectProp ann expr prop
+    ObjectUpdate ann a patches →
+      ObjectUpdate ann <$> visit a <*> traverse (traverse visit) patches
+    App ann a b →
+      App ann <$> visit a <*> visit b
+    Abs ann param expr →
+      Abs ann param <$> visit expr
+    Let ann binds body →
+      Let ann
+        <$> forM binds (traverse \(a, n, expr) → (a,n,) <$> visit expr)
+        <*> visit body
+    IfThenElse ann p th el →
+      IfThenElse ann <$> visit p <*> visit th <*> visit el
     _ → pure e
 
-countFreeRefs ∷ Exp → Map (Qualified Name) Natural
+countFreeRefs ∷ RawExp ann → Map (Qualified Name) Natural
 countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
  where
   countFreeRefs'
     ∷ Map (Qualified Name) Index
-    → Exp
+    → RawExp ann
     → MonoidMap (Qualified Name) (Sum Natural)
   countFreeRefs' minIndexes = \case
-    Ref qname index →
+    Ref _ann qname index →
       if Map.findWithDefault 0 qname minIndexes <= index
         then MMap.singleton qname (Sum 1)
         else mempty
-    Abs (unAnn → param) (unAnn → body) →
+    Abs _ann param body →
       case param of
-        ParamNamed name → countFreeRefs' minIndexes' body
+        ParamNamed _paramAnn name → countFreeRefs' minIndexes' body
          where
           minIndexes' = Map.insertWith (+) (Local name) 1 minIndexes
-        ParamUnused → countFreeRefs' minIndexes body
-    Let binds (unAnn → body) → fold (countsInBody : countsInBinds)
+        ParamUnused _paramAnn → countFreeRefs' minIndexes body
+    Let _ann binds body → fold (countsInBody : countsInBinds)
      where
       countsInBody = countFreeRefs' minIndexes' body
        where
         minIndexes' =
           foldr (\name → Map.insertWith (+) name 1) minIndexes $
-            toList binds >>= fmap (Local . runIdentity) . groupingNames
+            toList binds >>= fmap Local . bindingNames
       countsInBinds =
         toList binds >>= \case
-          Standalone (unAnn → boundName, expr) →
-            [countFreeRefs' minIndexes' (unAnn expr)]
+          Standalone (_nameAnn, boundName, expr) →
+            [countFreeRefs' minIndexes' expr]
            where
             minIndexes' = Map.insertWith (+) (Local boundName) 1 minIndexes
           RecursiveGroup recBinds →
-            countFreeRefs' minIndexes' . unAnn . snd <$> toList recBinds
+            toList recBinds <&> \(_nameAnn, _boundName, expr) →
+              countFreeRefs' minIndexes' expr
            where
             minIndexes' =
               foldr
-                ( \(qName, _) →
-                    Map.insertWith (+) (Local (runIdentity qName)) 1
-                )
+                (\(_nameAnn, qName, _expr) → Map.insertWith (+) (Local qName) 1)
                 minIndexes
                 recBinds
-    App (unAnn → argument) (unAnn → function) →
+    App _ann argument function →
       go argument <> go function
-    LiteralArray as →
-      foldMap (go . unAnn) as
-    LiteralObject props →
-      foldMap (go . unAnn . snd) props
-    ReflectCtor (unAnn → a) →
+    LiteralArray _ann as →
+      foldMap go as
+    LiteralObject _ann props →
+      foldMap (go . snd) props
+    ReflectCtor _ann a →
       go a
-    DataArgumentByIndex _idx (unAnn → a) →
+    DataArgumentByIndex _ann _idx a →
       go a
-    Eq (unAnn → a) (unAnn → b) →
+    Eq _ann a b →
       go a <> go b
-    ArrayLength (unAnn → a) →
+    ArrayLength _ann a →
       go a
-    ArrayIndex (unAnn → a) _indx →
+    ArrayIndex _ann a _indx →
       go a
-    ObjectProp (unAnn → a) _prop →
+    ObjectProp _ann a _prop →
       go a
-    ObjectUpdate (unAnn → a) patches →
-      go a <> foldMap (go . unAnn . snd) patches
-    IfThenElse (unAnn → p) (unAnn → th) (unAnn → el) →
+    ObjectUpdate _ann a patches →
+      go a <> foldMap (go . snd) patches
+    IfThenElse _ann p th el →
       go p <> go th <> go el
     -- Terminals:
     LiteralInt {} → mempty
@@ -540,96 +604,113 @@ countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
    where
     go = countFreeRefs' minIndexes
 
-countFreeRef ∷ Qualified Name → Exp → Natural
+countFreeRef ∷ Qualified Name → RawExp ann → Natural
 countFreeRef name = Map.findWithDefault 0 name . countFreeRefs
 
 -- | Substitute the given variable name and index with an expression
 substitute
-  ∷ Qualified Name
+  ∷ ∀ ann
+   . Qualified Name
   -- ^ The name of the variable to replace
   → Index
   -- ^ The index of the variable to replace
-  → Exp
+  → RawExp ann
   -- ^ The expression to substitute in place of the given variable
-  → Exp
+  → RawExp ann
   -- ^ The expression to substitute into
-  → Exp
+  → RawExp ann
 substitute name idx replacement = substitute' idx
  where
-  substitute' index subExpression = case subExpression of
-    Ref name' index'
-      | name == name' && index == index' →
-          {-
-          trace
-            ( "Substituting "
-                <> show name
-                <> "\n\tfor "
-                <> show replacement
-                <> "\n\tin "
-                <> show expression
-            )
-          -}
-          replacement
-      | otherwise → ref name' index'
-    Abs param body →
-      Abs param case unAnn param of
-        ParamUnused → go <$> body
-        ParamNamed pName → substitute name index' replacement' <$> body
-         where
-          index' = if name == Local pName then index + 1 else index
-          replacement' = shift 1 pName 0 replacement
-    Let binds body → Let binds' body'
-     where
-      binds' =
-        binds <&> \grouping →
-          case grouping of
-            Standalone (boundName, expr) →
-              Standalone
-                ( boundName
-                , substitute name index' replacement' <$> expr
-                )
-             where
-              index'
-                | name == Local (unAnn boundName) = index + 1
-                | otherwise = index
-              replacement' = shift 1 (unAnn boundName) 0 replacement
-            RecursiveGroup recBinds →
-              RecursiveGroup $
-                (substitute name index' replacement' <$>) <<$>> recBinds
-             where
-              index'
-                | name `elem` fmap Local boundNames = index + 1
-                | otherwise = index
-              replacement' =
-                foldr (\n r → shift 1 n 0 r) replacement boundNames
-              boundNames = runIdentity . fst <$> grouping
-      body' = substitute name index' replacement' <$> body
+  substitute' ∷ Index → RawExp ann → RawExp ann
+  substitute' index subExpression =
+    case subExpression of
+      Ref ann name' index'
+        | name == name' && index == index' →
+            {-
+            trace
+              ( "Substituting "
+                  <> show name
+                  <> "\n\tfor "
+                  <> show replacement
+                  <> "\n\tin "
+                  <> show expression
+              )
+            -}
+            replacement
+        | otherwise → Ref ann name' index'
+      Abs ann param body →
+        Abs ann param case param of
+          ParamUnused _paramAnn → go body
+          ParamNamed _paramAnn pName → substitute name index' replacement' body
+           where
+            index' = if name == Local pName then index + 1 else index
+            replacement' = shift 1 pName 0 replacement
+      Let ann binds body → Let ann binds' body'
        where
-        boundNames = toList binds >>= fmap runIdentity . groupingNames
-        index' = if name `elem` fmap Local boundNames then index + 1 else index
-        replacement' = foldr (\n r → shift 1 n 0 r) replacement boundNames
-    App argument function → App (go <$> argument) (go <$> function)
-    LiteralArray as → LiteralArray (go <<$>> as)
-    LiteralObject props → LiteralObject (fmap go <<$>> props)
-    ReflectCtor a → ReflectCtor (go <$> a)
-    DataArgumentByIndex i a → DataArgumentByIndex i (go <$> a)
-    Eq a b → Eq (go <$> a) (go <$> b)
-    ArrayLength a → ArrayLength (go <$> a)
-    ArrayIndex a indx → ArrayIndex (go <$> a) indx
-    ObjectProp a prop → ObjectProp (go <$> a) prop
-    ObjectUpdate a patches → ObjectUpdate (go <$> a) (fmap go <<$>> patches)
-    IfThenElse p th el → IfThenElse (go <$> p) (go <$> th) (go <$> el)
-    -- Terminals:
-    LiteralInt {} → subExpression
-    LiteralBool {} → subExpression
-    LiteralFloat {} → subExpression
-    LiteralString {} → subExpression
-    LiteralChar {} → subExpression
-    Ctor {} → subExpression
-    Exception {} → subExpression
-    ForeignImport {} → subExpression
+        binds' =
+          binds <&> \grouping →
+            case grouping of
+              Standalone (nameAnn, boundName, expr) →
+                Standalone
+                  ( nameAnn
+                  , boundName
+                  , substitute name index' replacement' expr
+                  )
+               where
+                index'
+                  | name == Local boundName = index + 1
+                  | otherwise = index
+                replacement' = shift 1 boundName 0 replacement
+              RecursiveGroup recBinds →
+                RecursiveGroup $
+                  substitute name index' replacement' <<$>> recBinds
+               where
+                index'
+                  | name `elem` fmap Local boundNames = index + 1
+                  | otherwise = index
+                replacement' =
+                  foldr (\n r → shift 1 n 0 r) replacement boundNames
+                boundNames = bindingNames grouping
+        body' = substitute name index' replacement' body
+         where
+          boundNames = toList binds >>= bindingNames
+          index' =
+            index
+              & if name `elem` (Local <$> boundNames) then (+ 1) else id
+          replacement' = foldr (\n r → shift 1 n 0 r) replacement boundNames
+      App ann argument function →
+        App ann (go argument) (go function)
+      LiteralArray ann as →
+        LiteralArray ann (go <$> as)
+      LiteralObject ann props →
+        LiteralObject ann (go <<$>> props)
+      ReflectCtor ann a →
+        ReflectCtor ann (go a)
+      DataArgumentByIndex ann i a →
+        DataArgumentByIndex ann i (go a)
+      Eq ann a b →
+        Eq ann (go a) (go b)
+      ArrayLength ann a →
+        ArrayLength ann (go a)
+      ArrayIndex ann a indx →
+        ArrayIndex ann (go a) indx
+      ObjectProp ann a prop →
+        ObjectProp ann (go a) prop
+      ObjectUpdate ann a patches →
+        ObjectUpdate ann (go a) (go <<$>> patches)
+      IfThenElse ann p th el →
+        IfThenElse ann (go p) (go th) (go el)
+      -- Terminals:
+      LiteralInt {} → subExpression
+      LiteralBool {} → subExpression
+      LiteralFloat {} → subExpression
+      LiteralString {} → subExpression
+      LiteralChar {} → subExpression
+      Ctor {} → subExpression
+      Exception {} → subExpression
+      ForeignImport {} → subExpression
    where
-    go ∷ Exp → Exp = substitute' index
+    go = substitute' index
 
 -- | Increase the index of all bound variables matching the given variable name
 shift
@@ -639,58 +720,75 @@ shift
   -- ^ The variable name to match (a.k.a. the namespace)
   → Index
   -- ^ The minimum bound for which indices to shift
-  → Exp
+  → RawExp ann
   -- ^ The expression to shift
-  → Exp
+  → RawExp ann
 shift offset namespace minIndex expression =
   case expression of
-    Ref (Local name) index →
-      refLocal name $
-        if name == namespace && minIndex <= index
-          then index + fromIntegral offset
-          else index
-    Abs argument body → Abs argument body'
+    Ref ann (Local name) index →
+      Ref ann (Local name) $
+        index
+          + if name == namespace && minIndex <= index
+            then fromIntegral offset
+            else 0
+    Abs ann argument body →
+      Abs ann argument (shift offset namespace minIndex' body)
      where
-      body' = shift offset namespace minIndex' <$> body
       minIndex'
-        | paramName (unAnn argument) == Just namespace = minIndex + 1
+        | paramName argument == Just namespace = minIndex + 1
         | otherwise = minIndex
-    Let binds body →
-      Let binds' body'
+    Let ann binds body →
+      Let ann binds' body'
      where
       binds' =
         binds <&> \grouping →
           case grouping of
-            Standalone (boundName, expr) → Standalone (boundName, expr')
+            Standalone (annotation, boundName, expr) →
+              Standalone
+                ( annotation
+                , boundName
+                , shift offset namespace minIndex' expr
+                )
              where
-              expr' = shift offset namespace minIndex' <$> expr
               minIndex'
-                | namespace == unAnn boundName = minIndex + 1
+                | namespace == boundName = minIndex + 1
                 | otherwise = minIndex
             RecursiveGroup recBinds →
               RecursiveGroup $
-                (shift offset namespace minIndex' <$>) <<$>> recBinds
+                recBinds <&> \(nameAnn, boundName, expr) →
+                  (nameAnn, boundName, shift offset namespace minIndex' expr)
              where
               minIndex'
-                | namespace `elem` fmap (unAnn . fst) grouping = minIndex + 1
+                | namespace `elem` bindingNames grouping = minIndex + 1
                 | otherwise = minIndex
-      body' = shift offset namespace minIndex' <$> body
+      body' = shift offset namespace minIndex' body
        where
-        boundNames' = toList binds >>= fmap unAnn . groupingNames
+        boundNames' = toList binds >>= bindingNames
         minIndex'
           | namespace `elem` boundNames' = minIndex + 1
           | otherwise = minIndex
-    App argument function → App (go <$> argument) (go <$> function)
-    LiteralArray as → LiteralArray (go <<$>> as)
-    LiteralObject props → LiteralObject (fmap go <<$>> props)
-    ReflectCtor a → ReflectCtor (go <$> a)
-    DataArgumentByIndex idx a → DataArgumentByIndex idx (go <$> a)
-    Eq a b → Eq (go <$> a) (go <$> b)
-    ArrayLength a → ArrayLength (go <$> a)
-    ArrayIndex a indx → ArrayIndex (go <$> a) indx
-    ObjectProp a prop → ObjectProp (go <$> a) prop
-    ObjectUpdate a patches → ObjectUpdate (go <$> a) (fmap go <<$>> patches)
-    IfThenElse p th el → IfThenElse (go <$> p) (go <$> th) (go <$> el)
+    App ann argument function →
+      App ann (go argument) (go function)
+    LiteralArray ann as →
+      LiteralArray ann (go <$> as)
+    LiteralObject ann props →
+      LiteralObject ann (go <<$>> props)
+    ReflectCtor ann a →
+      ReflectCtor ann (go a)
+    DataArgumentByIndex ann idx a →
+      DataArgumentByIndex ann idx (go a)
+    Eq ann a b →
+      Eq ann (go a) (go b)
+    ArrayLength ann a →
+      ArrayLength ann (go a)
+    ArrayIndex ann a indx →
+      ArrayIndex ann (go a) indx
+    ObjectProp ann a prop →
+      ObjectProp ann (go a) prop
+    ObjectUpdate ann a patches →
+      ObjectUpdate ann (go a) (go <<$>> patches)
+    IfThenElse ann p th el →
+      IfThenElse ann (go p) (go th) (go el)
     _ → expression
  where
   go = shift offset namespace minIndex

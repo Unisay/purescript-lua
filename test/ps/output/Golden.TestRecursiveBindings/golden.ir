@@ -1,273 +1,159 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "letRec", Let
+      ( Name "letRec", Let Nothing
         ( RecursiveGroup
           (
-            ( Identity
-              ( Name "no" ), Identity
-              ( Abs
-                ( Identity ( ParamNamed ( Name "v" ) ) )
-                ( Identity
-                  ( IfThenElse
-                    ( Identity
-                      ( Eq
-                        ( Identity ( LiteralBool True ) )
-                        ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                      )
-                    )
-                    ( Identity
-                      ( App
-                        ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
-                        ( Identity ( LiteralBool False ) )
-                      )
-                    )
-                    ( Identity
-                      ( IfThenElse
-                        ( Identity
-                          ( Eq
-                            ( Identity ( LiteralBool False ) )
-                            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                          )
-                        )
-                        ( Identity
-                          ( App
-                            ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
-                            ( Identity ( LiteralBool True ) )
-                          )
-                        )
-                        ( Identity ( Exception "No patterns matched" ) )
-                      )
-                    )
+            ( Nothing, Name "no", Abs Nothing
+              ( ParamNamed Nothing ( Name "v" ) )
+              ( IfThenElse Nothing
+                ( Eq Nothing ( LiteralBool Nothing True )
+                  ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+                )
+                ( App Nothing
+                  ( Ref Nothing ( Local ( Name "yes" ) ) 0 ) ( LiteralBool Nothing False )
+                )
+                ( IfThenElse Nothing
+                  ( Eq Nothing ( LiteralBool Nothing False )
+                    ( Ref Nothing ( Local ( Name "v" ) ) 0 )
                   )
+                  ( App Nothing
+                    ( Ref Nothing ( Local ( Name "yes" ) ) 0 ) ( LiteralBool Nothing True )
+                  )
+                  ( Exception Nothing "No patterns matched" )
                 )
               )
             ) :|
             [
-              ( Identity
-                ( Name "yes" ), Identity
-                ( Abs
-                  ( Identity ( ParamNamed ( Name "v" ) ) )
-                  ( Identity
-                    ( IfThenElse
-                      ( Identity
-                        ( Eq
-                          ( Identity ( LiteralBool True ) )
-                          ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                        )
-                      )
-                      ( Identity
-                        ( App
-                          ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
-                          ( Identity ( LiteralBool False ) )
-                        )
-                      )
-                      ( Identity
-                        ( IfThenElse
-                          ( Identity
-                            ( Eq
-                              ( Identity ( LiteralBool False ) )
-                              ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                            )
-                          )
-                          ( Identity
-                            ( App
-                              ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
-                              ( Identity ( LiteralBool True ) )
-                            )
-                          )
-                          ( Identity ( Exception "No patterns matched" ) )
-                        )
-                      )
+              ( Nothing, Name "yes", Abs Nothing
+                ( ParamNamed Nothing ( Name "v" ) )
+                ( IfThenElse Nothing
+                  ( Eq Nothing ( LiteralBool Nothing True )
+                    ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+                  )
+                  ( App Nothing
+                    ( Ref Nothing ( Local ( Name "no" ) ) 0 ) ( LiteralBool Nothing False )
+                  )
+                  ( IfThenElse Nothing
+                    ( Eq Nothing ( LiteralBool Nothing False )
+                      ( Ref Nothing ( Local ( Name "v" ) ) 0 )
                     )
+                    ( App Nothing
+                      ( Ref Nothing ( Local ( Name "no" ) ) 0 ) ( LiteralBool Nothing True )
+                    )
+                    ( Exception Nothing "No patterns matched" )
                   )
                 )
               )
             ]
           ) :| []
         )
-        ( Identity
-          ( App ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) ) ( Identity ( LiteralBool False ) ) )
-        )
+        ( App Nothing ( Ref Nothing ( Local ( Name "no" ) ) 0 ) ( LiteralBool Nothing False ) )
       ),
-      ( Name "whereRec", Let
+      ( Name "whereRec", Let Nothing
         ( RecursiveGroup
           (
-            ( Identity
-              ( Name "no" ), Identity
-              ( Abs
-                ( Identity ( ParamNamed ( Name "v" ) ) )
-                ( Identity
-                  ( IfThenElse
-                    ( Identity
-                      ( Eq
-                        ( Identity ( LiteralBool True ) )
-                        ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                      )
-                    )
-                    ( Identity
-                      ( App
-                        ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
-                        ( Identity ( LiteralBool False ) )
-                      )
-                    )
-                    ( Identity
-                      ( IfThenElse
-                        ( Identity
-                          ( Eq
-                            ( Identity ( LiteralBool False ) )
-                            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                          )
-                        )
-                        ( Identity
-                          ( App
-                            ( Identity ( Ref ( Local ( Name "yes" ) ) 0 ) )
-                            ( Identity ( LiteralBool True ) )
-                          )
-                        )
-                        ( Identity ( Exception "No patterns matched" ) )
-                      )
-                    )
+            ( Nothing, Name "no", Abs Nothing
+              ( ParamNamed Nothing ( Name "v" ) )
+              ( IfThenElse Nothing
+                ( Eq Nothing ( LiteralBool Nothing True )
+                  ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+                )
+                ( App Nothing
+                  ( Ref Nothing ( Local ( Name "yes" ) ) 0 ) ( LiteralBool Nothing False )
+                )
+                ( IfThenElse Nothing
+                  ( Eq Nothing ( LiteralBool Nothing False )
+                    ( Ref Nothing ( Local ( Name "v" ) ) 0 )
                   )
+                  ( App Nothing
+                    ( Ref Nothing ( Local ( Name "yes" ) ) 0 ) ( LiteralBool Nothing True )
+                  )
+                  ( Exception Nothing "No patterns matched" )
                 )
               )
             ) :|
             [
-              ( Identity
-                ( Name "yes" ), Identity
-                ( Abs
-                  ( Identity ( ParamNamed ( Name "v" ) ) )
-                  ( Identity
-                    ( IfThenElse
-                      ( Identity
-                        ( Eq
-                          ( Identity ( LiteralBool True ) )
-                          ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                        )
-                      )
-                      ( Identity
-                        ( App
-                          ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
-                          ( Identity ( LiteralBool False ) )
-                        )
-                      )
-                      ( Identity
-                        ( IfThenElse
-                          ( Identity
-                            ( Eq
-                              ( Identity ( LiteralBool False ) )
-                              ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                            )
-                          )
-                          ( Identity
-                            ( App
-                              ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) )
-                              ( Identity ( LiteralBool True ) )
-                            )
-                          )
-                          ( Identity ( Exception "No patterns matched" ) )
-                        )
-                      )
+              ( Nothing, Name "yes", Abs Nothing
+                ( ParamNamed Nothing ( Name "v" ) )
+                ( IfThenElse Nothing
+                  ( Eq Nothing ( LiteralBool Nothing True )
+                    ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+                  )
+                  ( App Nothing
+                    ( Ref Nothing ( Local ( Name "no" ) ) 0 ) ( LiteralBool Nothing False )
+                  )
+                  ( IfThenElse Nothing
+                    ( Eq Nothing ( LiteralBool Nothing False )
+                      ( Ref Nothing ( Local ( Name "v" ) ) 0 )
                     )
+                    ( App Nothing
+                      ( Ref Nothing ( Local ( Name "no" ) ) 0 ) ( LiteralBool Nothing True )
+                    )
+                    ( Exception Nothing "No patterns matched" )
                   )
                 )
               )
             ]
           ) :| []
         )
-        ( Identity
-          ( App ( Identity ( Ref ( Local ( Name "no" ) ) 0 ) ) ( Identity ( LiteralBool False ) ) )
-        )
+        ( App Nothing ( Ref Nothing ( Local ( Name "no" ) ) 0 ) ( LiteralBool Nothing False ) )
       ),
-      ( Name "letRecMixed", Let
+      ( Name "letRecMixed", Let Nothing
         ( Standalone
-          ( Identity ( Name "z" ), Identity ( LiteralInt 1 ) ) :|
+          ( Nothing, Name "z", LiteralInt Nothing 1 ) :|
           [ RecursiveGroup
             (
-              ( Identity
-                ( Name "a" ), Identity
-                ( Abs ( Identity ParamUnused )
-                  ( Identity
-                    ( App
-                      ( Identity ( Ref ( Local ( Name "b" ) ) 0 ) )
-                      ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
-                    )
-                  )
+              ( Nothing, Name "a", Abs Nothing ( ParamUnused Nothing )
+                ( App Nothing
+                  ( Ref Nothing ( Local ( Name "b" ) ) 0 )
+                  ( Ref Nothing ( Local ( Name "z" ) ) 0 )
                 )
               ) :|
               [
-                ( Identity
-                  ( Name "b" ), Identity
-                  ( Abs ( Identity ParamUnused )
-                    ( Identity
-                      ( App
-                        ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
-                        ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
-                      )
-                    )
+                ( Nothing, Name "b", Abs Nothing ( ParamUnused Nothing )
+                  ( App Nothing
+                    ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+                    ( Ref Nothing ( Local ( Name "z" ) ) 0 )
                   )
                 )
               ]
             ), Standalone
-            ( Identity
-              ( Name "f" ), Identity
-              ( Abs ( Identity ParamUnused )
-                ( Identity
-                  ( Abs
-                    ( Identity ( ParamNamed ( Name "k" ) ) )
-                    ( Identity
-                      ( App
-                        ( Identity ( Ref ( Local ( Name "a" ) ) 0 ) )
-                        ( Identity ( Ref ( Local ( Name "k" ) ) 0 ) )
-                      )
-                    )
-                  )
+            ( Nothing, Name "f", Abs Nothing ( ParamUnused Nothing )
+              ( Abs Nothing
+                ( ParamNamed Nothing ( Name "k" ) )
+                ( App Nothing
+                  ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+                  ( Ref Nothing ( Local ( Name "k" ) ) 0 )
                 )
               )
             ), Standalone
-            ( Identity
-              ( Name "y" ), Identity
-              ( App
-                ( Identity
-                  ( App
-                    ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
-                    ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
-                  )
-                )
-                ( Identity ( Ref ( Local ( Name "z" ) ) 0 ) )
+            ( Nothing, Name "y", App Nothing
+              ( App Nothing
+                ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                ( Ref Nothing ( Local ( Name "z" ) ) 0 )
               )
+              ( Ref Nothing ( Local ( Name "z" ) ) 0 )
             )
           ]
         )
-        ( Identity
-          ( App
-            ( Identity
-              ( App
-                ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
-                ( Identity
-                  ( App
-                    ( Identity
-                      ( App
-                        ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
-                        ( Identity ( Ref ( Local ( Name "y" ) ) 0 ) )
-                      )
-                    )
-                    ( Identity ( Ref ( Local ( Name "y" ) ) 0 ) )
-                  )
-                )
+        ( App Nothing
+          ( App Nothing
+            ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+            ( App Nothing
+              ( App Nothing
+                ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                ( Ref Nothing ( Local ( Name "y" ) ) 0 )
               )
+              ( Ref Nothing ( Local ( Name "y" ) ) 0 )
             )
-            ( Identity
-              ( App
-                ( Identity
-                  ( App
-                    ( Identity ( Ref ( Local ( Name "f" ) ) 0 ) )
-                    ( Identity ( Ref ( Local ( Name "y" ) ) 0 ) )
-                  )
-                )
-                ( Identity ( LiteralInt 0 ) )
-              )
+          )
+          ( App Nothing
+            ( App Nothing
+              ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+              ( Ref Nothing ( Local ( Name "y" ) ) 0 )
             )
+            ( LiteralInt Nothing 0 )
           )
         )
       )

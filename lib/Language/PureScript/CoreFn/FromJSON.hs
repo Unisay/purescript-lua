@@ -144,6 +144,7 @@ moduleFromJSON = withObject "Module" moduleFromObj
   moduleFromObj o = do
     version ← o .: "builtWith" >>= versionFromJSON
     moduleName ← o .: "moduleName" >>= moduleNameFromJSON
+    moduleComments ← o .: "comments" >>= listParser parseJSON
     modulePath ← o .: "modulePath"
     moduleImports ← o .: "imports" >>= listParser (importFromJSON modulePath)
     moduleExports ← o .: "exports" >>= listParser identFromJSON

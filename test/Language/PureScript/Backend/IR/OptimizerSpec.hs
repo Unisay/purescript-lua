@@ -16,7 +16,7 @@ import Language.PureScript.Backend.IR.Types
   , Grouping (Standalone)
   , Module (..)
   , Name (..)
-  , Parameter (..)
+  
   , RawExp (..)
   , abstraction
   , application
@@ -26,8 +26,9 @@ import Language.PureScript.Backend.IR.Types
   , lets
   , literalBool
   , literalInt
+  , noAnn
   , refLocal
-  , refLocal0
+  , refLocal0, paramNamed
   )
 import Language.PureScript.Names (moduleNameFromString)
 import Test.Hspec (Spec, describe)
@@ -116,15 +117,15 @@ spec = describe "IR Optimizer" do
 
       let original =
             abstraction
-              (ParamNamed name)
+              (paramNamed name)
               ( abstraction
-                  (ParamNamed name)
+                  (paramNamed name)
                   ( application
                       (refLocal name 0)
                       ( abstraction
-                          (ParamNamed name)
+                          (paramNamed name)
                           ( abstraction
-                              (ParamNamed name1)
+                              (paramNamed name1)
                               ( application
                                   (refLocal name 0)
                                   (refLocal name 2)
@@ -136,15 +137,15 @@ spec = describe "IR Optimizer" do
 
           renamed =
             abstraction
-              (ParamNamed name)
+              (paramNamed name)
               ( abstraction
-                  (ParamNamed name2)
+                  (paramNamed name2)
                   ( application
                       (refLocal name2 0)
                       ( abstraction
-                          (ParamNamed name3)
+                          (paramNamed name3)
                           ( abstraction
-                              (ParamNamed name1)
+                              (paramNamed name1)
                               ( application
                                   (refLocal name3 0)
                                   (refLocal name 0)
@@ -162,10 +163,10 @@ spec = describe "IR Optimizer" do
       valueB ← forAll Gen.literalNonRecursiveExp
       let original =
             lets
-              (Standalone (nameA, valueA) :| [Standalone (nameB, valueB)])
+              (Standalone (noAnn, nameA, valueA) :| [Standalone (noAnn, nameB, valueB)])
               ( lets
-                  ( Standalone (nameA, refLocal nameA 0)
-                      :| [Standalone (nameB, refLocal nameB 0)]
+                  ( Standalone (noAnn, nameA, refLocal nameA 0)
+                      :| [Standalone (noAnn, nameB, refLocal nameB 0)]
                   )
                   ( application
                       (application (refLocal nameA 0) (refLocal nameA 1))
@@ -178,12 +179,12 @@ spec = describe "IR Optimizer" do
 
           renamed =
             lets
-              ( Standalone (nameA, valueA)
-                  :| [Standalone (nameB, valueB)]
+              ( Standalone (noAnn, nameA, valueA)
+                  :| [Standalone (noAnn, nameB, valueB)]
               )
               ( lets
-                  ( Standalone (nameA1, refLocal nameA 0)
-                      :| [Standalone (nameB1, refLocal nameB 0)]
+                  ( Standalone (noAnn, nameA1, refLocal nameA 0)
+                      :| [Standalone (noAnn, nameB1, refLocal nameB 0)]
                   )
                   ( application
                       (application (refLocal nameA1 0) (refLocal nameA 0))
@@ -199,7 +200,7 @@ wrapInModule ∷ Exp → Module
 wrapInModule e =
   Module
     { moduleName = moduleNameFromString "Main"
-    , moduleBindings = [Standalone (Name "main", e)]
+    , moduleBindings = [Standalone (noAnn, Name "main", e)]
     , moduleImports = []
     , moduleExports = [Name "main"]
     , moduleReExports = Map.empty
@@ -208,7 +209,7 @@ wrapInModule e =
     }
 
 let1 ∷ Name → Exp → Exp → Exp
-let1 n e = lets (Standalone (n, e) :| [])
+let1 n e = lets (Standalone (noAnn, n, e) :| [])
 
 isRef ∷ Exp → Bool
 isRef = \case

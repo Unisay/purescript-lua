@@ -1,52 +1,52 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "U", Ctor ProductType
+      ( Name "U", Ctor Nothing ProductType
         ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "Unit" )
         ( CtorName "U" ) []
       ),
-      ( Name "P3", Ctor ProductType
+      ( Name "P3", Ctor Nothing ProductType
         ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TProduct" )
         ( CtorName "P3" )
         [ FieldName "value0", FieldName "value1", FieldName "value2" ]
       ),
-      ( Name "PF", Ctor ProductType
+      ( Name "PF", Ctor Nothing ProductType
         ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TProductWithFields" )
         ( CtorName "PF" )
         [ FieldName "value0" ]
       ),
-      ( Name "S0", Ctor SumType
+      ( Name "S0", Ctor Nothing SumType
         ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TSum" )
         ( CtorName "S0" ) []
       ),
-      ( Name "S1", Ctor SumType
+      ( Name "S1", Ctor Nothing SumType
         ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TSum" )
         ( CtorName "S1" )
         [ FieldName "value0" ]
       ),
-      ( Name "S2", Ctor SumType
+      ( Name "S2", Ctor Nothing SumType
         ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TSum" )
         ( CtorName "S2" )
         [ FieldName "value0", FieldName "value1" ]
       ),
-      ( Name "Nop", Ctor SumType
+      ( Name "Nop", Ctor Nothing SumType
         ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "Rec" )
         ( CtorName "Nop" ) []
       ),
-      ( Name "More", Ctor SumType
+      ( Name "More", Ctor Nothing SumType
         ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "Rec" )
         ( CtorName "More" )
         [ FieldName "value0" ]
       ),
-      ( Name "CtorSameName", Ctor ProductType
+      ( Name "CtorSameName", Ctor Nothing ProductType
         ( ModuleName "Golden.TestDataDeclarations1" )
         ( TyName "TySameName" )
         ( CtorName "CtorSameName" ) []

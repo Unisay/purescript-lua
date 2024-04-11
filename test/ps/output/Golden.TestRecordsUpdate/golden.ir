@@ -3,61 +3,51 @@ UberModule
     [ Standalone
       ( QName
         { qnameModuleName = ModuleName "Golden.TestRecordsUpdate", qnameName = Name "r"
-        }, LiteralObject
+        }, LiteralObject Nothing
         [
-          ( PropName "x", Identity ( LiteralInt 1 ) ),
-          ( PropName "y", Identity ( LiteralBool True ) ),
-          ( PropName "z", Identity
-            ( LiteralObject
-              [
-                ( PropName "z", Identity ( LiteralString "foo" ) ),
-                ( PropName "p", Identity ( LiteralChar 'a' ) )
-              ]
-            )
+          ( PropName "x", LiteralInt Nothing 1 ),
+          ( PropName "y", LiteralBool Nothing True ),
+          ( PropName "z", LiteralObject Nothing
+            [
+              ( PropName "z", LiteralString Nothing "foo" ),
+              ( PropName "p", LiteralChar Nothing 'a' )
+            ]
           )
         ]
       )
     ], uberModuleExports =
     [
-      ( Name "r", Ref ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 ),
-      ( Name "test1", ObjectUpdate
-        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 ) )
-        ( ( PropName "x", Identity ( LiteralInt 2 ) ) :| [] )
+      ( Name "r", Ref Nothing
+        ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0
       ),
-      ( Name "test2", Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity
-          ( ObjectUpdate
-            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-            ( ( PropName "y", Identity ( LiteralBool False ) ) :| [] )
+      ( Name "test1", ObjectUpdate Nothing
+        ( Ref Nothing ( Imported ( ModuleName "Golden.TestRecordsUpdate" ) ( Name "r" ) ) 0 )
+        ( ( PropName "x", LiteralInt Nothing 2 ) :| [] )
+      ),
+      ( Name "test2", Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( ObjectUpdate Nothing
+          ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+          ( ( PropName "y", LiteralBool Nothing False ) :| [] )
+        )
+      ),
+      ( Name "test3", Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( ObjectUpdate Nothing
+          ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+          (
+            ( PropName "z", ObjectUpdate Nothing
+              ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( PropName "z" ) )
+              ( ( PropName "p", LiteralChar Nothing 'b' ) :| [] )
+            ) :| []
           )
         )
       ),
-      ( Name "test3", Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity
-          ( ObjectUpdate
-            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-            (
-              ( PropName "z", Identity
-                ( ObjectUpdate
-                  ( Identity
-                    ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "z" ) )
-                  )
-                  ( ( PropName "p", Identity ( LiteralChar 'b' ) ) :| [] )
-                )
-              ) :| []
-            )
-          )
-        )
-      ),
-      ( Name "test4", Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity
-          ( ObjectUpdate
-            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-            ( ( PropName "x", Identity ( LiteralInt 1 ) ) :| [] )
-          )
+      ( Name "test4", Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( ObjectUpdate Nothing
+          ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+          ( ( PropName "x", LiteralInt Nothing 1 ) :| [] )
         )
       )
     ]

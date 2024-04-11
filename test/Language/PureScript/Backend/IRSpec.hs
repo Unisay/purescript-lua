@@ -73,7 +73,10 @@ spec = describe "IR representation" do
           , defaultAlternative
           ]
           >>= ( `shouldBe`
-                  ifThenElse (literalChar 'c' `eq` literalChar 'x') (literalInt 1) (literalInt 0)
+                  ifThenElse
+                    (literalChar 'c' `eq` literalChar 'x')
+                    (literalInt 1)
+                    (literalInt 0)
               )
 
       it "array literal binder" do
@@ -401,8 +404,8 @@ spec = describe "IR representation" do
           ]
           >>= ( `shouldBe`
                   lets
-                    ( Standalone (Name "z", literalChar 'y')
-                        :| [Standalone (Name "v", literalChar 'x')]
+                    ( Standalone (noAnn, Name "z", literalChar 'y')
+                        :| [Standalone (noAnn, Name "v", literalChar 'x')]
                     )
                     (refLocal (Name "z") 0)
               )
@@ -433,8 +436,8 @@ spec = describe "IR representation" do
                     ( ifThenElse
                         (literalChar 'b' `eq` literalChar 'y')
                         ( lets
-                            ( IR.Standalone (Name "b", literalChar 'y')
-                                :| [IR.Standalone (Name "a", literalChar 'x')]
+                            ( IR.Standalone (noAnn, Name "b", literalChar 'y')
+                                :| [IR.Standalone (noAnn, Name "a", literalChar 'x')]
                             )
                             ( application
                                 (refLocal (Name "a") 0)
@@ -442,8 +445,8 @@ spec = describe "IR representation" do
                             )
                         )
                         ( lets
-                            ( IR.Standalone (Name "o2", literalChar 'y')
-                                :| [IR.Standalone (Name "o1", literalChar 'x')]
+                            ( IR.Standalone (noAnn, Name "o2", literalChar 'y')
+                                :| [IR.Standalone (noAnn, Name "o1", literalChar 'x')]
                             )
                             ( application
                                 (refLocal (Name "o2") 0)
@@ -452,8 +455,8 @@ spec = describe "IR representation" do
                         )
                     )
                     ( lets
-                        ( IR.Standalone (Name "o2", literalChar 'y')
-                            :| [IR.Standalone (Name "o1", literalChar 'x')]
+                        ( IR.Standalone (noAnn, Name "o2", literalChar 'y')
+                            :| [IR.Standalone (noAnn, Name "o1", literalChar 'x')]
                         )
                         ( application
                             (refLocal (Name "o2") 0)
@@ -483,6 +486,7 @@ runRepresentM rm =
           , contextDataTypes = mempty
           , lastGeneratedNameIndex = 0
           , needsRuntimeLazy = Any False
+          , annotations = []
           }
         rm
     )
@@ -497,6 +501,7 @@ cfnModule ∷ ∀ {a}. Cfn.Module a
 cfnModule =
   Cfn.Module
     { moduleName = PS.ModuleName "M"
+    , moduleComments = mempty
     , modulePath = "M.purs"
     , moduleImports = mempty
     , moduleExports = mempty
@@ -551,4 +556,4 @@ cfnApp ∷ Cfn.Expr Cfn.Ann → Cfn.Expr Cfn.Ann → Cfn.Expr Cfn.Ann
 cfnApp = Cfn.App ann
 
 let1 ∷ Name → Exp → Exp → Exp
-let1 n e = lets (pure (IR.Standalone (n, e)))
+let1 n e = lets (pure (IR.Standalone (noAnn, n, e)))

@@ -5,14 +5,17 @@ module Language.PureScript.Backend.IR
 
 import Control.Monad.Error.Class (MonadError (throwError))
 import Control.Monad.Writer.Class (MonadWriter (..))
-import Data.Foldable (foldrM)
 import Data.List qualified as List
 import Data.List.NonEmpty ((<|))
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Lazy qualified as Map
 import Data.Tagged (Tagged (Tagged))
+import Data.Text qualified as Text
 import Data.Traversable (for)
+import Language.PureScript.Backend.IR.Inliner (Annotation)
+import Language.PureScript.Backend.IR.Inliner qualified as Inliner
 import Language.PureScript.Backend.IR.Types
+import Language.PureScript.Comments (Comment (..))
 import Language.PureScript.CoreFn qualified as Cfn
 import Language.PureScript.CoreFn.Laziness (applyLazinessTransform)
 import Language.PureScript.Names (ModuleName (..), runModuleName)
@@ -25,12 +28,15 @@ import Language.PureScript.PSString
   )
 import Relude.Extra (toFst)
 import Relude.Unsafe qualified as Unsafe
+import Text.Megaparsec qualified as Megaparsec
 import Text.Pretty.Simple (pShow)
 import Text.Show (Show (..))
 import Prelude hiding (identity, show)
 
 data Context = Context
-  { contextModule
+  { annotations
+      ∷ [Annotation]
+  , contextModule
       ∷ Cfn.Module Cfn.Ann
   , contextDataTypes
       ∷ Map (ModuleName, TyName) (AlgebraicType, Map CtorName [FieldName])
@@ -71,29 +77,46 @@ mkModule
   → Map (ModuleName, TyName) (AlgebraicType, Map CtorName [FieldName])
   → Either CoreFnError (Tagged "needsRuntimeLazy" Bool, Module)
 mkModule cfnModule contextDataTypes = do
-  let ctx =
-        Context
-          { contextModule = cfnModule
-          , contextDataTypes
-          , lastGeneratedNameIndex = 0
-          , needsRuntimeLazy = Any False
+  annotations ← parseAnnotations cfnModule
+  runRepM
+    Context
+      { annotations
+      , contextModule = cfnModule
+      , contextDataTypes
+      , lastGeneratedNameIndex = 0
+      , needsRuntimeLazy = Any False
+      }
+    do
+      moduleBindings ← mkDecls
+      moduleImports ← mkImports
+      moduleExports ← mkExports
+      moduleReExports ← mkReExports
+      moduleForeigns ← mkForeign
+      pure
+        Module
+          { moduleName = Cfn.moduleName cfnModule
+          , modulePath = Cfn.modulePath cfnModule
+          , moduleBindings
+          , moduleImports
+          , moduleExports
+          , moduleReExports
+          , moduleForeigns
           }
-  runRepM ctx do
-    moduleBindings ← mkDecls
-    moduleImports ← mkImports
-    moduleExports ← mkExports
-    moduleReExports ← mkReExports
-    moduleForeigns ← mkForeign
-    pure
-      Module
-        { moduleName = Cfn.moduleName cfnModule
-        , modulePath = Cfn.modulePath cfnModule
-        , moduleBindings
-        , moduleImports
-        , moduleExports
-        , moduleReExports
-        , moduleForeigns
-        }
+
+parseAnnotations ∷ Cfn.Module Cfn.Ann → Either CoreFnError [Annotation]
+parseAnnotations currentModule =
+  Cfn.moduleComments currentModule
+    & foldMapM \case
+      LineComment line → pure <$> parseAnnotationLine line
+      BlockComment block → traverse parseAnnotationLine (lines block)
+    & fmap catMaybes
+ where
+  parseAnnotationLine ∷ Text → Either CoreFnError (Maybe Annotation)
+  parseAnnotationLine (Text.strip → ln) = do
+    let parser = optional (Inliner.annotationParser <* Megaparsec.eof)
+    first
+      (CoreFnError (Cfn.moduleName currentModule) . AnnotationParsingError)
+      (Megaparsec.parse parser (Cfn.modulePath currentModule) ln)
 
 mkImports ∷ RepM [ModuleName]
 mkImports = do
@@ -146,15 +169,15 @@ mkQualified f (PS.Qualified by a) =
 identToName ∷ PS.Ident → Name
 identToName = Name . PS.runIdent
 
-mkDecls ∷ RepM [Grouping (Name, Exp)]
+mkDecls ∷ RepM [Grouping (Ann, Name, Exp)]
 mkDecls = do
   psDecls ← gets $ contextModule >>> Cfn.moduleBindings
   traverse mkGrouping psDecls
 
-mkGrouping ∷ Cfn.Bind Cfn.Ann → RepM (Grouping (Name, Exp))
+mkGrouping ∷ Cfn.Bind Cfn.Ann → RepM (Grouping (Ann, Name, Exp))
 mkGrouping = \case
   Cfn.NonRec _ann ident cfnExpr →
-    Standalone . (identToName ident,) <$> makeExp cfnExpr
+    Standalone . (noAnn,identToName ident,) <$> makeExp cfnExpr
   Cfn.Rec bindingGroup → do
     modname ← gets $ contextModule >>> Cfn.moduleName
     bindings ← writer $ applyLazinessTransform modname bindingGroup
@@ -162,7 +185,7 @@ mkGrouping = \case
       Nothing → throwContextualError EmptyBindingGroup
       Just bs →
         RecursiveGroup <$> for bs \((_ann, ident), expr) →
-          (identToName ident,) <$> makeExp expr
+          (noAnn,identToName ident,) <$> makeExp expr
 
 makeExp ∷ CfnExp → RepM Exp
 makeExp cfnExpr =
@@ -182,11 +205,10 @@ makeExp cfnExpr =
     Cfn.Var _ann qualifiedIdent →
       mkRef qualifiedIdent
     Cfn.Case _ann exprs alternatives →
-      case (exprs,) <$> NE.nonEmpty alternatives of
-        Just (es, as) → mkCase es as
+      case NE.nonEmpty alternatives of
+        Just as → mkCase exprs as
         Nothing → throwContextualError $ EmptyCase cfnExpr
-    Cfn.Let _ann binds exprs → do
-      mkLet binds exprs
+    Cfn.Let _ann binds exprs → mkLet binds exprs
 
 mkLiteral ∷ Cfn.Literal CfnExp → RepM Exp
 mkLiteral = \case
@@ -219,7 +241,8 @@ mkConstructor ann properTyName properCtorName fields = do
     if isNewtype ann
       then identity
       else
-        ctor
+        Ctor
+          noAnn
           algTy
           contextModuleName
           tyName
@@ -243,7 +266,7 @@ mkPropName str = case decodeString str of
 mkAccessor ∷ PSString → CfnExp → RepM Exp
 mkAccessor prop cfnExpr = do
   propName ← mkPropName prop
-  makeExp cfnExpr <&> \expr → objectProp expr propName
+  makeExp cfnExpr <&> \expr → ObjectProp noAnn expr propName
 
 mkObjectUpdate ∷ CfnExp → [(PSString, CfnExp)] → RepM Exp
 mkObjectUpdate cfnExp props = do
@@ -251,14 +274,15 @@ mkObjectUpdate cfnExp props = do
   patch ← traverse (bitraverse mkPropName makeExp) props
   case NE.nonEmpty patch of
     Nothing → throwContextualError EmptyObjectUpdate
-    Just ps → pure $ objectUpdate expr ps
+    Just ps → pure $ ObjectUpdate noAnn expr ps
 
 mkAbstraction ∷ PS.Ident → CfnExp → RepM Exp
-mkAbstraction i e = abstraction arg <$> makeExp e
+mkAbstraction i e = abstraction param <$> makeExp e
  where
-  arg = case PS.runIdent i of
-    "$__unused" → ParamUnused
-    n → ParamNamed (Name n)
+  param ∷ Parameter Ann =
+    case PS.runIdent i of
+      "$__unused" → paramUnused
+      n → paramNamed (Name n)
 
 mkApplication ∷ CfnExp → CfnExp → RepM Exp
 mkApplication e1 e2 =
@@ -277,11 +301,11 @@ mkQualifiedIdent (PS.Qualified by ident) =
           else Imported modName (identToName ident)
 
 mkRef ∷ PS.Qualified PS.Ident → RepM Exp
-mkRef = flip ref 0 <<$>> mkQualifiedIdent
+mkRef = (\n → Ref noAnn n 0) <<$>> mkQualifiedIdent
 
 mkLet ∷ [Cfn.Bind Cfn.Ann] → CfnExp → RepM Exp
 mkLet binds expr = do
-  groupings ∷ NonEmpty (Grouping (Name, Exp)) ←
+  groupings ∷ NonEmpty (Grouping (Ann, Name, Exp)) ←
     NE.nonEmpty binds
       & maybe (throwContextualError LetWithoutBinds) (traverse mkGrouping)
   lets groupings <$> makeExp expr
@@ -291,47 +315,46 @@ mkLet binds expr = do
 -- The algorithm is based on this document: ------------------------------------
 -- https://julesjacobs.com/notes/patternmatching/patternmatching.pdf -----------
 
-mkCase
-  ∷ [CfnExp]
-  → NonEmpty (Cfn.CaseAlternative Cfn.Ann)
-  → RepM Exp
-mkCase expressions alternatives = do
-  (refExpressions, refs) ← expressionsToRefs expressions
-  clauses ← traverse (alternativeToClauses refExpressions) alternatives
-  refs <$> mkCaseClauses (NE.toList clauses)
+mkCase ∷ [CfnExp] → NonEmpty (Cfn.CaseAlternative Cfn.Ann) → RepM Exp
+mkCase cfnExpressions alternatives = do
+  expressions ← traverse makeExp cfnExpressions
+  -- Before making clauses, we need to prepare bindings
+  -- such that instead of repeating the same expression multiple times,
+  -- we can bind it to a name once and then repeat references.
+  (references, bindings) ← prepareBindings expressions
+  clauses ← traverse (alternativeToClauses references) alternatives
+  let addHeader = maybe id lets (NE.nonEmpty bindings)
+  addHeader <$> mkCaseClauses (NE.toList clauses)
 
-expressionsToRefs ∷ [CfnExp] → RepM ([Exp], Exp → Exp)
-expressionsToRefs cfnExps =
-  traverse makeExp cfnExps >>= fmap declareBinds . foldrM inlineOrReference []
- where
-  inlineOrReference
-    ∷ Exp
-    → [Either Exp (Name, Exp)]
-    -- Either an expression to inline, or a named expression reference.
-    → RepM [Either Exp (Name, Exp)]
-  inlineOrReference e acc =
+-- Either an expression to inline, or a named expression reference.
+data Scrutinee = Inlinable Exp | Referrable Ann Name Exp
+
+{- | Separate expressions into two groups:
+     1. Expressions that can be inlined directly.
+     2. Expressions that need to be referenced.
+-}
+prepareBindings ∷ [Exp] → RepM ([Exp], [Binding])
+prepareBindings expressions = do
+  scrutinees ← forM expressions \e → do
+    let inlinable = pure (Inlinable e)
     case e of
-      LiteralInt _ → inlineExpr
-      LiteralFloat _ → inlineExpr
-      LiteralChar _ → inlineExpr
-      LiteralBool _ → inlineExpr
-      Ref _name _index → inlineExpr
-      _ → referenceExpr
-   where
-    inlineExpr = pure (Left e : acc)
-    referenceExpr = (: acc) . Right . (,e) <$> generateName "e"
-
-  -- Declare extracted references
-  declareBinds ∷ [Either Exp (Name, Exp)] → ([Exp], Exp → Exp)
-  declareBinds expressionsOrRefs =
-    ( either id (flip refLocal 0 . fst) <$> expressionsOrRefs
-    , case NE.nonEmpty (mapMaybe rightToMaybe expressionsOrRefs) of
-        Nothing → id
-        Just refs → lets (Standalone <$> refs)
+      LiteralInt {} → inlinable
+      LiteralFloat {} → inlinable
+      LiteralChar {} → inlinable
+      LiteralBool {} → inlinable
+      Ref {} → inlinable
+      _ → do
+        n ← generateName "e"
+        pure (Referrable noAnn n e)
+  pure
+    ( scrutinees <&> \case
+        Inlinable expr → expr
+        Referrable ann name _expr → Ref ann (Local name) 0
+    , [Standalone (ann, name, expr) | Referrable ann name expr ← scrutinees]
     )
 
 mkCaseClauses ∷ [CaseClause] → RepM Exp
-mkCaseClauses = mkClauses mempty
+mkCaseClauses = mkClauses Map.empty
  where
   mkClauses ∷ MatchHistory → [CaseClause] → RepM Exp
   mkClauses history = \case
@@ -366,16 +389,16 @@ mkCaseClauses = mkClauses mempty
             pure case clauseResult currentClause of
               Right result → lets binds result
               Left guardedResults →
-                lets (Standalone (n, next) <| binds) $
+                lets (Standalone (noAnn, n, next) <| binds) $
                   foldr (uncurry ifThenElse) (refLocal n 0) guardedResults
       Just (Match {..}, clause) →
         let expr = foldr applyStep matchExp stepsToFocus
             clause' =
               clause
-                { clauseBinds =
-                    (Standalone . (,expr) <$> matchBinds) <> clauseBinds clause
-                , clauseMatches =
-                    nestedMatches <> clauseMatches clause
+                { clauseMatches = nestedMatches <> clauseMatches clause
+                , clauseBindings =
+                    (Standalone . (noAnn,,expr) <$> matchBinds)
+                      <> clauseBindings clause
                 }
          in case matchPat of
               PatAny →
@@ -433,8 +456,8 @@ mkCaseClauses = mkClauses mempty
    where
     nextMatch hist clause = mkClause hist clause heuristic nextClause
 
-usedClauseBinds ∷ CaseClause → [Grouping (Name, Exp)]
-usedClauseBinds CaseClause {clauseBinds} = clauseBinds
+usedClauseBinds ∷ CaseClause → [Binding]
+usedClauseBinds CaseClause {clauseBindings} = clauseBindings
 
 matchChosenByHeuristic
   ∷ CaseClause → [CaseClause] → Maybe (Match, CaseClause)
@@ -471,12 +494,10 @@ matchChosenByHeuristic thisClause otherClauses =
         [] → acc
         ms → ms >>= \t → go (t : acc) (nestedMatches t)
 
-type Guard = Exp
-
 data CaseClause = CaseClause
   { clauseMatches ∷ [Match]
-  , clauseResult ∷ Either [(Guard, Exp)] Exp
-  , clauseBinds ∷ [Grouping (Name, Exp)]
+  , clauseResult ∷ Either [(Exp, Exp)] Exp
+  , clauseBindings ∷ [Binding]
   }
   deriving stock (Show)
 
@@ -612,7 +633,8 @@ mkBinder matchExp = go mempty
 
 type MatchHistory = Map Exp (CtorName, Bool)
 
-alternativeToClauses ∷ [Exp] → Cfn.CaseAlternative Cfn.Ann → RepM CaseClause
+alternativeToClauses
+  ∷ [Exp] → Cfn.CaseAlternative Cfn.Ann → RepM CaseClause
 alternativeToClauses
   localRefs
   Cfn.CaseAlternative {caseAlternativeBinders, caseAlternativeResult} = do
@@ -634,7 +656,7 @@ alternativeToClauses
     pure
       CaseClause
         { clauseResult
-        , clauseBinds = []
+        , clauseBindings = []
         , clauseMatches = matches
         }
 
@@ -698,6 +720,7 @@ data CoreFnErrorReason
       (Map (ModuleName, TyName) (AlgebraicType, Map CtorName [FieldName]))
       TyName
   | UnicodeDecodeError UnicodeException
+  | AnnotationParsingError (Megaparsec.ParseErrorBundle Text Void)
 
 instance Show CoreFnErrorReason where
   show = \case
@@ -728,3 +751,5 @@ instance Show CoreFnErrorReason where
         <> toString (pShow decls)
     UnicodeDecodeError e →
       "Unicode decode error: " <> displayException e
+    AnnotationParsingError bundle →
+      "Annotation parsing error: " <> Megaparsec.errorBundlePretty bundle

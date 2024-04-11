@@ -3,30 +3,29 @@ UberModule
     [ Standalone
       ( QName
         { qnameModuleName = ModuleName "Golden.TestRecordsAccess", qnameName = Name "r"
-        }, LiteralObject
-        [
-          ( PropName "x", Identity ( LiteralInt 1 ) ),
-          ( PropName "y", Identity ( LiteralBool True ) )
-        ]
+        }, LiteralObject Nothing
+        [ ( PropName "x", LiteralInt Nothing 1 ), ( PropName "y", LiteralBool Nothing True ) ]
       )
     ], uberModuleExports =
     [
-      ( Name "r", Ref ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) 0 ),
-      ( Name "test1", ObjectProp
-        ( Identity ( Ref ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) 0 ) )
+      ( Name "r", Ref Nothing
+        ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) 0
+      ),
+      ( Name "test1", ObjectProp Nothing
+        ( Ref Nothing ( Imported ( ModuleName "Golden.TestRecordsAccess" ) ( Name "r" ) ) 0 )
         ( PropName "x" )
       ),
-      ( Name "test2", Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) ) )
+      ( Name "test2", Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( PropName "x" ) )
       ),
-      ( Name "test3", Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) ) )
+      ( Name "test3", Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( PropName "x" ) )
       ),
-      ( Name "test4", Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "x" ) ) )
+      ( Name "test4", Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( PropName "x" ) )
       )
     ]
   }

@@ -1,19 +1,19 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "i", LiteralInt 1 ),
-      ( Name "b", LiteralBool True ),
-      ( Name "c", LiteralChar 'c' ),
-      ( Name "a", LiteralArray
-        [ Identity ( LiteralInt 1 ), Identity ( LiteralInt 2 ), Identity ( LiteralInt 3 ) ]
+      ( Name "i", LiteralInt Nothing 1 ),
+      ( Name "b", LiteralBool Nothing True ),
+      ( Name "c", LiteralChar Nothing 'c' ),
+      ( Name "a", LiteralArray Nothing
+        [ LiteralInt Nothing 1, LiteralInt Nothing 2, LiteralInt Nothing 3 ]
       ),
-      ( Name "o", LiteralObject
+      ( Name "o", LiteralObject Nothing
         [
-          ( PropName "i", Identity ( LiteralInt 1 ) ),
-          ( PropName "b", Identity ( LiteralBool True ) ),
-          ( PropName "c", Identity ( LiteralChar 'c' ) )
+          ( PropName "i", LiteralInt Nothing 1 ),
+          ( PropName "b", LiteralBool Nothing True ),
+          ( PropName "c", LiteralChar Nothing 'c' )
         ]
       ),
-      ( Name "f", Abs ( Identity ParamUnused ) ( Identity ( LiteralBool True ) ) )
+      ( Name "f", Abs Nothing ( ParamUnused Nothing ) ( LiteralBool Nothing True ) )
     ]
   }

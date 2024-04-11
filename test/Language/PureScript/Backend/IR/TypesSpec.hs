@@ -7,12 +7,17 @@ import Language.PureScript.Backend.IR.Types
   , Grouping (..)
   , Name (..)
   , Parameter (ParamNamed, ParamUnused)
-  , Qualified (Imported, Local)
-  , RawExp (..)
+  , Qualified (..)
   , abstraction
   , application
   , countFreeRefs
   , lets
+  , literalInt
+  , noAnn
+  , paramNamed
+  , paramUnused
+  , refImported
+  , refLocal
   )
 import Language.PureScript.Names (ModuleName (..))
 import Test.Hspec (Spec, describe)
@@ -36,71 +41,72 @@ spec = describe "Types" do
 expr ∷ Exp
 expr =
   abstraction
-    (ParamNamed (Name "cmp"))
+    (paramNamed (Name "cmp"))
     ( abstraction
-        (ParamNamed (Name "x"))
+        (paramNamed (Name "x"))
         ( abstraction
-            (ParamNamed (Name "ys"))
+            (paramNamed (Name "ys"))
             ( lets
                 ( Standalone
-                    ( Name "i"
+                    ( noAnn
+                    , Name "i"
                     , application
                         ( application
                             ( application
-                                (Ref (Imported (ModuleName "Data.Maybe") (Name "maybe")) 0)
-                                (LiteralInt 0)
+                                (refImported (ModuleName "Data.Maybe") (Name "maybe") 0)
+                                (literalInt 0)
                             )
                             ( abstraction
-                                (ParamNamed (Name "v"))
+                                (paramNamed (Name "v"))
                                 ( application
                                     ( application
-                                        (Ref (Imported (ModuleName "Data.Array") (Name "add")) 0)
-                                        (Ref (Local (Name "v")) 0)
+                                        (refImported (ModuleName "Data.Array") (Name "add") 0)
+                                        (refLocal (Name "v") 0)
                                     )
-                                    (LiteralInt 1)
+                                    (literalInt 1)
                                 )
                             )
                         )
                         ( application
                             ( application
-                                (Ref (Imported (ModuleName "Data.Array") (Name "findLastIndex")) 0)
+                                (refImported (ModuleName "Data.Array") (Name "findLastIndex") 0)
                                 ( abstraction
-                                    (ParamNamed (Name "y"))
+                                    (paramNamed (Name "y"))
                                     ( application
                                         ( application
-                                            (Ref (Imported (ModuleName "Data.Array") (Name "eq1")) 0)
+                                            (refImported (ModuleName "Data.Array") (Name "eq1") 0)
                                             ( application
                                                 ( application
-                                                    (Ref (Local (Name "cmp")) 0)
-                                                    (Ref (Local (Name "x")) 0)
+                                                    (refLocal (Name "cmp") 0)
+                                                    (refLocal (Name "x") 0)
                                                 )
-                                                (Ref (Local (Name "y")) 0)
+                                                (refLocal (Name "y") 0)
                                             )
                                         )
-                                        (Ref (Imported (ModuleName "Data.Ordering") (Name "GT")) 0)
+                                        (refImported (ModuleName "Data.Ordering") (Name "GT") 0)
                                     )
                                 )
                             )
-                            (Ref (Local (Name "ys")) 0)
+                            (refLocal (Name "ys") 0)
                         )
                     )
                     :| []
                 )
                 ( application
-                    (Ref (Imported (ModuleName "Partial.Unsafe") (Name "unsafePartial")) 0)
+                    (refImported (ModuleName "Partial.Unsafe") (Name "unsafePartial") 0)
                     ( abstraction
-                        ParamUnused
+                        paramUnused
                         ( application
-                            (Ref (Imported (ModuleName "Data.Array") (Name "fromJust")) 0)
+                            (refImported (ModuleName "Data.Array") (Name "fromJust") 0)
                             ( application
                                 ( application
                                     ( application
-                                        (Ref (Imported (ModuleName "Data.Array") (Name "insertAt")) 0)
-                                        (Ref (Local (Name "i")) 0)
+                                        (refImported (ModuleName "Data.Array") (Name "insertAt") 0)
+                                        (refLocal (Name "i") 0)
                                     )
-                                    (Ref (Local (Name "x")) 0)
+                                    (refLocal (Name "x") 0)
                                 )
-                                (Ref (Local (Name "ys")) 0)
+                                (refLocal (Name "ys") 0)
                             )
                         )
                     )

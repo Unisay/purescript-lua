@@ -1,13 +1,13 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "CtorSameName", Ctor ProductType
+      ( Name "CtorSameName", Ctor Nothing ProductType
         ( ModuleName "Golden.TestDataDeclarations2" )
         ( TyName "TySameName" )
         ( CtorName "CtorSameName" ) []
       ),
-      ( Name "test", Abs ( Identity ParamUnused )
-        ( Identity ( Abs ( Identity ParamUnused ) ( Identity ( LiteralBool True ) ) ) )
+      ( Name "test", Abs Nothing ( ParamUnused Nothing )
+        ( Abs Nothing ( ParamUnused Nothing ) ( LiteralBool Nothing True ) )
       )
     ]
   }

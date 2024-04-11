@@ -8,9 +8,9 @@ import Language.PureScript.Backend.IR.Types
   ( Exp
   , Name (..)
   , Qualified (..)
+  , bindingNames
   , countFreeRef
   , countFreeRefs
-  , groupingNames
   , listGrouping
   , traverseExpBottomUp
   )
@@ -47,13 +47,10 @@ collectBoundNames ∷ Exp → Set Name
 collectBoundNames =
   (`execAccum` Set.empty) . traverseExpBottomUp @_ @(Accum (Set Name)) \e →
     case e of
-      IR.Abs (IR.unAnn → IR.ParamNamed name) _body →
+      IR.Abs _ann (IR.ParamNamed _paramAnn name) _body →
         e <$ add (Set.singleton name)
-      IR.Let groupings _body →
+      IR.Let _ann groupings _body →
         e <$ add do
           Set.fromList
-            [ IR.unAnn iname
-            | grouping ← toList groupings
-            , iname ← groupingNames grouping
-            ]
+            [iname | grouping ← toList groupings, iname ← bindingNames grouping]
       _ → pure e

@@ -3,173 +3,98 @@ UberModule
     [ Standalone
       ( QName
         { qnameModuleName = ModuleName "Golden.TestValues", qnameName = Name "f"
-        }, Abs ( Identity ParamUnused )
-        ( Identity ( LiteralBool True ) )
+        }, Abs Nothing ( ParamUnused Nothing ) ( LiteralBool Nothing True )
       )
     ], uberModuleExports =
     [
-      ( Name "a", LiteralInt 1 ),
-      ( Name "b", LiteralChar 'b' ),
-      ( Name "c", Let
+      ( Name "a", LiteralInt Nothing 1 ),
+      ( Name "b", LiteralChar Nothing 'b' ),
+      ( Name "c", Let Nothing
         ( Standalone
-          ( Identity
-            ( Name "v" ), Identity
-            ( Abs ( Identity ParamUnused ) ( Identity ( LiteralInt 0 ) ) )
-          ) :| []
+          ( Nothing, Name "v", Abs Nothing ( ParamUnused Nothing ) ( LiteralInt Nothing 0 ) ) :| []
         )
-        ( Identity
-          ( IfThenElse
-            ( Identity
-              ( Eq
-                ( Identity ( LiteralBool True ) )
-                ( Identity
-                  ( App
-                    ( Identity
-                      ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) 0 )
-                    )
-                    ( Identity ( LiteralInt 2 ) )
-                  )
-                )
-              )
-            )
-            ( Identity
-              ( IfThenElse
-                ( Identity
-                  ( Eq
-                    ( Identity ( LiteralBool True ) )
-                    ( Identity
-                      ( App
-                        ( Identity
-                          ( Ref ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) 0 )
-                        )
-                        ( Identity ( LiteralInt 1 ) )
-                      )
-                    )
-                  )
-                )
-                ( Identity ( LiteralInt 42 ) )
-                ( Identity
-                  ( App
-                    ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                    ( Identity ( LiteralBool True ) )
-                  )
-                )
-              )
-            )
-            ( Identity
-              ( App
-                ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                ( Identity ( LiteralBool True ) )
-              )
+        ( IfThenElse Nothing
+          ( Eq Nothing ( LiteralBool Nothing True )
+            ( App Nothing
+              ( Ref Nothing ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) 0 )
+              ( LiteralInt Nothing 2 )
             )
           )
+          ( IfThenElse Nothing
+            ( Eq Nothing ( LiteralBool Nothing True )
+              ( App Nothing
+                ( Ref Nothing ( Imported ( ModuleName "Golden.TestValues" ) ( Name "f" ) ) 0 )
+                ( LiteralInt Nothing 1 )
+              )
+            )
+            ( LiteralInt Nothing 42 )
+            ( App Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( LiteralBool Nothing True ) )
+          )
+          ( App Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( LiteralBool Nothing True ) )
         )
       ),
-      ( Name "J", Ctor SumType
+      ( Name "J", Ctor Nothing SumType
         ( ModuleName "Golden.TestCaseStatements" )
         ( TyName "M" )
         ( CtorName "J" )
         [ FieldName "value0" ]
       ),
-      ( Name "N", Ctor SumType
+      ( Name "N", Ctor Nothing SumType
         ( ModuleName "Golden.TestCaseStatements" )
         ( TyName "M" )
         ( CtorName "N" ) []
       ),
-      ( Name "d", Abs
-        ( Identity ( ParamNamed ( Name "m" ) ) )
-        ( Identity
-          ( Abs
-            ( Identity ( ParamNamed ( Name "n" ) ) )
-            ( Identity
-              ( Abs
-                ( Identity ( ParamNamed ( Name "x" ) ) )
-                ( Identity
-                  ( Let
-                    ( Standalone
-                      ( Identity
-                        ( Name "v" ), Identity
-                        ( Abs ( Identity ParamUnused )
-                          ( Identity
-                            ( IfThenElse
-                              ( Identity
-                                ( Eq
-                                  ( Identity ( LiteralChar 'y' ) )
-                                  ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
-                                )
-                              )
-                              ( Identity ( LiteralInt 0 ) )
-                              ( Identity ( LiteralInt 1 ) )
-                            )
-                          )
-                        )
-                      ) :| []
+      ( Name "d", Abs Nothing
+        ( ParamNamed Nothing ( Name "m" ) )
+        ( Abs Nothing
+          ( ParamNamed Nothing ( Name "n" ) )
+          ( Abs Nothing
+            ( ParamNamed Nothing ( Name "x" ) )
+            ( Let Nothing
+              ( Standalone
+                ( Nothing, Name "v", Abs Nothing ( ParamUnused Nothing )
+                  ( IfThenElse Nothing
+                    ( Eq Nothing
+                      ( LiteralChar Nothing 'y' )
+                      ( Ref Nothing ( Local ( Name "x" ) ) 0 )
                     )
-                    ( Identity
-                      ( IfThenElse
-                        ( Identity
-                          ( Eq
-                            ( Identity ( LiteralChar 'x' ) )
-                            ( Identity ( Ref ( Local ( Name "x" ) ) 0 ) )
-                          )
-                        )
-                        ( Identity
-                          ( IfThenElse
-                            ( Identity
-                              ( Eq
-                                ( Identity ( LiteralString "Golden.TestCaseStatements∷M.J" ) )
-                                ( Identity
-                                  ( ReflectCtor ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) ) )
-                                )
-                              )
-                            )
-                            ( Identity
-                              ( IfThenElse
-                                ( Identity
-                                  ( Eq
-                                    ( Identity ( LiteralString "Golden.TestCaseStatements∷M.N" ) )
-                                    ( Identity
-                                      ( ReflectCtor ( Identity ( Ref ( Local ( Name "n" ) ) 0 ) ) )
-                                    )
-                                  )
-                                )
-                                ( Identity
-                                  ( ObjectProp
-                                    ( Identity ( Ref ( Local ( Name "m" ) ) 0 ) )
-                                    ( PropName "value0" )
-                                  )
-                                )
-                                ( Identity
-                                  ( App
-                                    ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                                    ( Identity ( LiteralBool True ) )
-                                  )
-                                )
-                              )
-                            )
-                            ( Identity
-                              ( App
-                                ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                                ( Identity ( LiteralBool True ) )
-                              )
-                            )
-                          )
-                        )
-                        ( Identity
-                          ( App
-                            ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) )
-                            ( Identity ( LiteralBool True ) )
-                          )
-                        )
-                      )
+                    ( LiteralInt Nothing 0 )
+                    ( LiteralInt Nothing 1 )
+                  )
+                ) :| []
+              )
+              ( IfThenElse Nothing
+                ( Eq Nothing ( LiteralChar Nothing 'x' ) ( Ref Nothing ( Local ( Name "x" ) ) 0 ) )
+                ( IfThenElse Nothing
+                  ( Eq Nothing
+                    ( LiteralString Nothing "Golden.TestCaseStatements∷M.J" )
+                    ( ReflectCtor Nothing ( Ref Nothing ( Local ( Name "m" ) ) 0 ) )
+                  )
+                  ( IfThenElse Nothing
+                    ( Eq Nothing
+                      ( LiteralString Nothing "Golden.TestCaseStatements∷M.N" )
+                      ( ReflectCtor Nothing ( Ref Nothing ( Local ( Name "n" ) ) 0 ) )
+                    )
+                    ( ObjectProp Nothing
+                      ( Ref Nothing ( Local ( Name "m" ) ) 0 )
+                      ( PropName "value0" )
+                    )
+                    ( App Nothing
+                      ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( LiteralBool Nothing True )
                     )
                   )
+                  ( App Nothing
+                    ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( LiteralBool Nothing True )
+                  )
+                )
+                ( App Nothing
+                  ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( LiteralBool Nothing True )
                 )
               )
             )
           )
         )
       ),
-      ( Name "multipleGuards", LiteralInt 1 )
+      ( Name "multipleGuards", LiteralInt Nothing 1 )
     ]
   }

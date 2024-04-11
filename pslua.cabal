@@ -125,6 +125,7 @@ library
     Language.PureScript.Backend
     Language.PureScript.Backend.IR
     Language.PureScript.Backend.IR.DCE
+    Language.PureScript.Backend.IR.Inliner
     Language.PureScript.Backend.IR.Linker
     Language.PureScript.Backend.IR.Optimizer
     Language.PureScript.Backend.IR.Query
@@ -140,6 +141,7 @@ library
     Language.PureScript.Backend.Lua.Traversal
     Language.PureScript.Backend.Lua.Types
     Language.PureScript.Backend.Types
+    Language.PureScript.Comments
     Language.PureScript.CoreFn
     Language.PureScript.CoreFn.Expr
     Language.PureScript.CoreFn.FromJSON

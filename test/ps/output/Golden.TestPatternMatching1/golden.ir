@@ -1,237 +1,159 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "Zero", Ctor SumType
+      ( Name "Zero", Ctor Nothing SumType
         ( ModuleName "Golden.TestPatternMatching1" )
         ( TyName "N" )
         ( CtorName "Zero" ) []
       ),
-      ( Name "Succ", Ctor SumType
+      ( Name "Succ", Ctor Nothing SumType
         ( ModuleName "Golden.TestPatternMatching1" )
         ( TyName "N" )
         ( CtorName "Succ" )
         [ FieldName "value0" ]
       ),
-      ( Name "Num", Ctor SumType
+      ( Name "Num", Ctor Nothing SumType
         ( ModuleName "Golden.TestPatternMatching1" )
         ( TyName "E" )
         ( CtorName "Num" )
         [ FieldName "value0" ]
       ),
-      ( Name "Not", Ctor SumType
+      ( Name "Not", Ctor Nothing SumType
         ( ModuleName "Golden.TestPatternMatching1" )
         ( TyName "E" )
         ( CtorName "Not" )
         [ FieldName "value0" ]
       ),
-      ( Name "pat", Abs
-        ( Identity ( ParamNamed ( Name "e" ) ) )
-        ( Identity
-          ( IfThenElse
-            ( Identity
-              ( Eq
-                ( Identity ( LiteralString "Golden.TestPatternMatching1∷E.Not" ) )
-                ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) ) )
+      ( Name "pat", Abs Nothing
+        ( ParamNamed Nothing ( Name "e" ) )
+        ( IfThenElse Nothing
+          ( Eq Nothing
+            ( LiteralString Nothing "Golden.TestPatternMatching1∷E.Not" )
+            ( ReflectCtor Nothing ( Ref Nothing ( Local ( Name "e" ) ) 0 ) )
+          )
+          ( IfThenElse Nothing
+            ( Eq Nothing
+              ( LiteralString Nothing "Golden.TestPatternMatching1∷E.Num" )
+              ( ReflectCtor Nothing
+                ( ObjectProp Nothing
+                  ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                  ( PropName "value0" )
+                )
               )
             )
-            ( Identity
-              ( IfThenElse
-                ( Identity
-                  ( Eq
-                    ( Identity ( LiteralString "Golden.TestPatternMatching1∷E.Num" ) )
-                    ( Identity
-                      ( ReflectCtor
-                        ( Identity
-                          ( ObjectProp
-                            ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
+            ( IfThenElse Nothing
+              ( Eq Nothing
+                ( LiteralString Nothing "Golden.TestPatternMatching1∷N.Succ" )
+                ( ReflectCtor Nothing
+                  ( ObjectProp Nothing
+                    ( ObjectProp Nothing
+                      ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                      ( PropName "value0" )
+                    )
+                    ( PropName "value0" )
+                  )
+                )
+              )
+              ( LiteralInt Nothing 1 )
+              ( IfThenElse Nothing
+                ( Eq Nothing
+                  ( LiteralString Nothing "Golden.TestPatternMatching1∷N.Zero" )
+                  ( ReflectCtor Nothing
+                    ( ObjectProp Nothing
+                      ( ObjectProp Nothing
+                        ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                        ( PropName "value0" )
+                      )
+                      ( PropName "value0" )
+                    )
+                  )
+                )
+                ( LiteralInt Nothing 2 )
+                ( LiteralInt Nothing 6 )
+              )
+            )
+            ( IfThenElse Nothing
+              ( Eq Nothing
+                ( LiteralString Nothing "Golden.TestPatternMatching1∷E.Not" )
+                ( ReflectCtor Nothing
+                  ( ObjectProp Nothing
+                    ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                    ( PropName "value0" )
+                  )
+                )
+              )
+              ( IfThenElse Nothing
+                ( Eq Nothing
+                  ( LiteralString Nothing "Golden.TestPatternMatching1∷E.Num" )
+                  ( ReflectCtor Nothing
+                    ( ObjectProp Nothing
+                      ( ObjectProp Nothing
+                        ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                        ( PropName "value0" )
+                      )
+                      ( PropName "value0" )
+                    )
+                  )
+                )
+                ( IfThenElse Nothing
+                  ( Eq Nothing
+                    ( LiteralString Nothing "Golden.TestPatternMatching1∷N.Succ" )
+                    ( ReflectCtor Nothing
+                      ( ObjectProp Nothing
+                        ( ObjectProp Nothing
+                          ( ObjectProp Nothing
+                            ( Ref Nothing ( Local ( Name "e" ) ) 0 )
                             ( PropName "value0" )
                           )
+                          ( PropName "value0" )
                         )
+                        ( PropName "value0" )
                       )
                     )
                   )
+                  ( LiteralInt Nothing 3 )
+                  ( LiteralInt Nothing 6 )
                 )
-                ( Identity
-                  ( IfThenElse
-                    ( Identity
-                      ( Eq
-                        ( Identity ( LiteralString "Golden.TestPatternMatching1∷N.Succ" ) )
-                        ( Identity
-                          ( ReflectCtor
-                            ( Identity
-                              ( ObjectProp
-                                ( Identity
-                                  ( ObjectProp
-                                    ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                    ( PropName "value0" )
-                                  )
-                                )
-                                ( PropName "value0" )
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                    ( Identity ( LiteralInt 1 ) )
-                    ( Identity
-                      ( IfThenElse
-                        ( Identity
-                          ( Eq
-                            ( Identity ( LiteralString "Golden.TestPatternMatching1∷N.Zero" ) )
-                            ( Identity
-                              ( ReflectCtor
-                                ( Identity
-                                  ( ObjectProp
-                                    ( Identity
-                                      ( ObjectProp
-                                        ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                        ( PropName "value0" )
-                                      )
-                                    )
-                                    ( PropName "value0" )
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
-                        ( Identity ( LiteralInt 2 ) )
-                        ( Identity ( LiteralInt 6 ) )
-                      )
-                    )
-                  )
-                )
-                ( Identity
-                  ( IfThenElse
-                    ( Identity
-                      ( Eq
-                        ( Identity ( LiteralString "Golden.TestPatternMatching1∷E.Not" ) )
-                        ( Identity
-                          ( ReflectCtor
-                            ( Identity
-                              ( ObjectProp
-                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                ( PropName "value0" )
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                    ( Identity
-                      ( IfThenElse
-                        ( Identity
-                          ( Eq
-                            ( Identity ( LiteralString "Golden.TestPatternMatching1∷E.Num" ) )
-                            ( Identity
-                              ( ReflectCtor
-                                ( Identity
-                                  ( ObjectProp
-                                    ( Identity
-                                      ( ObjectProp
-                                        ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                        ( PropName "value0" )
-                                      )
-                                    )
-                                    ( PropName "value0" )
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
-                        ( Identity
-                          ( IfThenElse
-                            ( Identity
-                              ( Eq
-                                ( Identity ( LiteralString "Golden.TestPatternMatching1∷N.Succ" ) )
-                                ( Identity
-                                  ( ReflectCtor
-                                    ( Identity
-                                      ( ObjectProp
-                                        ( Identity
-                                          ( ObjectProp
-                                            ( Identity
-                                              ( ObjectProp
-                                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                                ( PropName "value0" )
-                                              )
-                                            )
-                                            ( PropName "value0" )
-                                          )
-                                        )
-                                        ( PropName "value0" )
-                                      )
-                                    )
-                                  )
-                                )
-                              )
-                            )
-                            ( Identity ( LiteralInt 3 ) )
-                            ( Identity ( LiteralInt 6 ) )
-                          )
-                        )
-                        ( Identity ( LiteralInt 6 ) )
-                      )
-                    )
-                    ( Identity ( LiteralInt 6 ) )
+                ( LiteralInt Nothing 6 )
+              )
+              ( LiteralInt Nothing 6 )
+            )
+          )
+          ( IfThenElse Nothing
+            ( Eq Nothing
+              ( LiteralString Nothing "Golden.TestPatternMatching1∷E.Num" )
+              ( ReflectCtor Nothing ( Ref Nothing ( Local ( Name "e" ) ) 0 ) )
+            )
+            ( IfThenElse Nothing
+              ( Eq Nothing
+                ( LiteralString Nothing "Golden.TestPatternMatching1∷N.Succ" )
+                ( ReflectCtor Nothing
+                  ( ObjectProp Nothing
+                    ( Ref Nothing ( Local ( Name "e" ) ) 0 )
+                    ( PropName "value0" )
                   )
                 )
               )
+              ( LiteralInt Nothing 4 )
+              ( LiteralInt Nothing 5 )
             )
-            ( Identity
-              ( IfThenElse
-                ( Identity
-                  ( Eq
-                    ( Identity ( LiteralString "Golden.TestPatternMatching1∷E.Num" ) )
-                    ( Identity ( ReflectCtor ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) ) ) )
-                  )
-                )
-                ( Identity
-                  ( IfThenElse
-                    ( Identity
-                      ( Eq
-                        ( Identity ( LiteralString "Golden.TestPatternMatching1∷N.Succ" ) )
-                        ( Identity
-                          ( ReflectCtor
-                            ( Identity
-                              ( ObjectProp
-                                ( Identity ( Ref ( Local ( Name "e" ) ) 0 ) )
-                                ( PropName "value0" )
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                    ( Identity ( LiteralInt 4 ) )
-                    ( Identity ( LiteralInt 5 ) )
-                  )
-                )
-                ( Identity ( LiteralInt 6 ) )
-              )
-            )
+            ( LiteralInt Nothing 6 )
           )
         )
       ),
-      ( Name "T", Ctor ProductType
+      ( Name "T", Ctor Nothing ProductType
         ( ModuleName "Golden.TestPatternMatching1" )
         ( TyName "Tuple" )
         ( CtorName "T" )
         [ FieldName "value0", FieldName "value1" ]
       ),
-      ( Name "fst", Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity
-          ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "value0" ) )
-        )
+      ( Name "fst", Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( PropName "value0" ) )
       ),
-      ( Name "snd", Abs
-        ( Identity ( ParamNamed ( Name "v" ) ) )
-        ( Identity
-          ( ObjectProp ( Identity ( Ref ( Local ( Name "v" ) ) 0 ) ) ( PropName "value1" ) )
-        )
+      ( Name "snd", Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( PropName "value1" ) )
       )
     ]
   }
