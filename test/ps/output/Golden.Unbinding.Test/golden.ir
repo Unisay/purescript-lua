@@ -1,0 +1,28 @@
+UberModule
+  { uberModuleBindings =
+    [ Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.Unbinding.Test", qnameName = Name "f"
+        }, Abs Nothing ( ParamUnused Nothing )
+        ( Abs Nothing ( ParamUnused Nothing ) ( LiteralInt Nothing 3 ) )
+      )
+    ], uberModuleExports =
+    [
+      ( Name "a", LiteralInt Nothing 1 ),
+      ( Name "b", LiteralInt Nothing 2 ),
+      ( Name "f", Ref Nothing ( Imported ( ModuleName "Golden.Unbinding.Test" ) ( Name "f" ) ) 0 ),
+      ( Name "c", App Nothing
+        ( App Nothing
+          ( Ref Nothing ( Imported ( ModuleName "Golden.Unbinding.Test" ) ( Name "f" ) ) 0 )
+          ( LiteralInt Nothing 1 )
+        )
+        ( App Nothing
+          ( App Nothing
+            ( Ref Nothing ( Imported ( ModuleName "Golden.Unbinding.Test" ) ( Name "f" ) ) 0 )
+            ( LiteralInt Nothing 2 )
+          )
+          ( LiteralInt Nothing 1 )
+        )
+      )
+    ]
+  }

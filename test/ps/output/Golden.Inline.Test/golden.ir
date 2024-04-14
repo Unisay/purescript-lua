@@ -1,0 +1,2 @@
+UberModule
+  { uberModuleBindings = [], uberModuleExports = [ ( Name "main", LiteralInt Nothing 1 ) ] }

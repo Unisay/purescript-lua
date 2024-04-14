@@ -4,10 +4,13 @@ import Control.Monad.Trans.Accum (Accum, add, execAccum)
 import Data.Map qualified as Map
 import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
+import Language.PureScript.Backend.IR.Names
+  ( Name (Name)
+  , Qualified (Imported, Local)
+  , runModuleName
+  )
 import Language.PureScript.Backend.IR.Types
   ( Exp
-  , Name (..)
-  , Qualified (..)
   , bindingNames
   , countFreeRef
   , countFreeRefs
@@ -15,7 +18,6 @@ import Language.PureScript.Backend.IR.Types
   , traverseExpBottomUp
   )
 import Language.PureScript.Backend.IR.Types qualified as IR
-import Language.PureScript.Names (runModuleName)
 
 usesRuntimeLazy ∷ UberModule → Bool
 usesRuntimeLazy UberModule {uberModuleBindings, uberModuleExports} =

@@ -8,8 +8,16 @@ import Data.Map qualified as Map
 import Data.MonoidMap (MonoidMap)
 import Data.MonoidMap qualified as MMap
 import Language.PureScript.Backend.IR.Inliner qualified as Inliner
-import Language.PureScript.Names (ModuleName, runModuleName)
-import Quiet (Quiet (..))
+import Language.PureScript.Backend.IR.Names
+  ( CtorName (renderCtorName)
+  , FieldName
+  , ModuleName
+  , Name (Name)
+  , PropName
+  , Qualified (..)
+  , TyName (renderTyName)
+  , runModuleName
+  )
 import Prelude hiding (show)
 
 type Ann = Maybe Inliner.Annotation
@@ -144,49 +152,6 @@ ctorId modName tyName ctorName =
     <> renderTyName tyName
     <> "."
     <> renderCtorName ctorName
-
---------------------------------------------------------------------------------
--- Names -----------------------------------------------------------------------
-
-newtype Name = Name {nameToText ∷ Text}
-  deriving newtype (Eq, Ord)
-  deriving stock (Generic)
-  deriving (Show) via (Quiet Name)
-
-data QName = QName {qnameModuleName ∷ ModuleName, qnameName ∷ Name}
-  deriving stock (Eq, Ord, Show)
-
-printQName ∷ QName → Text
-printQName QName {..} =
-  runModuleName qnameModuleName <> "∷" <> nameToText qnameName
-
-newtype TyName = TyName {renderTyName ∷ Text}
-  deriving newtype (Eq, Ord)
-  deriving stock (Generic)
-  deriving (Show) via (Quiet TyName)
-
-newtype CtorName = CtorName {renderCtorName ∷ Text}
-  deriving newtype (Eq, Ord)
-  deriving stock (Generic)
-  deriving (Show) via (Quiet CtorName)
-
--- TODO: is it used at all?
-newtype FieldName = FieldName {renderFieldName ∷ Text}
-  deriving newtype (Eq, Ord)
-  deriving stock (Generic)
-  deriving (Show) via (Quiet FieldName)
-
-newtype PropName = PropName {renderPropName ∷ Text}
-  deriving newtype (Eq, Ord)
-  deriving stock (Generic)
-  deriving (Show) via (Quiet PropName)
-
-data Qualified a = Local a | Imported ModuleName a
-  deriving stock (Show, Eq, Ord, Functor)
-
-qualifiedQName ∷ QName → Qualified Name
-qualifiedQName QName {qnameModuleName, qnameName} =
-  Imported qnameModuleName qnameName
 
 --------------------------------------------------------------------------------
 -- Instances -------------------------------------------------------------------

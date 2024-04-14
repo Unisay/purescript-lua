@@ -4,6 +4,13 @@ module Language.PureScript.Backend.IR.Linker where
 
 import Data.Graph (graphFromEdges', reverseTopSort)
 import Data.Map qualified as Map
+import Language.PureScript.Backend.IR.Names
+  ( ModuleName
+  , Name (..)
+  , PropName (PropName)
+  , QName (QName)
+  , Qualified (Imported, Local)
+  )
 import Language.PureScript.Backend.IR.Types
   ( Ann
   , Binding
@@ -11,18 +18,13 @@ import Language.PureScript.Backend.IR.Types
   , Grouping (..)
   , Index
   , Module (..)
-  , Name (..)
   , Parameter (ParamNamed, ParamUnused)
-  , PropName (..)
-  , QName (QName)
-  , Qualified (Imported, Local)
   , RawExp (..)
   , bindingNames
   , noAnn
   , objectProp
   , refImported
   )
-import Language.PureScript.Names (ModuleName)
 
 --------------------------------------------------------------------------------
 -- Data ------------------------------------------------------------------------

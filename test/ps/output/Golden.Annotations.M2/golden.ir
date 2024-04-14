@@ -1,0 +1,42 @@
+UberModule
+  { uberModuleBindings = [], uberModuleExports =
+    [
+      ( Name "inlineIntoMe", Abs Nothing
+        ( ParamNamed Nothing ( Name "i" ) )
+        ( App Nothing
+          ( Abs
+            ( Just ( Annotation InModule Always ) )
+            ( ParamNamed Nothing ( Name "v" ) )
+            ( IfThenElse Nothing
+              ( Eq Nothing ( LiteralInt Nothing 1 ) ( Ref Nothing ( Local ( Name "v" ) ) 0 ) )
+              ( LiteralInt Nothing 2 )
+              ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+            )
+          )
+          ( App Nothing
+            ( Abs
+              ( Just ( Annotation InModule Always ) )
+              ( ParamNamed Nothing ( Name "v" ) )
+              ( IfThenElse Nothing
+                ( Eq Nothing ( LiteralInt Nothing 1 ) ( Ref Nothing ( Local ( Name "v" ) ) 0 ) )
+                ( LiteralInt Nothing 2 )
+                ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+              )
+            )
+            ( App Nothing
+              ( Abs
+                ( Just ( Annotation InModule Always ) )
+                ( ParamNamed Nothing ( Name "v" ) )
+                ( IfThenElse Nothing
+                  ( Eq Nothing ( LiteralInt Nothing 1 ) ( Ref Nothing ( Local ( Name "v" ) ) 0 ) )
+                  ( LiteralInt Nothing 2 )
+                  ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+                )
+              )
+              ( Ref Nothing ( Local ( Name "i" ) ) 0 )
+            )
+          )
+        )
+      )
+    ]
+  }

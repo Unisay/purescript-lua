@@ -4,15 +4,24 @@ import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
 import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.DCE qualified as DCE
+import Language.PureScript.Backend.IR.Inliner
+  ( Annotation (..)
+  , InlineRecipe (..)
+  , InlineScope (InModule)
+  )
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
+import Language.PureScript.Backend.IR.Names
+  ( Name (..)
+  , QName
+  , Qualified (Local)
+  , qualifiedQName
+  )
 import Language.PureScript.Backend.IR.Query (collectBoundNames)
 import Language.PureScript.Backend.IR.Types
   ( Ann
   , Exp
   , Grouping (..)
-  , Name (..)
-  , QName (..)
-  , Qualified (..)
+  , Parameter (..)
   , RawExp (..)
   , RewriteMod (..)
   , RewriteRule
@@ -20,14 +29,14 @@ import Language.PureScript.Backend.IR.Types
   , bindingExprs
   , countFreeRef
   , countFreeRefs
+  , getAnn
   , isNonRecursiveLiteral
   , literalBool
-  , qualifiedQName
   , rewriteExpTopDown
   , substitute
   , thenRewrite
+  , unIndex
   )
-import Language.PureScript.Backend.IR.Types qualified as IR
 
 optimizedUberModule ∷ UberModule → UberModule
 optimizedUberModule =
@@ -47,53 +56,53 @@ renameShadowedNamesInExpr scope = go
  where
   go ∷ Exp → Exp
   go = \case
-    IR.LiteralInt ann i →
-      IR.LiteralInt ann i
-    IR.LiteralFloat ann f →
-      IR.LiteralFloat ann f
-    IR.LiteralString ann s →
-      IR.LiteralString ann s
-    IR.LiteralChar ann c →
-      IR.LiteralChar ann c
-    IR.LiteralBool ann b →
-      IR.LiteralBool ann b
-    IR.LiteralArray ann as →
-      IR.LiteralArray ann (go <$> as)
-    IR.LiteralObject ann ps →
-      IR.LiteralObject ann (go <<$>> ps)
-    IR.ReflectCtor ann a →
-      IR.ReflectCtor ann (go a)
-    IR.Eq ann a b →
-      IR.Eq ann (go a) (go b)
-    IR.DataArgumentByIndex ann index a →
-      IR.DataArgumentByIndex ann index (go a)
-    IR.ArrayLength ann a →
-      IR.ArrayLength ann (go a)
-    IR.ArrayIndex ann a index →
-      IR.ArrayIndex ann (go a) index
-    IR.ObjectProp ann a prop →
-      IR.ObjectProp ann (go a) prop
-    IR.ObjectUpdate ann a ps →
-      IR.ObjectUpdate ann (go a) (go <<$>> ps)
-    IR.Abs ann param body →
-      IR.Abs ann param' (renameShadowedNamesInExpr scope' body)
+    LiteralInt ann i →
+      LiteralInt ann i
+    LiteralFloat ann f →
+      LiteralFloat ann f
+    LiteralString ann s →
+      LiteralString ann s
+    LiteralChar ann c →
+      LiteralChar ann c
+    LiteralBool ann b →
+      LiteralBool ann b
+    LiteralArray ann as →
+      LiteralArray ann (go <$> as)
+    LiteralObject ann ps →
+      LiteralObject ann (go <<$>> ps)
+    ReflectCtor ann a →
+      ReflectCtor ann (go a)
+    Eq ann a b →
+      Eq ann (go a) (go b)
+    DataArgumentByIndex ann index a →
+      DataArgumentByIndex ann index (go a)
+    ArrayLength ann a →
+      ArrayLength ann (go a)
+    ArrayIndex ann a index →
+      ArrayIndex ann (go a) index
+    ObjectProp ann a prop →
+      ObjectProp ann (go a) prop
+    ObjectUpdate ann a ps →
+      ObjectUpdate ann (go a) (go <<$>> ps)
+    Abs ann param body →
+      Abs ann param' (renameShadowedNamesInExpr scope' body)
      where
       (param', scope') =
         case param of
-          IR.ParamUnused _ann → (param, scope)
-          IR.ParamNamed paramAnn name →
-            first (IR.ParamNamed paramAnn) (withScopedName body scope name)
-    IR.App ann a b →
-      IR.App ann (go a) (go b)
-    IR.Ref ann qname index →
+          ParamUnused _ann → (param, scope)
+          ParamNamed paramAnn name →
+            first (ParamNamed paramAnn) (withScopedName body scope name)
+    App ann a b →
+      App ann (go a) (go b)
+    Ref ann qname index →
       case qname of
-        IR.Local lname
+        Local lname
           | Just renames ← Map.lookup lname scope
-          , Just rename ← renames !!? fromIntegral (IR.unIndex index) →
-              IR.Ref ann (IR.Local rename) 0
-        _ → IR.Ref ann qname index
-    IR.Let ann binds body →
-      IR.Let ann (NE.fromList (reverse binds')) body'
+          , Just rename ← renames !!? fromIntegral (unIndex index) →
+              Ref ann (Local rename) 0
+        _ → Ref ann qname index
+    Let ann binds body →
+      Let ann (NE.fromList (reverse binds')) body'
      where
       scope' ∷ RenamesInScope
       binds' ∷ [Grouping (Ann, Name, Exp)]
@@ -119,14 +128,14 @@ renameShadowedNamesInExpr scope = go
               let expr' = renameShadowedNamesInExpr sc' expr
                in (sc'', (ann', name', expr') : recBinds)
       body' = renameShadowedNamesInExpr scope' body
-    IR.IfThenElse ann i t e →
-      IR.IfThenElse ann (go i) (go t) (go e)
-    IR.Ctor ann aty mn ty ctr fs →
-      IR.Ctor ann aty mn ty ctr fs
-    IR.Exception ann m →
-      IR.Exception ann m
-    IR.ForeignImport ann m p ns →
-      IR.ForeignImport ann m p ns
+    IfThenElse ann i t e →
+      IfThenElse ann (go i) (go t) (go e)
+    Ctor ann aty mn ty ctr fs →
+      Ctor ann aty mn ty ctr fs
+    Exception ann m →
+      Exception ann m
+    ForeignImport ann m p ns →
+      ForeignImport ann m p ns
    where
     withScopedName ∷ Exp → Map Name [Name] → Name → (Name, Map Name [Name])
     withScopedName e sc name =
@@ -214,10 +223,12 @@ substituteInExports ∷ QName → Exp → [(Name, Exp)] → [(Name, Exp)]
 substituteInExports qname inlinee = map \case
   (name, expr) → (name, substitute (qualifiedQName qname) 0 inlinee expr)
 
-optimizedExpression ∷ RawExp Ann → RawExp Ann
+optimizedExpression ∷ Exp → Exp
 optimizedExpression =
   rewriteExpTopDown $
     constantFolding
+      `thenRewrite` betaReduce
+      `thenRewrite` betaReduceUnusedParams
       `thenRewrite` removeUnreachableThenBranch
       `thenRewrite` removeUnreachableElseBranch
       `thenRewrite` removeIfWithEqualBranches
@@ -236,6 +247,21 @@ constantFolding =
       Rewritten Stop $ literalBool $ a == b
     Eq _ (LiteralString _ a) (LiteralString _ b) →
       Rewritten Stop $ literalBool $ a == b
+    _ → NoChange
+
+-- \x -> (\y -> y + 1) x ===> (\y -> y + 1)
+betaReduce ∷ RewriteRule Ann
+betaReduce =
+  pure . \case
+    Abs _ (ParamNamed _ _) (App _ f (Ref _ (Local _) 0)) →
+      Rewritten Recurse f
+    _ → NoChange
+
+betaReduceUnusedParams ∷ RewriteRule Ann
+betaReduceUnusedParams =
+  pure . \case
+    App _ (Abs _ (ParamUnused _) body) _arg →
+      Rewritten Recurse body
     _ → NoChange
 
 removeIfWithEqualBranches ∷ RewriteRule Ann
@@ -289,4 +315,8 @@ isInlinableExpr expr =
     _ → False
 
   hasInlineAnnotation ∷ Exp → Bool
-  hasInlineAnnotation _ = False
+  hasInlineAnnotation =
+    getAnn >>> \case
+      Just (Annotation InModule Always) → True
+      Just (Annotation InModule Never) → False
+      _ → False

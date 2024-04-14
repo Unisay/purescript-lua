@@ -5,6 +5,7 @@ import Hedgehog (MonadGen)
 import Hedgehog.Corpus qualified as Corpus
 import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
+import Language.PureScript.Backend.IR.Names qualified as IR
 import Language.PureScript.Backend.IR.Types (noAnn)
 import Language.PureScript.Backend.IR.Types qualified as IR
 import Language.PureScript.Names (ModuleName, moduleNameFromString)

@@ -127,6 +127,7 @@ library
     Language.PureScript.Backend.IR.DCE
     Language.PureScript.Backend.IR.Inliner
     Language.PureScript.Backend.IR.Linker
+    Language.PureScript.Backend.IR.Names
     Language.PureScript.Backend.IR.Optimizer
     Language.PureScript.Backend.IR.Query
     Language.PureScript.Backend.IR.Types
@@ -159,17 +160,18 @@ test-suite spec
   main-is:        Main.hs
   other-modules:
     Hedgehog.Gen.Extended
-    Language.PureScript.Backend.IR.DCESpec
+    Language.PureScript.Backend.IR.DCE.Spec
     Language.PureScript.Backend.IR.Gen
-    Language.PureScript.Backend.IR.OptimizerSpec
-    Language.PureScript.Backend.IR.TypesSpec
-    Language.PureScript.Backend.IRSpec
-    Language.PureScript.Backend.Lua.DeadCodeEliminatorSpec
+    Language.PureScript.Backend.IR.Inliner.Spec
+    Language.PureScript.Backend.IR.Optimizer.Spec
+    Language.PureScript.Backend.IR.Spec
+    Language.PureScript.Backend.IR.Types.Spec
+    Language.PureScript.Backend.Lua.DeadCodeEliminator.Spec
     Language.PureScript.Backend.Lua.Gen
-    Language.PureScript.Backend.Lua.GoldenSpec
+    Language.PureScript.Backend.Lua.Golden.Spec
     Language.PureScript.Backend.Lua.Linker.Foreign.Spec
-    Language.PureScript.Backend.Lua.OptimizerSpec
-    Language.PureScript.Backend.Lua.PrinterSpec
+    Language.PureScript.Backend.Lua.Optimizer.Spec
+    Language.PureScript.Backend.Lua.Printer.Spec
     Test.Hspec.Expectations.Pretty
     Test.Hspec.Extra
     Test.Hspec.Golden

@@ -3,7 +3,7 @@ UberModule
     [
       ( Name "u", ObjectProp Nothing
         ( ForeignImport Nothing
-          ( ModuleName "Golden.TestReturnTableField" ) "golden/Golden/TestReturnTableField.purs"
+          ( ModuleName "Golden.TestReturnTableField" ) "golden/Golden/ReturnTableField/Test.purs"
           [ Name "u" ]
         )
         ( PropName "u" )

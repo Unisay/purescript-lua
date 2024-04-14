@@ -1,9 +1,0 @@
-UberModule
-  { uberModuleBindings = [], uberModuleExports =
-    [
-      ( Name "main", App Nothing
-        ( Abs Nothing ( ParamUnused Nothing ) ( LiteralInt Nothing 1 ) )
-        ( Abs Nothing ( ParamUnused Nothing ) ( LiteralInt Nothing 2 ) )
-      )
-    ]
-  }

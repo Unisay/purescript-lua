@@ -1,0 +1,16 @@
+UberModule
+  { uberModuleBindings = [], uberModuleExports =
+    [
+      ( Name "apply", Abs Nothing
+        ( ParamNamed Nothing ( Name "f1" ) )
+        ( Ref Nothing ( Local ( Name "f1" ) ) 0 )
+      ),
+      ( Name "f", Abs Nothing ( ParamUnused Nothing )
+        ( Abs Nothing ( ParamUnused Nothing )
+          ( Abs Nothing ( ParamUnused Nothing )
+            ( Abs Nothing ( ParamUnused Nothing ) ( LiteralString Nothing "ok" ) )
+          )
+        )
+      )
+    ]
+  }

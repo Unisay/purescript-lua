@@ -7,15 +7,18 @@ import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
 import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
+import Language.PureScript.Backend.IR.Names
+  ( ModuleName
+  , Name
+  , QName (..)
+  , Qualified (..)
+  )
 import Language.PureScript.Backend.IR.Types
   ( Ann
   , Exp
   , Grouping (..)
   , Index
-  , Name
   , Parameter (..)
-  , QName (..)
-  , Qualified (..)
   , RawExp (..)
   , RewriteMod (..)
   , Rewritten (..)
@@ -24,7 +27,6 @@ import Language.PureScript.Backend.IR.Types
   , listGrouping
   , rewriteExpTopDown
   )
-import Language.PureScript.Names (ModuleName)
 
 data EntryPoint = EntryPoint ModuleName [Name]
   deriving stock (Show)
