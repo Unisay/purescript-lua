@@ -69,9 +69,13 @@ runRepM
   ∷ Context
   → RepM a
   → Either CoreFnError (Tagged "needsRuntimeLazy" Bool, a)
-runRepM ctx (RepM m) =
-  runStateT m ctx <&> \(a, ctx') →
-    (Tagged . getAny $ needsRuntimeLazy ctx', a)
+runRepM ctx (RepM m) = do
+  (a, ctx') ← runStateT m ctx
+  let remainingAnnotations = annotations ctx'
+  unless (Map.null remainingAnnotations) do
+    Left . CoreFnError (Cfn.moduleName (contextModule ctx)) $
+      UnusedAnnotations remainingAnnotations
+  pure (Tagged . getAny $ needsRuntimeLazy ctx', a)
 
 mkModule
   ∷ Cfn.Module Cfn.Ann
@@ -119,6 +123,15 @@ parseAnnotations currentModule =
       & first
         (CoreFnError (Cfn.moduleName currentModule) . AnnotationParsingError)
 
+useAnnotation ∷ Name → RepM (Maybe Annotation)
+useAnnotation name = do
+  ctx ← get
+  let (ann, annotations') =
+        -- delete the annotation from the map returning the value
+        Map.updateLookupWithKey (\_ _ → Nothing) name (annotations ctx)
+  put $ ctx {annotations = annotations'}
+  pure ann
+
 mkImports ∷ RepM [ModuleName]
 mkImports = do
   Cfn.Module {moduleName, moduleImports} ← gets contextModule
@@ -135,8 +148,13 @@ mkReExports =
   Map.fromAscList . fmap (identToName <<$>>) . Map.toAscList
     <$> gets (contextModule >>> Cfn.moduleReExports)
 
-mkForeign ∷ RepM [Name]
-mkForeign = identToName <<$>> gets (contextModule >>> Cfn.moduleForeign)
+mkForeign ∷ RepM [(Ann, Name)]
+mkForeign = do
+  idents ← gets (contextModule >>> Cfn.moduleForeign)
+  forM idents \ident → do
+    let name = identToName ident
+    ann ← useAnnotation name
+    pure (ann, name)
 
 collectDataDeclarations
   ∷ Map ModuleName (Cfn.Module Cfn.Ann)
@@ -179,7 +197,7 @@ mkBinding ∷ Cfn.Bind Cfn.Ann → RepM Binding
 mkBinding = \case
   Cfn.NonRec _ann ident cfnExpr → do
     let name = identToName ident
-    ann ← gets $ annotations >>> Map.lookup name
+    ann ← useAnnotation name
     expr ← makeExprAnnotated ann cfnExpr
     pure $ Standalone (noAnn, name, expr)
   Cfn.Rec bindingGroup → do
@@ -324,7 +342,7 @@ mkLet ann binds expr = do
 -- The algorithm is based on this document: ------------------------------------
 -- https://julesjacobs.com/notes/patternmatching/patternmatching.pdf -----------
 
-mkCase ∷ Ann -> [CfnExp] → NonEmpty (Cfn.CaseAlternative Cfn.Ann) → RepM Exp
+mkCase ∷ Ann → [CfnExp] → NonEmpty (Cfn.CaseAlternative Cfn.Ann) → RepM Exp
 mkCase ann cfnExpressions alternatives = do
   expressions ← traverse makeExpr cfnExpressions
   -- Before making clauses, we need to prepare bindings
@@ -699,7 +717,10 @@ algebraicTy modName tyName = do
 --------------------------------------------------------------------------------
 -- Errors ----------------------------------------------------------------------
 
-throwContextualError ∷ CoreFnErrorReason → RepM a
+throwContextualError
+  ∷ (MonadState Context m, MonadError CoreFnError m)
+  ⇒ CoreFnErrorReason
+  → m a
 throwContextualError e = do
   currentModule ← gets (contextModule >>> Cfn.moduleName)
   throwError $ CoreFnError currentModule e
@@ -730,6 +751,7 @@ data CoreFnErrorReason
       TyName
   | UnicodeDecodeError UnicodeException
   | AnnotationParsingError (Megaparsec.ParseErrorBundle Text Void)
+  | UnusedAnnotations (Map Name Annotation)
 
 instance Show CoreFnErrorReason where
   show = \case
@@ -762,3 +784,5 @@ instance Show CoreFnErrorReason where
       "Unicode decode error: " <> displayException e
     AnnotationParsingError bundle →
       "Annotation parsing error: " <> Megaparsec.errorBundlePretty bundle
+    UnusedAnnotations anns →
+      "Unused annotations: " <> toString (pShow anns)

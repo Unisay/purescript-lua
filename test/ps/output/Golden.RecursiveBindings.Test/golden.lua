@@ -3,29 +3,25 @@ return {
     local no
     local yes
     no = function(v)
-      if true == v then
+      if v then
         return yes(false)
       else
-        return (function()
-          if false == v then
-            return yes(true)
-          else
-            return error("No patterns matched")
-          end
-        end)()
+        if false == v then
+          return yes(true)
+        else
+          return error("No patterns matched")
+        end
       end
     end
     yes = function(v)
-      if true == v then
+      if v then
         return no(false)
       else
-        return (function()
-          if false == v then
-            return no(true)
-          else
-            return error("No patterns matched")
-          end
-        end)()
+        if false == v then
+          return no(true)
+        else
+          return error("No patterns matched")
+        end
       end
     end
     return no(false)
@@ -34,29 +30,25 @@ return {
     local no
     local yes
     no = function(v)
-      if true == v then
+      if v then
         return yes(false)
       else
-        return (function()
-          if false == v then
-            return yes(true)
-          else
-            return error("No patterns matched")
-          end
-        end)()
+        if false == v then
+          return yes(true)
+        else
+          return error("No patterns matched")
+        end
       end
     end
     yes = function(v)
-      if true == v then
+      if v then
         return no(false)
       else
-        return (function()
-          if false == v then
-            return no(true)
-          else
-            return error("No patterns matched")
-          end
-        end)()
+        if false == v then
+          return no(true)
+        else
+          return error("No patterns matched")
+        end
       end
     end
     return no(false)

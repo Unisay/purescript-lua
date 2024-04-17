@@ -14,18 +14,14 @@ UberModule
           ( Nothing, Name "v", Abs Nothing ( ParamUnused Nothing ) ( LiteralInt Nothing 0 ) ) :| []
         )
         ( IfThenElse Nothing
-          ( Eq Nothing ( LiteralBool Nothing True )
-            ( App Nothing
-              ( Ref Nothing ( Imported ( ModuleName "Golden.Values.Test" ) ( Name "f" ) ) 0 )
-              ( LiteralInt Nothing 2 )
-            )
+          ( App Nothing
+            ( Ref Nothing ( Imported ( ModuleName "Golden.Values.Test" ) ( Name "f" ) ) 0 )
+            ( LiteralInt Nothing 2 )
           )
           ( IfThenElse Nothing
-            ( Eq Nothing ( LiteralBool Nothing True )
-              ( App Nothing
-                ( Ref Nothing ( Imported ( ModuleName "Golden.Values.Test" ) ( Name "f" ) ) 0 )
-                ( LiteralInt Nothing 1 )
-              )
+            ( App Nothing
+              ( Ref Nothing ( Imported ( ModuleName "Golden.Values.Test" ) ( Name "f" ) ) 0 )
+              ( LiteralInt Nothing 1 )
             )
             ( LiteralInt Nothing 42 )
             ( App Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( LiteralBool Nothing True ) )

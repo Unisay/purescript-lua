@@ -4,11 +4,7 @@ import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
 import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.DCE qualified as DCE
-import Language.PureScript.Backend.IR.Inliner
-  ( Annotation (..)
-  , InlineRecipe (..)
-  , InlineScope (InModule)
-  )
+import Language.PureScript.Backend.IR.Inliner (Annotation (..))
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Names
   ( Name (..)
@@ -228,6 +224,7 @@ optimizedExpression =
   rewriteExpTopDown $
     constantFolding
       `thenRewrite` betaReduce
+      `thenRewrite` etaReduce
       `thenRewrite` betaReduceUnusedParams
       `thenRewrite` removeUnreachableThenBranch
       `thenRewrite` removeUnreachableElseBranch
@@ -239,6 +236,9 @@ constantFolding =
   pure . \case
     Eq _ (LiteralBool _ a) (LiteralBool _ b) →
       Rewritten Stop $ literalBool $ a == b
+    Eq _ (LiteralBool _ True) b →
+      -- 'b' must be of type Bool
+      Rewritten Stop b
     Eq _ (LiteralInt _ a) (LiteralInt _ b) →
       Rewritten Stop $ literalBool $ a == b
     Eq _ (LiteralFloat _ a) (LiteralFloat _ b) →
@@ -249,12 +249,20 @@ constantFolding =
       Rewritten Stop $ literalBool $ a == b
     _ → NoChange
 
--- \x -> (\y -> y + 1) x ===> (\y -> y + 1)
+-- (λx. M) N ===> M[x := N]
 betaReduce ∷ RewriteRule Ann
 betaReduce =
   pure . \case
-    Abs _ (ParamNamed _ _) (App _ f (Ref _ (Local _) 0)) →
-      Rewritten Recurse f
+    App _ (Abs _ (ParamNamed _ param) body) r →
+      Rewritten Recurse $ substitute (Local param) 0 r body
+    _ → NoChange
+
+-- (λx. M x) where x not free in M ===> M
+etaReduce ∷ RewriteRule Ann
+etaReduce =
+  pure . \case
+    Abs _ (ParamNamed _ _param) (App _ m (Ref _ (Local _) 0)) →
+      Rewritten Recurse m
     _ → NoChange
 
 betaReduceUnusedParams ∷ RewriteRule Ann
@@ -317,6 +325,6 @@ isInlinableExpr expr =
   hasInlineAnnotation ∷ Exp → Bool
   hasInlineAnnotation =
     getAnn >>> \case
-      Just (Annotation InModule Always) → True
-      Just (Annotation InModule Never) → False
-      _ → False
+      Just Always → True
+      Just Never → False
+      Nothing → False

@@ -57,7 +57,6 @@ rewriteRulesInOrder =
   [ pushDeclarationsDownTheInnerScope
   , removeScopeWhenInsideEmptyFunction
   , reduceTableDefinitionAccessor
-  -- , collapseNestedFunctions
   ]
 
 type RewriteRule = Exp → Exp
@@ -89,14 +88,6 @@ pushDeclarationsDownTheInnerScope = \case
   isDeclaration = \case
     Local _ _ → True
     _ → False
-
-{-
-collapseNestedFunctions :: RewriteRule
-collapseNestedFunctions = \case
-  Function outerArgs [Return (Function innerArgs innerBody)] ->
-    Function (outerArgs <> innerArgs) innerBody
-  e -> e
--}
 
 removeScopeWhenInsideEmptyFunction ∷ RewriteRule
 removeScopeWhenInsideEmptyFunction = \case

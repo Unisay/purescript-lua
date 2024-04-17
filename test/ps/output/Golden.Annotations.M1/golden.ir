@@ -1,14 +1,29 @@
 UberModule
-  { uberModuleBindings = [], uberModuleExports =
+  { uberModuleBindings =
+    [ Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.Annotations.M1", qnameName = Name "foreign"
+        }, ForeignImport Nothing
+        ( ModuleName "Golden.Annotations.M1" ) "golden/Golden/Annotations/M1.purs"
+        [ ( Nothing, Name "dontInlineClosure" ), ( Just Always, Name "inlineMeLambda" ) ]
+      )
+    ], uberModuleExports =
     [
-      ( Name "inlineMe", Abs
-        ( Just ( Annotation InModule Always ) )
+      ( Name "inlineMe", Abs ( Just Always )
         ( ParamNamed Nothing ( Name "v" ) )
         ( IfThenElse Nothing
           ( Eq Nothing ( LiteralInt Nothing 1 ) ( Ref Nothing ( Local ( Name "v" ) ) 0 ) )
           ( LiteralInt Nothing 2 )
           ( Ref Nothing ( Local ( Name "v" ) ) 0 )
         )
+      ),
+      ( Name "dontInlineClosure", ObjectProp ( Just Always )
+        ( Ref Nothing ( Imported ( ModuleName "Golden.Annotations.M1" ) ( Name "foreign" ) ) 0 )
+        ( PropName "dontInlineClosure" )
+      ),
+      ( Name "inlineMeLambda", ObjectProp ( Just Always )
+        ( Ref Nothing ( Imported ( ModuleName "Golden.Annotations.M1" ) ( Name "foreign" ) ) 0 )
+        ( PropName "inlineMeLambda" )
       )
     ]
   }

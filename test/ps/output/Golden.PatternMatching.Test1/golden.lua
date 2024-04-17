@@ -14,57 +14,41 @@ return {
   end,
   pat = function(e)
     if "Golden.PatternMatching.Test1∷E.Not" == e["$ctor"] then
-      return (function()
-        if "Golden.PatternMatching.Test1∷E.Num" == e.value0["$ctor"] then
-          return (function()
-            if "Golden.PatternMatching.Test1∷N.Succ" == e.value0.value0["$ctor"] then
-              return 1
-            else
-              return (function()
-                if "Golden.PatternMatching.Test1∷N.Zero" == e.value0.value0["$ctor"] then
-                  return 2
-                else
-                  return 6
-                end
-              end)()
-            end
-          end)()
+      if "Golden.PatternMatching.Test1∷E.Num" == e.value0["$ctor"] then
+        if "Golden.PatternMatching.Test1∷N.Succ" == e.value0.value0["$ctor"] then
+          return 1
         else
-          return (function()
-            if "Golden.PatternMatching.Test1∷E.Not" == e.value0["$ctor"] then
-              return (function()
-                if "Golden.PatternMatching.Test1∷E.Num" == e.value0.value0["$ctor"] then
-                  return (function()
-                    if "Golden.PatternMatching.Test1∷N.Succ" == e.value0.value0.value0["$ctor"] then
-                      return 3
-                    else
-                      return 6
-                    end
-                  end)()
-                else
-                  return 6
-                end
-              end)()
+          if "Golden.PatternMatching.Test1∷N.Zero" == e.value0.value0["$ctor"] then
+            return 2
+          else
+            return 6
+          end
+        end
+      else
+        if "Golden.PatternMatching.Test1∷E.Not" == e.value0["$ctor"] then
+          if "Golden.PatternMatching.Test1∷E.Num" == e.value0.value0["$ctor"] then
+            if "Golden.PatternMatching.Test1∷N.Succ" == e.value0.value0.value0["$ctor"] then
+              return 3
             else
               return 6
             end
-          end)()
-        end
-      end)()
-    else
-      return (function()
-        if "Golden.PatternMatching.Test1∷E.Num" == e["$ctor"] then
-          return (function()
-            if "Golden.PatternMatching.Test1∷N.Succ" == e.value0["$ctor"] then
-              return 4
-            else
-              return 5
-            end
-          end)()
+          else
+            return 6
+          end
         else
           return 6
         end
-      end)()
+      end
+    else
+      if "Golden.PatternMatching.Test1∷E.Num" == e["$ctor"] then
+        if "Golden.PatternMatching.Test1∷N.Succ" == e.value0["$ctor"] then
+          return 4
+        else
+          return 5
+        end
+      else
+        return 6
+      end
     end
   end,
   T = function(value0)

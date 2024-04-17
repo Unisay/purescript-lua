@@ -1,25 +1,16 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "test", App Nothing
-        ( Abs Nothing
-          ( ParamNamed Nothing ( Name "v" ) )
-          ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "v" ) ) 0 ) ( PropName "elem" ) )
-        )
-        ( App Nothing
-          ( Abs Nothing
-            ( ParamNamed Nothing ( Name "r" ) )
-            ( LiteralObject Nothing
-              [
-                ( PropName "elem", ObjectProp Nothing
-                  ( Ref Nothing ( Local ( Name "r" ) ) 0 )
-                  ( PropName "elem" )
-                )
-              ]
+      ( Name "test", ObjectProp Nothing
+        ( LiteralObject Nothing
+          [
+            ( PropName "elem", ObjectProp Nothing
+              ( LiteralObject Nothing [ ( PropName "elem", LiteralInt Nothing 1 ) ] )
+              ( PropName "elem" )
             )
-          )
-          ( LiteralObject Nothing [ ( PropName "elem", LiteralInt Nothing 1 ) ] )
+          ]
         )
+        ( PropName "elem" )
       )
     ]
   }

@@ -3,13 +3,11 @@ Golden_PatternMatching_Test2_I_bat = function(n)
   if "Golden.PatternMatching.Test1∷N.Zero" == n["$ctor"] then
     return 1
   else
-    return (function()
-      if "Golden.PatternMatching.Test1∷N.Succ" == n["$ctor"] then
-        return Golden_PatternMatching_Test2_I_bat(n.value0)
-      else
-        return error("No patterns matched")
-      end
-    end)()
+    if "Golden.PatternMatching.Test1∷N.Succ" == n["$ctor"] then
+      return Golden_PatternMatching_Test2_I_bat(n.value0)
+    else
+      return error("No patterns matched")
+    end
   end
 end
 return {
@@ -40,43 +38,31 @@ return {
   end,
   pat = function(e)
     if "Golden.PatternMatching.Test2∷N.Add" == e["$ctor"] then
-      return (function()
-        if "Golden.PatternMatching.Test2∷N.Zero" == e.value1["$ctor"] then
-          return (function()
-            if "Golden.PatternMatching.Test2∷N.Add" == e.value0["$ctor"] then
-              return 1
-            else
-              return (function()
-                if "Golden.PatternMatching.Test2∷N.Mul" == e.value0["$ctor"] then
-                  return 2
-                else
-                  return 5
-                end
-              end)()
-            end
-          end)()
+      if "Golden.PatternMatching.Test2∷N.Zero" == e.value1["$ctor"] then
+        if "Golden.PatternMatching.Test2∷N.Add" == e.value0["$ctor"] then
+          return 1
         else
-          return (function()
-            if "Golden.PatternMatching.Test2∷N.Mul" == e.value1["$ctor"] then
-              return 3
-            else
-              return (function()
-                if "Golden.PatternMatching.Test2∷N.Add" == e.value1["$ctor"] then
-                  return 4
-                else
-                  return (function()
-                    if "Golden.PatternMatching.Test2∷N.Zero" == e.value1["$ctor"] then
-                      return 5
-                    else
-                      return 6
-                    end
-                  end)()
-                end
-              end)()
-            end
-          end)()
+          if "Golden.PatternMatching.Test2∷N.Mul" == e.value0["$ctor"] then
+            return 2
+          else
+            return 5
+          end
         end
-      end)()
+      else
+        if "Golden.PatternMatching.Test2∷N.Mul" == e.value1["$ctor"] then
+          return 3
+        else
+          if "Golden.PatternMatching.Test2∷N.Add" == e.value1["$ctor"] then
+            return 4
+          else
+            if "Golden.PatternMatching.Test2∷N.Zero" == e.value1["$ctor"] then
+              return 5
+            else
+              return 6
+            end
+          end
+        end
+      end
     else
       return 6
     end

@@ -88,36 +88,26 @@ Effect_I_applicativeEffect = {
 }
 Effect_I__S___lazy_functorEffect = _S___runtime_lazy("functorEffect")(function( unused4 )
   return {
-    map = (function(dictApplicative)
-      return function(f)
-        return (function(dict)
-          return dict.apply
-        end)(dictApplicative.Apply0(Prim_I_undefined))(Control_Applicative_I_pure(dictApplicative)(f))
-      end
-    end)(Effect_I_applicativeEffect)
+    map = function(f)
+      return (Effect_I_applicativeEffect.Apply0(Prim_I_undefined)).apply(Control_Applicative_I_pure(Effect_I_applicativeEffect)(f))
+    end
   }
 end)
 Effect_I__S___lazy_applyEffect = _S___runtime_lazy("applyEffect")(function( unused6 )
   return {
-    apply = (function(dictMonad)
+    apply = (function()
       return function(f)
-        local bind = (function(dict)
-          return dict.bind
-        end)(dictMonad.Bind1(Prim_I_undefined))
+        local bind = (Effect_I_monadEffect.Bind1(Prim_I_undefined)).bind
         return function(a)
           return bind(f)(function(fPrime)
             return bind(a)(function(aPrime)
-              return Control_Applicative_I_pure(dictMonad.Applicative0(Prim_I_undefined))(fPrime(aPrime))
+              return Control_Applicative_I_pure(Effect_I_monadEffect.Applicative0(Prim_I_undefined))(fPrime(aPrime))
             end)
           end)
         end
       end
-    end)(Effect_I_monadEffect),
+    end)(),
     Functor0 = function(unused5) return Effect_I__S___lazy_functorEffect(0) end
   }
 end)
-return {
-  main = (function(dictApplicative)
-    return Control_Applicative_I_pure(dictApplicative)(nil)
-  end)(Effect_I_applicativeEffect)
-}
+return { main = Control_Applicative_I_pure(Effect_I_applicativeEffect)(nil) }

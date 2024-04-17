@@ -4,6 +4,7 @@ module Language.PureScript.Backend.IR.Linker where
 
 import Data.Graph (graphFromEdges', reverseTopSort)
 import Data.Map qualified as Map
+import Language.PureScript.Backend.IR.Inliner qualified as Inline
 import Language.PureScript.Backend.IR.Names
   ( ModuleName
   , Name (..)
@@ -22,7 +23,6 @@ import Language.PureScript.Backend.IR.Types
   , RawExp (..)
   , bindingNames
   , noAnn
-  , objectProp
   , refImported
   )
 
@@ -81,10 +81,13 @@ foreignBindings Module {moduleName, modulePath, moduleForeigns} =
     ]
 
   foreignNamesBindings ∷ [Grouping (QName, Exp)] =
-    moduleForeigns <&> \name →
+    moduleForeigns <&> \(_ann, name) →
       Standalone
         ( QName moduleName name
-        , objectProp foreignModuleRef (PropName (nameToText name))
+        , ObjectProp
+            (Just Inline.Always)
+            foreignModuleRef
+            (PropName (nameToText name))
         )
 
 qualifiedModuleBindings ∷ Module → [Grouping (QName, Exp)]
@@ -98,7 +101,7 @@ qualifiedModuleBindings Module {moduleName, moduleBindings, moduleForeigns} =
     (QName moduleName name, qualifyTopRefs moduleName topRefs expr)
    where
     topRefs ∷ Map Name Index = Map.fromList do
-      (,0) <$> ((moduleBindings >>= bindingNames) <> moduleForeigns)
+      (,0) <$> ((moduleBindings >>= bindingNames) <> fmap snd moduleForeigns)
 
 qualifyTopRefs ∷ ModuleName → Map Name Index → Exp → Exp
 qualifyTopRefs moduleName = go

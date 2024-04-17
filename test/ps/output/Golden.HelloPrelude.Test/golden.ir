@@ -5,7 +5,14 @@ UberModule
         { qnameModuleName = ModuleName "Effect", qnameName = Name "foreign"
         }, ForeignImport Nothing
         ( ModuleName "Effect" ) ".spago/effect/v4.1.0/src/Effect.purs"
-        [ Name "pureE", Name "bindE", Name "untilE", Name "whileE", Name "forE", Name "foreachE" ]
+        [
+          ( Nothing, Name "pureE" ),
+          ( Nothing, Name "bindE" ),
+          ( Nothing, Name "untilE" ),
+          ( Nothing, Name "whileE" ),
+          ( Nothing, Name "forE" ),
+          ( Nothing, Name "foreachE" )
+        ]
       ), Standalone
       ( QName
         { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "pure"
@@ -31,7 +38,7 @@ UberModule
             { qnameModuleName = ModuleName "Effect", qnameName = Name "bindEffect"
             }, LiteralObject Nothing
             [
-              ( PropName "bind", ObjectProp Nothing
+              ( PropName "bind", ObjectProp ( Just Always )
                 ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "foreign" ) ) 0 )
                 ( PropName "bindE" )
               ),
@@ -49,7 +56,7 @@ UberModule
             { qnameModuleName = ModuleName "Effect", qnameName = Name "applicativeEffect"
             }, LiteralObject Nothing
             [
-              ( PropName "pure", ObjectProp Nothing
+              ( PropName "pure", ObjectProp ( Just Always )
                 ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "foreign" ) ) 0 )
                 ( PropName "pureE" )
               ),
@@ -73,44 +80,32 @@ UberModule
             ( Abs Nothing ( ParamUnused Nothing )
               ( LiteralObject Nothing
                 [
-                  ( PropName "map", App Nothing
-                    ( Abs Nothing
-                      ( ParamNamed Nothing ( Name "dictApplicative" ) )
-                      ( Abs Nothing
-                        ( ParamNamed Nothing ( Name "f" ) )
+                  ( PropName "map", Abs Nothing
+                    ( ParamNamed Nothing ( Name "f" ) )
+                    ( App Nothing
+                      ( ObjectProp Nothing
                         ( App Nothing
-                          ( App Nothing
-                            ( Abs Nothing
-                              ( ParamNamed Nothing ( Name "dict" ) )
-                              ( ObjectProp Nothing
-                                ( Ref Nothing ( Local ( Name "dict" ) ) 0 )
-                                ( PropName "apply" )
-                              )
+                          ( ObjectProp Nothing
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
                             )
-                            ( App Nothing
-                              ( ObjectProp Nothing
-                                ( Ref Nothing ( Local ( Name "dictApplicative" ) ) 0 )
-                                ( PropName "Apply0" )
-                              )
-                              ( Ref Nothing
-                                ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
-                              )
-                            )
+                            ( PropName "Apply0" )
                           )
-                          ( App Nothing
-                            ( App Nothing
-                              ( Ref Nothing
-                                ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0
-                              )
-                              ( Ref Nothing ( Local ( Name "dictApplicative" ) ) 0 )
-                            )
-                            ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                          ( Ref Nothing ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
+                        )
+                        ( PropName "apply" )
+                      )
+                      ( App Nothing
+                        ( App Nothing
+                          ( Ref Nothing
+                            ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0
+                          )
+                          ( Ref Nothing
+                            ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
                           )
                         )
+                        ( Ref Nothing ( Local ( Name "f" ) ) 0 )
                       )
-                    )
-                    ( Ref Nothing
-                      ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
                     )
                   )
                 ]
@@ -127,74 +122,65 @@ UberModule
             ( Abs Nothing ( ParamUnused Nothing )
               ( LiteralObject Nothing
                 [
-                  ( PropName "apply", App Nothing
-                    ( Abs Nothing
-                      ( ParamNamed Nothing ( Name "dictMonad" ) )
-                      ( Let Nothing
-                        ( Standalone
-                          ( Nothing, Name "bind", App Nothing
-                            ( Abs Nothing
-                              ( ParamNamed Nothing ( Name "dict" ) )
-                              ( ObjectProp Nothing
-                                ( Ref Nothing ( Local ( Name "dict" ) ) 0 )
-                                ( PropName "bind" )
-                              )
+                  ( PropName "apply", Let Nothing
+                    ( Standalone
+                      ( Nothing, Name "bind", ObjectProp Nothing
+                        ( App Nothing
+                          ( ObjectProp Nothing
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Effect" ) ( Name "monadEffect" ) ) 0
                             )
-                            ( App Nothing
-                              ( ObjectProp Nothing
-                                ( Ref Nothing ( Local ( Name "dictMonad" ) ) 0 )
-                                ( PropName "Bind1" )
-                              )
-                              ( Ref Nothing
-                                ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
-                              )
-                            )
-                          ) :| []
+                            ( PropName "Bind1" )
+                          )
+                          ( Ref Nothing ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
                         )
-                        ( Abs Nothing
-                          ( ParamNamed Nothing ( Name "f" ) )
+                        ( PropName "bind" )
+                      ) :| []
+                    )
+                    ( Abs Nothing
+                      ( ParamNamed Nothing ( Name "f" ) )
+                      ( Abs Nothing
+                        ( ParamNamed Nothing ( Name "a" ) )
+                        ( App Nothing
+                          ( App Nothing
+                            ( Ref Nothing ( Local ( Name "bind" ) ) 0 )
+                            ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                          )
                           ( Abs Nothing
-                            ( ParamNamed Nothing ( Name "a" ) )
+                            ( ParamNamed Nothing ( Name "f'" ) )
                             ( App Nothing
                               ( App Nothing
                                 ( Ref Nothing ( Local ( Name "bind" ) ) 0 )
-                                ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                                ( Ref Nothing ( Local ( Name "a" ) ) 0 )
                               )
                               ( Abs Nothing
-                                ( ParamNamed Nothing ( Name "f'" ) )
+                                ( ParamNamed Nothing ( Name "a'" ) )
                                 ( App Nothing
                                   ( App Nothing
-                                    ( Ref Nothing ( Local ( Name "bind" ) ) 0 )
-                                    ( Ref Nothing ( Local ( Name "a" ) ) 0 )
-                                  )
-                                  ( Abs Nothing
-                                    ( ParamNamed Nothing ( Name "a'" ) )
+                                    ( Ref Nothing
+                                      ( Imported
+                                        ( ModuleName "Control.Applicative" )
+                                        ( Name "pure" )
+                                      ) 0
+                                    )
                                     ( App Nothing
-                                      ( App Nothing
+                                      ( ObjectProp Nothing
                                         ( Ref Nothing
                                           ( Imported
-                                            ( ModuleName "Control.Applicative" )
-                                            ( Name "pure" )
+                                            ( ModuleName "Effect" )
+                                            ( Name "monadEffect" )
                                           ) 0
                                         )
-                                        ( App Nothing
-                                          ( ObjectProp Nothing
-                                            ( Ref Nothing ( Local ( Name "dictMonad" ) ) 0 )
-                                            ( PropName "Applicative0" )
-                                          )
-                                          ( Ref Nothing
-                                            ( Imported
-                                              ( ModuleName "Prim" )
-                                              ( Name "undefined" )
-                                            ) 0
-                                          )
-                                        )
+                                        ( PropName "Applicative0" )
                                       )
-                                      ( App Nothing
-                                        ( Ref Nothing ( Local ( Name "f'" ) ) 0 )
-                                        ( Ref Nothing ( Local ( Name "a'" ) ) 0 )
+                                      ( Ref Nothing
+                                        ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
                                       )
                                     )
+                                  )
+                                  ( App Nothing
+                                    ( Ref Nothing ( Local ( Name "f'" ) ) 0 )
+                                    ( Ref Nothing ( Local ( Name "a'" ) ) 0 )
                                   )
                                 )
                               )
@@ -203,7 +189,6 @@ UberModule
                         )
                       )
                     )
-                    ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "monadEffect" ) ) 0 )
                   ),
                   ( PropName "Functor0", Abs Nothing ( ParamUnused Nothing )
                     ( App Nothing
@@ -222,23 +207,17 @@ UberModule
     ], uberModuleExports =
     [
       ( Name "main", App Nothing
-        ( Abs Nothing
-          ( ParamNamed Nothing ( Name "dictApplicative" ) )
-          ( App Nothing
-            ( App Nothing
-              ( Ref Nothing ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0 )
-              ( Ref Nothing ( Local ( Name "dictApplicative" ) ) 0 )
-            )
-            ( ObjectProp Nothing
-              ( ForeignImport Nothing
-                ( ModuleName "Data.Unit" ) ".spago/prelude/v7.1.0/src/Data/Unit.purs"
-                [ Name "unit" ]
-              )
-              ( PropName "unit" )
-            )
-          )
+        ( App Nothing
+          ( Ref Nothing ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0 )
+          ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0 )
         )
-        ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0 )
+        ( ObjectProp ( Just Always )
+          ( ForeignImport Nothing
+            ( ModuleName "Data.Unit" ) ".spago/prelude/v7.1.0/src/Data/Unit.purs"
+            [ ( Nothing, Name "unit" ) ]
+          )
+          ( PropName "unit" )
+        )
       )
     ]
   }

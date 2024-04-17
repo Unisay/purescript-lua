@@ -1,10 +1,10 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "u", ObjectProp Nothing
+      ( Name "u", ObjectProp ( Just Always )
         ( ForeignImport Nothing
           ( ModuleName "Golden.TestReturnTableField" ) "golden/Golden/ReturnTableField/Test.purs"
-          [ Name "u" ]
+          [ ( Nothing, Name "u" ) ]
         )
         ( PropName "u" )
       )

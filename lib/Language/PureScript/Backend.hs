@@ -13,6 +13,7 @@ import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Types (AppOrModule (..), entryPointModule)
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Path (Abs, Dir, Path, SomeBase)
+import Text.Pretty.Simple (pPrint)
 import Prelude hiding (show)
 
 data CompilationResult = CompilationResult
@@ -32,8 +33,8 @@ compileModules
   → AppOrModule
   → ExceptT (Variant e) IO CompilationResult
 compileModules outputDir foreignDir appOrModule = do
-  cfnModules ←
-    CoreFn.readModuleRecursively outputDir (entryPointModule appOrModule)
+  let entryModuleName = entryPointModule appOrModule
+  cfnModules ← CoreFn.readModuleRecursively outputDir entryModuleName
   let dataDecls = IR.collectDataDeclarations cfnModules
   irResults ← forM (Map.toList cfnModules) \(_psModuleName, cfnModule) →
     Oops.hoistEither $ IR.mkModule cfnModule dataDecls
@@ -42,12 +43,8 @@ compileModules outputDir foreignDir appOrModule = do
         Linker.makeUberModule (linkerMode appOrModule) irModules
           & optimizedUberModule
   let needsRuntimeLazy = Tagged (any untag needsRuntimeLazys)
-
-  unoptimizedChunk ←
-    Lua.fromUberModule foreignDir needsRuntimeLazy appOrModule uberModule
-  pure
-    CompilationResult {lua = optimizeChunk unoptimizedChunk, ir = uberModule}
-
+  chunk ← Lua.fromUberModule foreignDir needsRuntimeLazy appOrModule uberModule
+  pure CompilationResult {lua = optimizeChunk chunk, ir = uberModule}
 linkerMode ∷ AppOrModule → Linker.LinkMode
 linkerMode = \case
   AsModule psModuleName → Linker.LinkAsModule psModuleName

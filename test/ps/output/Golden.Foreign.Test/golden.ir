@@ -1,10 +1,10 @@
 UberModule
   { uberModuleBindings = [], uberModuleExports =
     [
-      ( Name "foo", ObjectProp Nothing
+      ( Name "foo", ObjectProp ( Just Always )
         ( ForeignImport Nothing
           ( ModuleName "Golden.Foreign.Test" ) "golden/Golden/Foreign/Test.purs"
-          [ Name "foo" ]
+          [ ( Nothing, Name "foo" ) ]
         )
         ( PropName "foo" )
       )

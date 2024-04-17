@@ -244,14 +244,14 @@ local1 name expr = Local name (Just (ann expr))
 local0 ∷ Name → Statement
 local0 name = Local name Nothing
 
-ifThenElse ∷ Exp → [Statement] → [Statement] → Statement
+ifThenElse ∷ Exp → Chunk → Chunk → Statement
 ifThenElse i t e = IfThenElse (ann i) (ann <$> t) (ann <$> e)
 
 return ∷ Exp → Statement
 return = Return . ann
 
-thunks ∷ [Statement] → Exp
-thunks ss = functionCall (Function [] (ann <$> ss)) []
+chunkToExpression ∷ Chunk → Exp
+chunkToExpression ss = functionCall (Function [] (ann <$> ss)) []
 
 -- Expressions -----------------------------------------------------------------
 
@@ -267,7 +267,7 @@ varIndex e1 e2 = Var (ann (VarIndex (ann e1) (ann e2)))
 varField ∷ Exp → Name → Exp
 varField e n = Var (ann (VarField (ann e) n))
 
-functionDef ∷ [Param] → [Statement] → Exp
+functionDef ∷ [Param] → Chunk → Exp
 functionDef params body = Function (ann <$> params) (ann <$> body)
 
 functionCall ∷ Exp → [Exp] → Exp
@@ -288,7 +288,7 @@ pun n = TableRowNV n (ann (varName n))
 thunk ∷ Exp → Exp
 thunk e = scope [Return (ann e)]
 
-scope ∷ [Statement] → Exp
+scope ∷ Chunk → Exp
 scope body = functionCall (Function [] (ann <$> body)) []
 
 -- Unary operators -------------------------------------------------------------

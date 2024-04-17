@@ -1,6 +1,6 @@
 module Language.PureScript.Backend.Lua
   ( fromUberModule
-  , fromExp
+  , fromIR
   , fromName
   , fromQName
   , qualifyName
@@ -68,26 +68,31 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
     bindings ←
       Linker.uberModuleBindings uber & foldMapM \case
         IR.Standalone (IR.QName modname name, irExp) → do
-          exp ← fromExp foreigns Set.empty modname irExp
-          pure $ DList.singleton (Lua.local1 (fromQName modname name) exp)
+          exp ← fromIR foreigns Set.empty modname irExp
+          pure $
+            DList.singleton
+              (Lua.local1 (fromQName modname name) (asExpression exp))
         IR.RecursiveGroup recGroup → do
           recBinds ← forM (toList recGroup) \(IR.QName modname name, irExp) →
-            (fromQName modname name,) <$> fromExp foreigns Set.empty modname irExp
+            (fromQName modname name,) . asExpression
+              <$> fromIR foreigns Set.empty modname irExp
           let declarations = Lua.local0 . fst <$> DList.fromList recBinds
               assignments = DList.fromList do
-                recBinds <&> \(name, exp) → Lua.assign (Lua.VarName name) exp
+                recBinds <&> \(name, exp) →
+                  Lua.assign (Lua.VarName name) exp
           pure $ declarations <> assignments
 
     returnExp ←
       case appOrModule of
         AsModule modname →
           Lua.table <$> forM (uberModuleExports uber) \(fromName → name, expr) →
-            Lua.tableRowNV name <$> fromExp foreigns mempty modname expr
+            Lua.tableRowNV name . asExpression
+              <$> fromIR foreigns mempty modname expr
         AsApplication modname ident → do
           case List.lookup name (uberModuleExports uber) of
             Just expr → do
-              entry ← fromExp foreigns mempty modname expr
-              pure $ Lua.functionCall entry []
+              entry ← fromIR foreigns mempty modname expr
+              pure $ Lua.functionCall (asExpression entry) []
             _ → Oops.throw $ AppEntryPointNotFound modname ident
          where
           name = IR.identToName ident
@@ -100,6 +105,11 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
     , [Fixture.objectUpdate | UsesObjectUpdate ← [usesObjectUpdate]]
     , DList.toList chunk
     ]
+
+asExpression ∷ Either Lua.Chunk Lua.Exp → Lua.Exp
+asExpression = \case
+  Left chunk → Lua.chunkToExpression chunk
+  Right expr → expr
 
 fromQName ∷ ModuleName → IR.Name → Lua.Name
 fromQName modname name = qualifyName modname (fromName name)
@@ -119,39 +129,39 @@ fromModuleName = Name.makeSafe . runModuleName
 fromPropName ∷ IR.PropName → Lua.Name
 fromPropName (IR.PropName name) = Name.makeSafe name
 
-fromExp
+fromIR
   ∷ ∀ e
    . e `CouldBe` Error
   ⇒ Tagged "foreign" (Path Abs Dir)
   → Set Lua.Name
   → ModuleName
   → IR.Exp
-  → LuaM e Lua.Exp
-fromExp foreigns topLevelNames modname ir = case ir of
+  → LuaM e (Either Lua.Chunk Lua.Exp)
+fromIR foreigns topLevelNames modname ir = case ir of
   IR.LiteralInt _ann i →
-    pure $ Lua.Integer i
+    pure . Right $ Lua.Integer i
   IR.LiteralFloat _ann d →
-    pure $ Lua.Float d
+    pure . Right $ Lua.Float d
   IR.LiteralString _ann s →
-    pure $ Lua.String s
+    pure . Right $ Lua.String s
   IR.LiteralChar _ann c →
-    pure $ Lua.String $ Text.singleton c
+    pure . Right $ Lua.String $ Text.singleton c
   IR.LiteralBool _ann b →
-    pure $ Lua.Boolean b
+    pure . Right $ Lua.Boolean b
   IR.LiteralArray _ann exprs →
-    Lua.table <$> forM (zip [1 ..] exprs) \(i, e) →
-      Lua.tableRowKV (Lua.Integer i) <$> go e
+    Right . Lua.table <$> forM (zip [1 ..] exprs) \(i, e) →
+      Lua.tableRowKV (Lua.Integer i) <$> goExp e
   IR.LiteralObject _ann kvs →
-    Lua.table <$> for kvs \(prop, exp) →
-      Lua.tableRowNV (fromPropName prop) <$> go exp
+    Right . Lua.table <$> for kvs \(prop, exp) →
+      Lua.tableRowNV (fromPropName prop) <$> goExp exp
   IR.ReflectCtor _ann e →
-    (`Lua.varIndex` keyCtor) <$> go e
+    Right . (`Lua.varIndex` keyCtor) <$> goExp e
   IR.DataArgumentByIndex _ann i e →
-    (`Lua.varField` Lua.unsafeName ("value" <> show i)) <$> go e
+    Right . (`Lua.varField` Lua.unsafeName ("value" <> show i)) <$> goExp e
   IR.Eq _ann l r →
-    Lua.equalTo <$> go l <*> go r
+    Right <$> liftA2 Lua.equalTo (goExp l) (goExp r)
   IR.Ctor _ann _algebraicTy ctorModName ctorTyName ctorName fieldNames →
-    pure $ foldr wrap value args
+    pure . Right $ foldr wrap value args
    where
     wrap name expr = Lua.functionDef [ParamNamed name] [Lua.return expr]
     value = Lua.table $ ctorRow : attributes
@@ -160,32 +170,33 @@ fromExp foreigns topLevelNames modname ir = case ir of
     args = Name.unsafeName . IR.renderFieldName <$> fieldNames
     attributes = args <&> ap Lua.tableRowNV Lua.varName
   IR.ArrayLength _ann e →
-    Lua.hash <$> go e
+    Right . Lua.hash <$> goExp e
   IR.ArrayIndex _ann expr index →
-    flip Lua.varIndex (Lua.Integer (fromIntegral index)) <$> go expr
+    Right . flip Lua.varIndex (Lua.Integer (fromIntegral index)) <$> goExp expr
   IR.ObjectProp _ann expr propName →
-    flip Lua.varField (fromPropName propName) <$> go expr
+    Right . flip Lua.varField (fromPropName propName) <$> goExp expr
   IR.ObjectUpdate _ann expr propValues → do
     add UsesObjectUpdate
-    obj ← go expr
+    obj ← goExp expr
     vals ←
       Lua.table <$> for (toList propValues) \(propName, e) →
-        Lua.tableRowNV (fromPropName propName) <$> go e
-    pure $ Lua.functionCall (Lua.varName Fixture.objectUpdateName) [obj, vals]
+        Lua.tableRowNV (fromPropName propName) <$> goExp e
+    pure . Right $
+      Lua.functionCall (Lua.varName Fixture.objectUpdateName) [obj, vals]
   IR.Abs _ann param expr → do
-    e ← go expr
+    e ← goExp expr
     luaParam ←
       Lua.ParamNamed
         <$> case param of
           IR.ParamUnused _ann → uniqueName "unused"
           IR.ParamNamed _ann name → pure (fromName name)
-    pure $ Lua.functionDef [luaParam] [Lua.return e]
+    pure . Right $ Lua.functionDef [luaParam] [Lua.return e]
   IR.App _ann expr param → do
-    e ← go expr
-    a ← go param
-    pure $ Lua.functionCall e [a]
+    e ← goExp expr
+    a ← goExp param
+    pure . Right $ Lua.functionCall e [a]
   IR.Ref _ann qualifiedName index →
-    pure case qualifiedName of
+    pure . Right $ case qualifiedName of
       IR.Local name
         | topLevelName ← fromQName modname name
         , Set.member topLevelName topLevelNames →
@@ -198,9 +209,8 @@ fromExp foreigns topLevelNames modname ir = case ir of
     body ← go bodyExp
     recs ←
       bindings & foldMapM \case
-        IR.Standalone (_ann, name, expr) → do
-          e ← go expr
-          pure $ DList.singleton (Lua.local1 (fromName name) e)
+        IR.Standalone (_ann, name, expr) →
+          DList.singleton . Lua.local1 (fromName name) <$> goExp expr
         IR.RecursiveGroup grp → do
           let binds =
                 toList grp <&> \(_ann, irName, _) → do
@@ -214,14 +224,22 @@ fromExp foreigns topLevelNames modname ir = case ir of
                   if Set.member (fromQName modname irName) topLevelNames
                     then fromQName modname irName
                     else fromName irName
-            Lua.assign (Lua.VarName name) <$> go expr
+            Lua.assign (Lua.VarName name) <$> goExp expr
           pure $ DList.fromList binds <> DList.fromList assignments
-    pure . Lua.scope . DList.toList $ DList.snoc recs (Lua.return body)
-  IR.IfThenElse _ann cond th el →
-    fromIfThenElse <$> go cond <*> go th <*> go el
+    pure . Left . DList.toList $
+      recs <> either DList.fromList (DList.singleton . Lua.return) body
+  IR.IfThenElse _ann cond th el → do
+    thenExp ← go th
+    elseExp ← go el
+    condExp ← goExp cond
+    let
+      thenBranch = either id (pure . Lua.return) thenExp
+      elseBranch = either id (pure . Lua.return) elseExp
+    pure $ Left [Lua.ifThenElse condExp thenBranch elseBranch]
   IR.Exception _ann msg →
-    pure $ Lua.error msg
-  IR.ForeignImport _ann _moduleName path (map fromName → names) → do
+    pure . Right $ Lua.error msg
+  IR.ForeignImport _ann _moduleName path annotatedNames → do
+    let foreignNames = fromName <<$>> annotatedNames
     Foreign.Source {header, exports} ←
       Oops.hoistEither =<< liftIO do
         left LinkerErrorForeign
@@ -234,24 +252,20 @@ fromExp foreigns topLevelNames modname ir = case ir of
             , -- Export tables can contain Lua-reserved words as keys
             -- for example: `{ ["for"] = 42 }`
             let name = Key.toSafeName key
-            , name `elem` names
+            , name `elem` fmap snd foreignNames
             ]
     pure case foreignHeader of
-      Nothing → foreignExports
-      Just fh → Lua.thunks (fh : [Lua.return foreignExports])
+      Nothing → Right foreignExports
+      Just fh → Left (fh : [Lua.return foreignExports])
  where
-  go ∷ IR.Exp → LuaM e Lua.Exp
-  go = fromExp foreigns topLevelNames modname
+  go ∷ IR.Exp → LuaM e (Either Lua.Chunk Lua.Exp)
+  go = fromIR foreigns topLevelNames modname
+
+  goExp ∷ IR.Exp → LuaM e Lua.Exp
+  goExp = asExpression <<$>> go
 
 keyCtor ∷ Lua.Exp
 keyCtor = Lua.String "$ctor"
-
-fromIfThenElse ∷ Lua.Exp → Lua.Exp → Lua.Exp → Lua.Exp
-fromIfThenElse cond thenExp elseExp = Lua.functionCall fun []
- where
-  thenBranch = [Lua.return thenExp]
-  elseBranch = [Lua.return elseExp]
-  fun = Lua.functionDef [] [Lua.ifThenElse cond thenBranch elseBranch]
 
 --------------------------------------------------------------------------------
 -- Helpers ---------------------------------------------------------------------

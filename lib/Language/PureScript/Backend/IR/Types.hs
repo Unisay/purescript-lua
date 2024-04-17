@@ -33,7 +33,7 @@ data Module = Module
   , moduleImports ∷ [ModuleName]
   , moduleExports ∷ [Name]
   , moduleReExports ∷ Map ModuleName [Name]
-  , moduleForeigns ∷ [Name]
+  , moduleForeigns ∷ [(Ann, Name)]
   , modulePath ∷ FilePath
   }
 
@@ -83,7 +83,7 @@ data RawExp ann
   | Let ann (NonEmpty (Grouping (ann, Name, RawExp ann))) (RawExp ann)
   | IfThenElse ann (RawExp ann) (RawExp ann) (RawExp ann)
   | Exception ann Text
-  | ForeignImport ann ModuleName FilePath [Name]
+  | ForeignImport ann ModuleName FilePath [(ann, Name)]
 
 deriving stock instance Show ann ⇒ Show (RawExp ann)
 deriving stock instance Eq ann ⇒ Eq (RawExp ann)
@@ -359,7 +359,10 @@ annotateExpM around annotateExp annotateParam annotateName =
         pure $ IfThenElse ann i' t' e'
       Ctor _ann mn aty ty ctr fs → pure $ Ctor ann mn aty ty ctr fs
       Exception _ann m → pure $ Exception ann m
-      ForeignImport _ann m p ns → pure $ ForeignImport ann m p ns
+      ForeignImport _ann m p ns → do
+        anns ← traverse (uncurry annotateName) ns
+        let ns' = zip anns (fmap snd ns)
+        pure $ ForeignImport ann m p ns'
  where
   mkAnn ∷ RawExp ann → m (RawExp ann')
   mkAnn = annotateExpM around annotateExp annotateParam annotateName

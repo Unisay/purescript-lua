@@ -7,9 +7,7 @@ UberModule
             ( Nothing, Name "no", Abs Nothing
               ( ParamNamed Nothing ( Name "v" ) )
               ( IfThenElse Nothing
-                ( Eq Nothing ( LiteralBool Nothing True )
-                  ( Ref Nothing ( Local ( Name "v" ) ) 0 )
-                )
+                ( Ref Nothing ( Local ( Name "v" ) ) 0 )
                 ( App Nothing
                   ( Ref Nothing ( Local ( Name "yes" ) ) 0 ) ( LiteralBool Nothing False )
                 )
@@ -28,9 +26,7 @@ UberModule
               ( Nothing, Name "yes", Abs Nothing
                 ( ParamNamed Nothing ( Name "v" ) )
                 ( IfThenElse Nothing
-                  ( Eq Nothing ( LiteralBool Nothing True )
-                    ( Ref Nothing ( Local ( Name "v" ) ) 0 )
-                  )
+                  ( Ref Nothing ( Local ( Name "v" ) ) 0 )
                   ( App Nothing
                     ( Ref Nothing ( Local ( Name "no" ) ) 0 ) ( LiteralBool Nothing False )
                   )
@@ -56,9 +52,7 @@ UberModule
             ( Nothing, Name "no", Abs Nothing
               ( ParamNamed Nothing ( Name "v" ) )
               ( IfThenElse Nothing
-                ( Eq Nothing ( LiteralBool Nothing True )
-                  ( Ref Nothing ( Local ( Name "v" ) ) 0 )
-                )
+                ( Ref Nothing ( Local ( Name "v" ) ) 0 )
                 ( App Nothing
                   ( Ref Nothing ( Local ( Name "yes" ) ) 0 ) ( LiteralBool Nothing False )
                 )
@@ -77,9 +71,7 @@ UberModule
               ( Nothing, Name "yes", Abs Nothing
                 ( ParamNamed Nothing ( Name "v" ) )
                 ( IfThenElse Nothing
-                  ( Eq Nothing ( LiteralBool Nothing True )
-                    ( Ref Nothing ( Local ( Name "v" ) ) 0 )
-                  )
+                  ( Ref Nothing ( Local ( Name "v" ) ) 0 )
                   ( App Nothing
                     ( Ref Nothing ( Local ( Name "no" ) ) 0 ) ( LiteralBool Nothing False )
                   )

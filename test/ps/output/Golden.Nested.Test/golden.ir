@@ -1,0 +1,43 @@
+UberModule
+  { uberModuleBindings =
+    [ Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.Nested.Test", qnameName = Name "isZero"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( IfThenElse Nothing
+          ( Eq Nothing
+            ( LiteralInt Nothing 0 )
+            ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+          ) ( LiteralBool Nothing True ) ( LiteralBool Nothing False )
+        )
+      )
+    ], uberModuleExports =
+    [
+      ( Name "isZero", Ref Nothing
+        ( Imported ( ModuleName "Golden.Nested.Test" ) ( Name "isZero" ) ) 0
+      ),
+      ( Name "main", IfThenElse Nothing
+        ( App Nothing
+          ( Ref Nothing ( Imported ( ModuleName "Golden.Nested.Test" ) ( Name "isZero" ) ) 0 )
+          ( LiteralInt Nothing 1 )
+        )
+        ( IfThenElse Nothing
+          ( App Nothing
+            ( Ref Nothing ( Imported ( ModuleName "Golden.Nested.Test" ) ( Name "isZero" ) ) 0 )
+            ( LiteralInt Nothing 1 )
+          )
+          ( LiteralString Nothing "ok" )
+          ( LiteralString Nothing "fine" )
+        )
+        ( IfThenElse Nothing
+          ( App Nothing
+            ( Ref Nothing ( Imported ( ModuleName "Golden.Nested.Test" ) ( Name "isZero" ) ) 0 )
+            ( LiteralInt Nothing 0 )
+          )
+          ( LiteralString Nothing "ha" )
+          ( LiteralString Nothing "cool" )
+        )
+      )
+    ]
+  }

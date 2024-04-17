@@ -40,19 +40,13 @@ UberModule
               )
             )
             ( App Nothing
-              ( Abs Nothing
-                ( ParamNamed Nothing ( Name "x2" ) )
-                ( App Nothing
-                  ( App Nothing
-                    ( Ref Nothing
-                      ( Imported ( ModuleName "Golden.NameShadowing.Test" ) ( Name "f" ) ) 0
-                    )
-                    ( Ref Nothing ( Local ( Name "x2" ) ) 0 )
-                  )
-                  ( LiteralInt Nothing 1 )
+              ( App Nothing
+                ( Ref Nothing
+                  ( Imported ( ModuleName "Golden.NameShadowing.Test" ) ( Name "f" ) ) 0
                 )
+                ( LiteralInt Nothing 42 )
               )
-              ( LiteralInt Nothing 42 )
+              ( LiteralInt Nothing 1 )
             )
           )
         )

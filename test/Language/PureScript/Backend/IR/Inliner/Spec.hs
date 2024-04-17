@@ -2,9 +2,7 @@ module Language.PureScript.Backend.IR.Inliner.Spec where
 
 import Hedgehog (MonadTest, failure, footnote, (===))
 import Language.PureScript.Backend.IR.Inliner
-  ( Annotation (..)
-  , InlineRecipe (..)
-  , InlineScope (..)
+  ( Annotation (Always, Never)
   , Pragma
   )
 import Language.PureScript.Backend.IR.Inliner qualified as Inliner
@@ -18,7 +16,10 @@ spec = describe "IR Inliner" do
   describe "parses annotations" do
     test "@inline foo always" do
       ann ← parseAnn "@inline foo always "
-      ann === (Name "foo", Annotation InModule Always)
+      ann === (Name "foo", Always)
+    test "@inline foo never" do
+      ann ← parseAnn "@inline foo never "
+      ann === (Name "foo", Never)
 
 --------------------------------------------------------------------------------
 -- Helpers ---------------------------------------------------------------------

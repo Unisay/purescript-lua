@@ -1,9 +1,31 @@
+local Golden_Annotations_M1_I_foreign = (function()
+  local step = 2
+  return {
+    dontInlineClosure = function(i)
+        return i + step
+      end,
+    inlineMeLambda = function(i)
+        return i + i
+      end
+  }
+end)()
 return {
   inlineIntoMe = function(i)
-    return (function(v)
-      if 1 == v then return 2 else return v end
-    end)((function(v)
-      if 1 == v then return 2 else return v end
-    end)((function(v) if 1 == v then return 2 else return v end end)(i)))
-  end
+    if 1 == (function()
+      if 1 == (function() if 1 == i then return 2 else return i end end)() then
+        return 2
+      else
+        if 1 == i then return 2 else return i end
+      end
+    end)() then
+      return 2
+    else
+      if 1 == (function() if 1 == i then return 2 else return i end end)() then
+        return 2
+      else
+        if 1 == i then return 2 else return i end
+      end
+    end
+  end,
+  inlineIntoMe2 = Golden_Annotations_M1_I_foreign.dontInlineClosure(Golden_Annotations_M1_I_foreign.inlineMeLambda(Golden_Annotations_M1_I_foreign.inlineMeLambda(17)))
 }
