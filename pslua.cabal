@@ -132,7 +132,7 @@ library
     Language.PureScript.Backend.IR.Query
     Language.PureScript.Backend.IR.Types
     Language.PureScript.Backend.Lua
-    Language.PureScript.Backend.Lua.DeadCodeEliminator
+    Language.PureScript.Backend.Lua.DCE
     Language.PureScript.Backend.Lua.Fixture
     Language.PureScript.Backend.Lua.Key
     Language.PureScript.Backend.Lua.Linker.Foreign
@@ -166,7 +166,7 @@ test-suite spec
     Language.PureScript.Backend.IR.Optimizer.Spec
     Language.PureScript.Backend.IR.Spec
     Language.PureScript.Backend.IR.Types.Spec
-    Language.PureScript.Backend.Lua.DeadCodeEliminator.Spec
+    Language.PureScript.Backend.Lua.DCE.Spec
     Language.PureScript.Backend.Lua.Gen
     Language.PureScript.Backend.Lua.Golden.Spec
     Language.PureScript.Backend.Lua.Linker.Foreign.Spec

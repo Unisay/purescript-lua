@@ -1,17 +1,17 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Language.PureScript.Backend.Lua.DeadCodeEliminator.Spec where
+module Language.PureScript.Backend.Lua.DCE.Spec where
 
 import Control.Monad.Accum (add)
 import Control.Monad.Trans.Accum (Accum, execAccum)
 import Hedgehog (annotateShow, forAll, (===))
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
-import Language.PureScript.Backend.Lua.DeadCodeEliminator
+import Language.PureScript.Backend.Lua.DCE
   ( DceMode (PreserveReturned)
   , MonadScopes (..)
   )
-import Language.PureScript.Backend.Lua.DeadCodeEliminator qualified as DCE
+import Language.PureScript.Backend.Lua.DCE qualified as DCE
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Gen qualified as Gen
 import Language.PureScript.Backend.Lua.Name qualified as Lua

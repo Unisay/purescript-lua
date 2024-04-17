@@ -244,7 +244,6 @@ fromIR foreigns topLevelNames modname ir = case ir of
       Oops.hoistEither =<< liftIO do
         left LinkerErrorForeign
           <$> Foreign.parseForeignSource (untag foreigns) path
-    let foreignHeader = Lua.ForeignSourceStat <$> header
     let foreignExports ∷ Lua.Exp =
           Lua.table
             [ Lua.tableRowNV name (Lua.ForeignSourceExp src)
@@ -254,9 +253,9 @@ fromIR foreigns topLevelNames modname ir = case ir of
             let name = Key.toSafeName key
             , name `elem` fmap snd foreignNames
             ]
-    pure case foreignHeader of
+    pure case header of
       Nothing → Right foreignExports
-      Just fh → Left (fh : [Lua.return foreignExports])
+      Just fh → Left $ Lua.ForeignSourceStat fh : [Lua.return foreignExports]
  where
   go ∷ IR.Exp → LuaM e (Either Lua.Chunk Lua.Exp)
   go = fromIR foreigns topLevelNames modname

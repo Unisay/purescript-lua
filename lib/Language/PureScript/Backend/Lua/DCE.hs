@@ -1,4 +1,4 @@
-module Language.PureScript.Backend.Lua.DeadCodeEliminator where
+module Language.PureScript.Backend.Lua.DCE where
 
 import Control.Monad.Trans.Accum (add, execAccum)
 import Data.DList (DList)
@@ -63,13 +63,13 @@ eliminateDeadCode dceMode chunk = do
       guard (Set.member vertex reachableVertices) $> preserved
 
   dceExpression ∷ ANode Lua.ExpF → ANode Lua.ExpF
-  dceExpression indexedExp@(Node key scope, expr) =
+  dceExpression originalExpr@(Node key scope, expr) =
     case expr of
-      Lua.Nil → indexedExp
-      Lua.Boolean _bool → indexedExp
-      Lua.Integer _int → indexedExp
-      Lua.Float _double → indexedExp
-      Lua.String _text → indexedExp
+      Lua.Nil → originalExpr
+      Lua.Boolean _bool → originalExpr
+      Lua.Integer _int → originalExpr
+      Lua.Float _double → originalExpr
+      Lua.String _text → originalExpr
       Lua.Function params body →
         dce (Lua.Function (dceParams params) (dceChunk body))
       Lua.TableCtor rows →
@@ -83,7 +83,7 @@ eliminateDeadCode dceMode chunk = do
       Lua.FunctionCall e es →
         dce (Lua.FunctionCall (dceExpression e) (dceExpression <$> es))
       Lua.ForeignSourceExp _src →
-        indexedExp
+        originalExpr
    where
     dce = (Node key scope,)
 

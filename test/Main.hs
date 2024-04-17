@@ -5,7 +5,7 @@ import Language.PureScript.Backend.IR.Inliner.Spec qualified as Inliner
 import Language.PureScript.Backend.IR.Optimizer.Spec qualified as IROptimizer
 import Language.PureScript.Backend.IR.Spec qualified as IR
 import Language.PureScript.Backend.IR.Types.Spec qualified as Types
-import Language.PureScript.Backend.Lua.DeadCodeEliminator.Spec qualified as LuaDce
+import Language.PureScript.Backend.Lua.DCE.Spec qualified as LuaDce
 import Language.PureScript.Backend.Lua.Golden.Spec qualified as Golden
 import Language.PureScript.Backend.Lua.Linker.Foreign.Spec qualified as LuaLinkerForeign
 import Language.PureScript.Backend.Lua.Optimizer.Spec qualified as LuaOptimizer
