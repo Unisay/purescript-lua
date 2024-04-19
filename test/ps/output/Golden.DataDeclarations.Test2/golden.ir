@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "CtorSameName", Ctor Nothing ProductType
         ( ModuleName "Golden.DataDeclarations.Test2" )

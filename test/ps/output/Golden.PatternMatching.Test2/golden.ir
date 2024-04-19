@@ -31,7 +31,7 @@ UberModule
           )
         ) :| []
       )
-    ], uberModuleExports =
+    ], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "Zero", Ctor Nothing SumType
         ( ModuleName "Golden.PatternMatching.Test2" )

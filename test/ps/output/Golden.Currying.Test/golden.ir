@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "apply", Abs Nothing
         ( ParamNamed Nothing ( Name "f1" ) )

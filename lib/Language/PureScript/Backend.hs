@@ -13,7 +13,6 @@ import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Types (AppOrModule (..), entryPointModule)
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Path (Abs, Dir, Path, SomeBase)
-import Text.Pretty.Simple (pPrint)
 import Prelude hiding (show)
 
 data CompilationResult = CompilationResult

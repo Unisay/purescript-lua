@@ -1,4 +1,4 @@
 UberModule
-  { uberModuleBindings = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
     [ ( Name "binding3", LiteralArray Nothing [ LiteralInt Nothing 1, LiteralInt Nothing 2 ] ) ]
   }

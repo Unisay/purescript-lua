@@ -3,7 +3,7 @@ module Language.PureScript.Backend.IR.Optimizer where
 import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
 import Data.Set qualified as Set
-import Language.PureScript.Backend.IR.DCE qualified as DCE
+import Language.PureScript.Backend.IR.DCE (eliminateDeadCode)
 import Language.PureScript.Backend.IR.Inliner (Annotation (..))
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Names
@@ -36,7 +36,20 @@ import Language.PureScript.Backend.IR.Types
 
 optimizedUberModule ∷ UberModule → UberModule
 optimizedUberModule =
-  renameShadowedNames . idempotently (DCE.eliminateDeadCode . optimizeModule)
+  idempotently (eliminateDeadCode . optimizeModule)
+    -- by merging foreign bindings into the main bindings, we can
+    -- unblock even more optimizations, e.g. inline foreign bindings.
+    >>> mergeForeignsIntoBindings
+    >>> idempotently (eliminateDeadCode . optimizeModule)
+    >>> renameShadowedNames
+
+mergeForeignsIntoBindings ∷ UberModule → UberModule
+mergeForeignsIntoBindings uberModule@UberModule {..} =
+  uberModule
+    { uberModuleForeigns = []
+    , uberModuleBindings =
+        map Standalone uberModuleForeigns <> uberModuleBindings
+    }
 
 renameShadowedNames ∷ UberModule → UberModule
 renameShadowedNames uberModule =
@@ -158,14 +171,11 @@ idempotently = fix $ \i f a →
   let a' = f a
    in if a' == a then a else i f a'
 
--- in if a' == a
---   then trace ("\n\nFIXPOINT\n" <> {- shower a' <> -} "\n") a
---   else trace ("\n\nRETRYING\n" <> {- shower a' <> -} "\n") $ i f a'
-
 optimizeModule ∷ UberModule → UberModule
 optimizeModule UberModule {..} =
   UberModule
-    { uberModuleBindings = uberModuleBindings'
+    { uberModuleForeigns
+    , uberModuleBindings = uberModuleBindings'
     , uberModuleExports = uberModuleExports'
     }
  where

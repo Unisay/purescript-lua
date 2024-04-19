@@ -26,9 +26,6 @@ import Language.PureScript.Backend.IR.Types
   , refImported
   )
 
---------------------------------------------------------------------------------
--- Data ------------------------------------------------------------------------
-
 data LinkMode
   = LinkAsApplication ModuleName Name
   | LinkAsModule ModuleName
@@ -36,59 +33,49 @@ data LinkMode
 
 data UberModule = UberModule
   { uberModuleBindings ∷ [Grouping (QName, Exp)]
+  , uberModuleForeigns ∷ [(QName, Exp)]
   , uberModuleExports ∷ [(Name, Exp)]
   }
   deriving stock (Show, Eq)
 
---------------------------------------------------------------------------------
--- Functions -------------------------------------------------------------------
-
 makeUberModule ∷ LinkMode → [Module] → UberModule
-makeUberModule linkMode modules =
-  UberModule {uberModuleBindings, uberModuleExports}
- where
-  sortedModules = topoSorted modules
+makeUberModule linkMode (topoSorted → modules) =
+  UberModule
+    { uberModuleForeigns = foreignBindings =<< modules
+    , uberModuleBindings = qualifiedModuleBindings =<< modules
+    , uberModuleExports =
+        case linkMode of
+          LinkAsApplication moduleName name →
+            [(name, refImported moduleName name 0)]
+          LinkAsModule modname →
+            [ (exportedName, refImported moduleName exportedName 0)
+            | Module {moduleName, moduleExports} ← modules
+            , moduleName == modname
+            , exportedName ← moduleExports
+            ]
+    }
 
-  uberModuleBindings =
-    concatMap foreignBindings sortedModules
-      <> concatMap qualifiedModuleBindings sortedModules
-
-  uberModuleExports ∷ [(Name, Exp)] =
-    case linkMode of
-      LinkAsApplication moduleName name →
-        [(name, refImported moduleName name 0)]
-      LinkAsModule modname →
-        [ (exportedName, refImported moduleName exportedName 0)
-        | Module {moduleName, moduleExports} ← modules
-        , moduleName == modname
-        , exportedName ← moduleExports
-        ]
-
-foreignBindings ∷ Module → [Grouping (QName, Exp)]
+foreignBindings ∷ Module → [(QName, Exp)]
 foreignBindings Module {moduleName, modulePath, moduleForeigns} =
   foreignModuleBinding <> foreignNamesBindings
  where
   foreignName = Name "foreign"
-  foreignModuleRef = refImported moduleName foreignName 0
 
-  foreignModuleBinding ∷ [Grouping (QName, Exp)]
-  foreignModuleBinding =
-    [ Standalone
-      ( QName moduleName foreignName
+  foreignModuleBinding ∷ [(QName, Exp)] =
+    [ ( QName moduleName foreignName
       , ForeignImport noAnn moduleName modulePath moduleForeigns
       )
     | not (null moduleForeigns)
     ]
 
-  foreignNamesBindings ∷ [Grouping (QName, Exp)] =
+  foreignNamesBindings ∷ [(QName, Exp)] =
     moduleForeigns <&> \(_ann, name) →
-      Standalone
-        ( QName moduleName name
-        , ObjectProp
-            (Just Inline.Always)
-            foreignModuleRef
-            (PropName (nameToText name))
-        )
+      ( QName moduleName name
+      , ObjectProp
+          (Just Inline.Always)
+          (refImported moduleName foreignName 0)
+          (PropName (nameToText name))
+      )
 
 qualifiedModuleBindings ∷ Module → [Grouping (QName, Exp)]
 qualifiedModuleBindings Module {moduleName, moduleBindings, moduleForeigns} =

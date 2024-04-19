@@ -105,8 +105,7 @@ valueParser = char '(' *> go 0 DL.empty <* MP.space
   go ∷ Int → DList Char → Parser String
   go numToClose value = do
     cs ← many $ MP.satisfy (\c → c /= '(' && c /= ')')
-    s ← MP.optional MP.anySingle
-    case s of
+    MP.optional MP.anySingle >>= \case
       Just '(' → go (succ numToClose) (DL.snoc (value <> DL.fromList cs) '(')
       Just ')' →
         if numToClose > 0

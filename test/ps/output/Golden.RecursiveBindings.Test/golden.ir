@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "letRec", Let Nothing
         ( RecursiveGroup

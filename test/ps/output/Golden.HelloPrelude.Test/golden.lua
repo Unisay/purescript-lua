@@ -31,41 +31,6 @@ local Effect_I_foreign = {
           return f(a())()
         end
       end
-    end,
-  untilE = function(f)
-      return function()
-        while not f() do
-        end
-      end
-    end,
-  whileE = function(f)
-      return function(a)
-        return function()
-          while f() do
-            a()
-          end
-        end
-      end
-    end,
-  forE = function(lo)
-      return function(hi)
-        return function(f)
-          return function()
-            for i = lo, hi do
-              f(i)()
-            end
-          end
-        end
-      end
-    end,
-  foreachE = function(as)
-      return function(f)
-        return function()
-          for i, v in ipairs(as) do
-            f(v)()
-          end
-        end
-      end
     end
 }
 local Control_Applicative_I_pure = function(dict) return dict.pure end

@@ -150,7 +150,8 @@ mainEntryPoint = EntryPoint mainModuleName [Name "main"]
 emptyModule ∷ UberModule
 emptyModule =
   UberModule
-    { uberModuleBindings = []
+    { uberModuleForeigns = []
+    , uberModuleBindings = []
     , uberModuleExports = []
     }
 

@@ -6,7 +6,7 @@ UberModule
         }, Abs Nothing ( ParamUnused Nothing )
         ( Abs Nothing ( ParamUnused Nothing ) ( LiteralInt Nothing 3 ) )
       )
-    ], uberModuleExports =
+    ], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "a", LiteralInt Nothing 1 ),
       ( Name "b", LiteralInt Nothing 2 ),

@@ -1,0 +1,1 @@
+{"builtWith":"0.15.15","comments":[],"decls":[],"exports":["dead","alive"],"foreign":["dead","alive"],"imports":[{"annotation":{"meta":null,"sourceSpan":{"end":[4,28],"start":[1,1]}},"moduleName":["Prim"]}],"moduleName":["Golden","Foreign","Lib"],"modulePath":"golden/Golden/Foreign/Lib.purs","reExports":{},"sourceSpan":{"end":[4,28],"start":[1,1]}}

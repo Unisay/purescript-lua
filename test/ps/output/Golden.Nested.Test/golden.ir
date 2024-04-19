@@ -12,7 +12,7 @@ UberModule
           ) ( LiteralBool Nothing True ) ( LiteralBool Nothing False )
         )
       )
-    ], uberModuleExports =
+    ], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "isZero", Ref Nothing
         ( Imported ( ModuleName "Golden.Nested.Test" ) ( Name "isZero" ) ) 0

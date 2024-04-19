@@ -15,7 +15,7 @@ UberModule
           )
         ]
       )
-    ], uberModuleExports =
+    ], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "r", Ref Nothing
         ( Imported ( ModuleName "Golden.RecordsUpdate.Test" ) ( Name "r" ) ) 0

@@ -6,7 +6,7 @@ UberModule
         }, LiteralObject Nothing
         [ ( PropName "x", LiteralInt Nothing 1 ), ( PropName "y", LiteralBool Nothing True ) ]
       )
-    ], uberModuleExports =
+    ], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "r", Ref Nothing
         ( Imported ( ModuleName "Golden.RecordsAccess.Test" ) ( Name "r" ) ) 0

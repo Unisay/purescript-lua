@@ -18,7 +18,7 @@ UberModule
           )
         )
       )
-    ], uberModuleExports =
+    ], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "b", Abs Nothing
         ( ParamNamed Nothing ( Name "x" ) )

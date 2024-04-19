@@ -7,7 +7,7 @@ UberModule
         ( ModuleName "Golden.Annotations.M1" ) "golden/Golden/Annotations/M1.purs"
         [ ( Nothing, Name "dontInlineClosure" ), ( Just Always, Name "inlineMeLambda" ) ]
       )
-    ], uberModuleExports =
+    ], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "inlineMe", Abs ( Just Always )
         ( ParamNamed Nothing ( Name "v" ) )

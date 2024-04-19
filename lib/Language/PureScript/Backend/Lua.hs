@@ -65,6 +65,10 @@ fromUberModule
   → ExceptT (Variant e) IO Lua.Chunk
 fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
   (chunk, usesObjectUpdate) ← (`runAccumT` NoObjectUpdate) do
+    foreignBindings ←
+      forM (Linker.uberModuleForeigns uber) \(IR.QName modname name, irExp) → do
+        exp ← asExpression <$> fromIR foreigns Set.empty modname irExp
+        pure (Lua.local1 (fromQName modname name) exp)
     bindings ←
       Linker.uberModuleBindings uber & foldMapM \case
         IR.Standalone (IR.QName modname name, irExp) → do
@@ -97,7 +101,9 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
          where
           name = IR.identToName ident
 
-    pure $ DList.snoc bindings (Lua.Return (Lua.ann returnExp))
+    pure $
+      DList.fromList foreignBindings
+        <> DList.snoc bindings (Lua.Return (Lua.ann returnExp))
 
   pure . mconcat $
     [ [Fixture.prim | usesPrimModule uber]

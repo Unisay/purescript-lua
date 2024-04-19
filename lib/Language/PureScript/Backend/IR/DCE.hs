@@ -1,15 +1,19 @@
-module Language.PureScript.Backend.IR.DCE where
+module Language.PureScript.Backend.IR.DCE
+  ( EntryPoint (..)
+  , eliminateDeadCode
+  ) where
 
 import Data.DList (DList)
 import Data.DList qualified as DL
 import Data.Graph (Graph, Vertex, graphFromEdges, reachable)
 import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
+import Data.Set (member)
 import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Names
   ( ModuleName
-  , Name
+  , Name (..)
   , QName (..)
   , Qualified (..)
   )
@@ -33,23 +37,50 @@ data EntryPoint = EntryPoint ModuleName [Name]
 
 type Scope = Map (Qualified Name, Index) Id
 
+type Node = ((), Id, [Id])
+
 eliminateDeadCode ∷ UberModule → UberModule
 eliminateDeadCode uber@UberModule {..} =
-  -- trace ("\n\nannotatedBindings:\n" <> toString (pShow annotatedBindings) <> "\n") $
-  -- trace ("\nannotatedExports:\n" <> toString (pShow annotatedExports) <> "\n") $
-  -- trace ("\nadjacencyList:\n" <> toString (pShow adjacencyList) <> "\n") $
-  -- trace ("\nreachableIds:\n" <> toString (pShow reachableIds) <> "\n\n") $
+  -- traceIt "annotatedForeigns" annotatedForeigns $
+  --   traceIt "annotatedBindings" annotatedBindings $
+  --     traceIt "annotatedExports" annotatedExports $
+  --       traceIt "topLevelScope" topLevelScope $
+  --         traceIt "adjacencyList" adjacencyList $
+  --           traceIt "reachableIds" reachableIds $
   uber
-    { uberModuleBindings = preserveBindings
+    { uberModuleForeigns = preservedForeigns
+    , uberModuleBindings = preservedBindings
     , uberModuleExports = preservedExports
     }
  where
-  preserveBindings ∷ [Grouping (QName, Exp)]
-  preserveBindings = do
-    grouping ← annotatedBindings
-    case grouping of
+  -- traceIt ∷ ∀ a b. Show a ⇒ String → a → b → b
+  -- traceIt label it =
+  --   trace ("\n\n" <> label <> ":\n" <> pp it <> "\n")
+  --  where
+  --   pp =
+  --     toString
+  --       . pShowOpt
+  --         defaultOutputOptionsDarkBg
+  --           { outputOptionsCompact = True
+  --           }
+
+  preservedForeigns ∷ [(QName, Exp)]
+  preservedForeigns = do
+    (name, expr) ← annotatedForeigns
+    guard $ nodeId expr `member` reachableIds
+    pure . (name,) $ case expr of
+      ForeignImport (_id, ann) modname path names →
+        ForeignImport
+          ann
+          modname
+          path
+          [(a, n) | ((i, a), n) ← names, i `member` reachableIds]
+      other → dceAnnotatedExp other
+
+  preservedBindings ∷ [Grouping (QName, Exp)] =
+    annotatedBindings >>= \case
       Standalone (qname, expr) → do
-        guard $ nodeId expr `Set.member` reachableIds
+        guard $ nodeId expr `member` reachableIds
         [Standalone (qname, dceAnnotatedExp expr)]
       RecursiveGroup recBinds →
         case NE.nonEmpty (preservedRecBinds (toList recBinds)) of
@@ -59,7 +90,7 @@ eliminateDeadCode uber@UberModule {..} =
     preservedRecBinds ∷ [(QName, AExp)] → [(QName, Exp)]
     preservedRecBinds recBinds = do
       (qname, expr) ← recBinds
-      guard $ nodeId expr `Set.member` reachableIds
+      guard $ nodeId expr `member` reachableIds
       pure (qname, dceAnnotatedExp expr)
 
   preservedExports ∷ [(Name, Exp)]
@@ -67,21 +98,30 @@ eliminateDeadCode uber@UberModule {..} =
     (name, annotatedExp) ← annotatedExports
     pure (name, dceAnnotatedExp annotatedExp)
 
-  ( annotatedExports ∷ [(Name, AExp)]
+  -- run these computations in the same monad
+  -- so that we can share the state of the ID counter
+  ( annotatedForeigns ∷ [(QName, AExp)]
     , annotatedBindings ∷ [Grouping (QName, AExp)]
+    , annotatedExports ∷ [(Name, AExp)]
     ) = runAnnM do
-      -- run both computations in the same monad
-      -- so that we can share the state of the ID counter
-      exports ← traverse (traverse assignUniqueIds) uberModuleExports
-      binds ← traverse (traverse (traverse assignUniqueIds)) uberModuleBindings
-      pure (exports, binds)
+      liftA3
+        (,,)
+        (traverse (traverse assignUniqueIds) uberModuleForeigns)
+        (traverse (traverse (traverse assignUniqueIds)) uberModuleBindings)
+        (traverse (traverse assignUniqueIds) uberModuleExports)
+
+  annotatedForeignImports ∷ [(QName, AExp)] =
+    [i | i@(_qname, ForeignImport {}) ← annotatedForeigns]
+
+  annotatedForeignBindings ∷ [(QName, AExp)] =
+    [b | b@(_qname, ObjectProp {}) ← annotatedForeigns]
 
   dceAnnotatedExp ∷ AExp → Exp
   dceAnnotatedExp =
     deannotateExp <$> rewriteExpTopDown do
       pure . \case
         Abs ann param b
-          | not (paramId `Set.member` reachableIds) →
+          | not (paramId `member` reachableIds) →
               Rewritten Recurse (Abs ann param' b)
          where
           paramId ∷ Id =
@@ -101,7 +141,7 @@ eliminateDeadCode uber@UberModule {..} =
           preservedBinds =
             toList binds >>= \case
               b@(Standalone ((expId, _ann), _name, _expr)) →
-                [b | expId `Set.member` reachableIds]
+                [b | expId `member` reachableIds]
               RecursiveGroup recBinds →
                 case NE.nonEmpty preservedRecBinds of
                   Nothing → []
@@ -110,7 +150,7 @@ eliminateDeadCode uber@UberModule {..} =
                 preservedRecBinds =
                   [ b
                   | b@((nameId, _ann), _, _) ← toList recBinds
-                  , nameId `Set.member` reachableIds
+                  , nameId `member` reachableIds
                   ]
         _ → NoChange
 
@@ -132,39 +172,93 @@ eliminateDeadCode uber@UberModule {..} =
   -- Building a graph of nodes -------------------------------------------------
 
   ( graph ∷ Graph
-    , vertexToV ∷ Vertex → ((), Id, [Id])
+    , vertexToV ∷ Vertex → Node
     , keyToVertex ∷ Id → Maybe Vertex
-    ) = graphFromEdges adjacencyList
+    ) = graphFromEdges (toList adjacencyList)
 
-  adjacencyList ∷ [((), Id, [Id])]
-  adjacencyList =
-    DL.toList $ adjacencyListFromExports <> adjacencyListFromBindings
+  -- Crash if the adjacency list is not complete:
+  -- every referenced node must be present in the list.
+  -- assertAdjacencyListIsComplete
+  --   ∷ HasCallStack
+  --   ⇒ [Node]
+  --   → [Node]
+  -- assertAdjacencyListIsComplete al =
+  --   if referencedNodes `isSubsetOf` nodes
+  --     then al
+  --     else
+  --       error . unlines $
+  --         [ "Incomplete adjacency list: "
+  --         , toText (pShow al)
+  --         , "Nodes: " <> toText (pShow nodes)
+  --         , "Referenced nodes: " <> toText (pShow referencedNodes)
+  --         ]
+  --  where
+  --   nodes = Set.fromList (al <&> \((), node, _) → node)
+  --   referencedNodes = Set.fromList (al >>= \((), _, refs) → refs)
 
-  adjacencyListFromExports ∷ DList ((), Id, [Id])
-  adjacencyListFromExports =
+  mkNode ∷ Id → [Id] → Node
+  mkNode = ((),,)
+
+  adjacencyList ∷ DList Node =
+    adjacencyListFromForeignImports
+      <> adjacencyListFromForeignBindings
+      <> adjacencyListFromExports
+      <> adjacencyListFromBindings
+
+  adjacencyListFromForeignImports ∷ DList Node = DL.fromList do
+    annotatedForeignImports <&> \(_qname, expr) → mkNode (nodeId expr) []
+
+  -- The functionality which builds adjacency list for foreign bindings
+  -- depends on the particular sturcture emitted by the 'Linker' and therefore
+  -- is not generic.
+  adjacencyListFromForeignBindings ∷ DList Node =
+    annotatedForeignBindings & foldMap \case
+      ( QName bindingModule bindingName
+        , ObjectProp (objPropId, _) (Ref (objRefId, _) _ 0) _prop
+        ) →
+          DL.fromList do
+            mkNode objPropId (objRefId : map fst foreignImportForBinding)
+              : mkNode objRefId (map snd foreignImportForBinding)
+              : [mkNode propId [] | (propId, _) ← foreignImportForBinding]
+         where
+          foreignImportForBinding ∷ [(Id, Id)] =
+            [ (propId, importId)
+            | ( QName importModule _foreign
+                , ForeignImport (importId, _) _ _ propNames
+                ) ←
+                annotatedForeignImports
+            , bindingModule == importModule
+            , ((propId, _ann), propName) ← propNames
+            , propName == bindingName
+            ]
+      _ → DL.empty
+
+  adjacencyListFromExports ∷ DList Node =
     annotatedExports & foldMap \(_name, expr) →
-      adjacencyListForExpr bindingsInScope expr
+      adjacencyListForExpr topLevelScope expr
 
-  adjacencyListFromBindings ∷ DList ((), Id, [Id])
-  adjacencyListFromBindings =
+  adjacencyListFromBindings ∷ DList Node =
     annotatedBindings & foldMap \case
       Standalone (_qname, expr) →
-        adjacencyListForExpr bindingsInScope expr
+        adjacencyListForExpr topLevelScope expr
       RecursiveGroup recBinds →
         recBinds & foldMap \(_qname, expr) →
-          adjacencyListForExpr bindingsInScope expr
+          adjacencyListForExpr topLevelScope expr
 
-  bindingsInScope ∷ Scope
-  bindingsInScope =
-    Map.fromList $
-      [ ((Imported modname name, 0), nodeId expr)
-      | grouping ← annotatedBindings
-      , (QName modname name, expr) ← listGrouping grouping
-      ]
+  topLevelScope ∷ Scope =
+    Map.fromList (foreignsInScope <> bindingsInScope)
+   where
+    foreignsInScope = do
+      (QName modname name, expr) ← annotatedForeigns
+      pure ((Imported modname name, 0), nodeId expr)
 
-  adjacencyListForExpr ∷ Scope → AExp → DList ((), Id, [Id])
+    bindingsInScope = do
+      (QName modname name, expr) ← listGrouping =<< annotatedBindings
+      pure ((Imported modname name, 0), nodeId expr)
+
+  adjacencyListForExpr ∷ Scope → AExp → DList Node
   adjacencyListForExpr scope expr =
-    ((), nodeId expr, expressionDependsOnIds scope expr)
+    mkNode (nodeId expr) (expressionDependsOnIds scope expr)
       `DL.cons` case expr of
         LiteralInt {} → mempty
         LiteralFloat {} → mempty
@@ -204,7 +298,7 @@ eliminateDeadCode uber@UberModule {..} =
             ParamUnused _ann' → adjacencyListForExpr scope b
             ParamNamed (paramId, _ann) name →
               DL.cons
-                ((), paramId, [])
+                (mkNode paramId [])
                 (adjacencyListForExpr (addLocalToScope paramId name 0 scope) b)
         Let _ann groupings body →
           adjacencyListForExpr scope' body
@@ -216,21 +310,21 @@ eliminateDeadCode uber@UberModule {..} =
             addLocalToScope nameId name 0
    where
     adjacencyListForGrouping
-      ∷ (Scope, DList ((), Id, [Id]))
+      ∷ (Scope, DList Node)
       → Grouping ((Id, Ann), Name, AExp)
-      → (Scope, DList ((), Id, [Id]))
+      → (Scope, DList Node)
     adjacencyListForGrouping (groupingScope, adj) = \case
       Standalone binding@((nameId, _ann), _name, boundExpr) →
         ( updateScope binding groupingScope
         , DL.cons
-            ((), nameId, [nodeId boundExpr])
+            (mkNode nameId [nodeId boundExpr])
             (adjacencyListForExpr groupingScope boundExpr <> adj)
         )
       RecursiveGroup recBinds →
         ( scope'
         , recBinds & foldMap \((nameId, _ann), _name, boundExpr) →
             DL.cons
-              ((), nameId, [nodeId boundExpr])
+              (mkNode nameId [nodeId boundExpr])
               (adjacencyListForExpr scope' boundExpr <> adj)
         )
        where
@@ -239,39 +333,40 @@ eliminateDeadCode uber@UberModule {..} =
       updateScope ∷ ((Id, Ann), Name, AExp) → Scope → Scope
       updateScope ((nameId, _ann), name, _expr) = addLocalToScope nameId name 0
 
-    expressionDependsOnIds ∷ Scope → AExp → [Id]
-    expressionDependsOnIds exprScope = \case
-      LiteralArray _ann as → nodeId <$> as
-      LiteralObject _ann ps → nodeId . snd <$> ps
-      LiteralInt {} → []
-      LiteralFloat {} → []
-      LiteralString {} → []
-      LiteralChar {} → []
-      LiteralBool {} → []
-      Exception {} → []
-      ForeignImport {} → []
-      Ctor {} → []
-      ReflectCtor _ann a → [nodeId a]
-      Eq _ann a b → [nodeId a, nodeId b]
-      DataArgumentByIndex _ann _idx a → [nodeId a]
-      ArrayLength _ann as → [nodeId as]
-      ArrayIndex _ann a _idx → [nodeId a]
-      ObjectProp _ann a _prp → [nodeId a]
-      ObjectUpdate _ann o patches → nodeId o : toList (nodeId . snd <$> patches)
-      Abs _ann _ b → [nodeId b]
-      App _ann a b → [nodeId a, nodeId b]
-      IfThenElse _ann i t e → [nodeId i, nodeId t, nodeId e]
-      Ref _ann qname idx → maybeToList $ Map.lookup (qname, idx) exprScope
-      Let _ann _groupings body → [nodeId body]
+expressionDependsOnIds ∷ Scope → AExp → [Id]
+expressionDependsOnIds exprScope = \case
+  LiteralArray _ann as → nodeId <$> as
+  LiteralObject _ann ps → nodeId . snd <$> ps
+  LiteralInt {} → []
+  LiteralFloat {} → []
+  LiteralString {} → []
+  LiteralChar {} → []
+  LiteralBool {} → []
+  Exception {} → []
+  ForeignImport {} → []
+  Ctor {} → []
+  ReflectCtor _ann a → [nodeId a]
+  Eq _ann a b → [nodeId a, nodeId b]
+  DataArgumentByIndex _ann _idx a → [nodeId a]
+  ArrayLength _ann as → [nodeId as]
+  ArrayIndex _ann a _idx → [nodeId a]
+  ObjectProp _ann a _prp → [nodeId a]
+  ObjectUpdate _ann o patches → nodeId o : toList (nodeId . snd <$> patches)
+  Abs _ann _ b → [nodeId b]
+  App _ann a b → [nodeId a, nodeId b]
+  IfThenElse _ann i t e → [nodeId i, nodeId t, nodeId e]
+  Ref _ann qname idx → maybeToList $ Map.lookup (qname, idx) exprScope
+  Let _ann _groupings body → [nodeId body]
 
 addLocalToScope ∷ Id → Name → Index → Scope → Scope
 addLocalToScope nid name index s =
-  let lname = Local name
-   in case Map.lookup (lname, index) s of
-        Nothing → Map.insert (lname, index) nid s
-        Just nid' →
-          Map.insert (lname, index) nid $
-            addLocalToScope nid' name (succ index) s
+  case Map.lookup (lname, index) s of
+    Nothing → Map.insert (lname, index) nid s
+    Just nid' →
+      Map.insert (lname, index) nid $
+        addLocalToScope nid' name (succ index) s
+ where
+  lname = Local name
 
 --------------------------------------------------------------------------------
 -- Annotating expressions with IDs ---------------------------------------------

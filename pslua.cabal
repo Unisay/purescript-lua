@@ -12,6 +12,7 @@ extra-source-files:
 common shared
   ghc-options:
     -O2 -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
+    -Werror=missing-fields -Werror=missing-methods -Werror=missing-signatures
     -Wmissing-deriving-strategies -Wunused-foralls -Wunused-foralls
     -fprint-explicit-foralls -fprint-explicit-kinds -Wcompat
     -Widentities -Werror=incomplete-patterns -Wredundant-constraints

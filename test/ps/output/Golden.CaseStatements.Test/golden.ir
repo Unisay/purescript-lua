@@ -5,7 +5,7 @@ UberModule
         { qnameModuleName = ModuleName "Golden.Values.Test", qnameName = Name "f"
         }, Abs Nothing ( ParamUnused Nothing ) ( LiteralBool Nothing True )
       )
-    ], uberModuleExports =
+    ], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "a", LiteralInt Nothing 1 ),
       ( Name "b", LiteralChar Nothing 'b' ),

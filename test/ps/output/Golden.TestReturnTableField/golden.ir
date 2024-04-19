@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "u", ObjectProp ( Just Always )
         ( ForeignImport Nothing

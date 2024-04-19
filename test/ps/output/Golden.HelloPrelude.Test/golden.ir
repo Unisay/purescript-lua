@@ -5,14 +5,7 @@ UberModule
         { qnameModuleName = ModuleName "Effect", qnameName = Name "foreign"
         }, ForeignImport Nothing
         ( ModuleName "Effect" ) ".spago/effect/v4.1.0/src/Effect.purs"
-        [
-          ( Nothing, Name "pureE" ),
-          ( Nothing, Name "bindE" ),
-          ( Nothing, Name "untilE" ),
-          ( Nothing, Name "whileE" ),
-          ( Nothing, Name "forE" ),
-          ( Nothing, Name "foreachE" )
-        ]
+        [ ( Nothing, Name "pureE" ), ( Nothing, Name "bindE" ) ]
       ), Standalone
       ( QName
         { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "pure"
@@ -204,7 +197,7 @@ UberModule
           )
         ]
       )
-    ], uberModuleExports =
+    ], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "main", App Nothing
         ( App Nothing

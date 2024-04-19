@@ -1,5 +1,5 @@
 UberModule
-  { uberModuleBindings = [], uberModuleExports =
+  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
     [
       ( Name "Zero", Ctor Nothing SumType
         ( ModuleName "Golden.PatternMatching.Test1" )

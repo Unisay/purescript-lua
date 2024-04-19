@@ -96,7 +96,7 @@ mkModule cfnModule contextDataTypes = do
       moduleImports ← mkImports
       moduleExports ← mkExports
       moduleReExports ← mkReExports
-      moduleForeigns ← mkForeign
+      moduleForeigns ← mkForeigns
       pure
         Module
           { moduleName = Cfn.moduleName cfnModule
@@ -148,8 +148,8 @@ mkReExports =
   Map.fromAscList . fmap (identToName <<$>>) . Map.toAscList
     <$> gets (contextModule >>> Cfn.moduleReExports)
 
-mkForeign ∷ RepM [(Ann, Name)]
-mkForeign = do
+mkForeigns ∷ RepM [(Ann, Name)]
+mkForeigns = do
   idents ← gets (contextModule >>> Cfn.moduleForeign)
   forM idents \ident → do
     let name = identToName ident
