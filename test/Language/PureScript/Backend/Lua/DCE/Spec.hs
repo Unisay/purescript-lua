@@ -100,7 +100,7 @@ spec = describe "Lua Dead Code Elimination" do
     DCE.eliminateDeadCode PreserveReturned chunk === chunk
 
   test "Doesn't eliminate anything from runtimeLazy" do
-    let name = [Lua.name|_S___runtime_lazy|]
+    let name = Fixture.runtimeLazyName
     let chunk =
           [ Fixture.runtimeLazy
           , Lua.return (Lua.functionCall (Lua.varName name) [])
@@ -108,7 +108,7 @@ spec = describe "Lua Dead Code Elimination" do
     DCE.eliminateDeadCode PreserveReturned chunk === chunk
 
   test "scopes" do
-    let name = [Lua.name|_S___runtime_lazy|]
+    let name = Fixture.runtimeLazyName
     let chunk =
           [ Lua.local1 name $
               Lua.Function

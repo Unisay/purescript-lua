@@ -1,6 +1,6 @@
-local Golden_Newtype_Test_I_NT = function(x) return x end
+PSLUA_Golden_Newtype_Test_NT = function(x) return x end
 return {
-  NT = Golden_Newtype_Test_I_NT,
+  NT = PSLUA_Golden_Newtype_Test_NT,
   f = function(v) return v.foo end,
-  g = Golden_Newtype_Test_I_NT
+  g = PSLUA_Golden_Newtype_Test_NT
 }
