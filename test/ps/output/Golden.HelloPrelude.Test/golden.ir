@@ -38,7 +38,7 @@ UberModule
               ( PropName "Apply0", Abs Nothing ( ParamUnused Nothing )
                 ( App Nothing
                   ( Ref Nothing
-                    ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) 0
+                    ( Imported ( ModuleName "Effect" ) ( Name "PSLUA_lazy_applyEffect" ) ) 0
                   )
                   ( LiteralInt Nothing 0 )
                 )
@@ -56,7 +56,7 @@ UberModule
               ( PropName "Apply0", Abs Nothing ( ParamUnused Nothing )
                 ( App Nothing
                   ( Ref Nothing
-                    ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_applyEffect" ) ) 0
+                    ( Imported ( ModuleName "Effect" ) ( Name "PSLUA_lazy_applyEffect" ) ) 0
                   )
                   ( LiteralInt Nothing 0 )
                 )
@@ -64,10 +64,10 @@ UberModule
             ]
           ),
           ( QName
-            { qnameModuleName = ModuleName "Effect", qnameName = Name "$__lazy_functorEffect"
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "PSLUA_lazy_functorEffect"
             }, App Nothing
             ( App Nothing
-              ( Ref Nothing ( Local ( Name "$__runtime_lazy" ) ) 0 )
+              ( Ref Nothing ( Local ( Name "PSLUA_runtime_lazy" ) ) 0 )
               ( LiteralString Nothing "functorEffect" )
             )
             ( Abs Nothing ( ParamUnused Nothing )
@@ -106,10 +106,10 @@ UberModule
             )
           ),
           ( QName
-            { qnameModuleName = ModuleName "Effect", qnameName = Name "$__lazy_applyEffect"
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "PSLUA_lazy_applyEffect"
             }, App Nothing
             ( App Nothing
-              ( Ref Nothing ( Local ( Name "$__runtime_lazy" ) ) 0 )
+              ( Ref Nothing ( Local ( Name "PSLUA_runtime_lazy" ) ) 0 )
               ( LiteralString Nothing "applyEffect" )
             )
             ( Abs Nothing ( ParamUnused Nothing )
@@ -186,7 +186,7 @@ UberModule
                   ( PropName "Functor0", Abs Nothing ( ParamUnused Nothing )
                     ( App Nothing
                       ( Ref Nothing
-                        ( Imported ( ModuleName "Effect" ) ( Name "$__lazy_functorEffect" ) ) 0
+                        ( Imported ( ModuleName "Effect" ) ( Name "PSLUA_lazy_functorEffect" ) ) 0
                       )
                       ( LiteralInt Nothing 0 )
                     )

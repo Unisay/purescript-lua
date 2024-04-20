@@ -1,23 +1,19 @@
-local Golden_RecDataDefs_Test_I_A = {
-  ["$ctor"] = "Golden.RecDataDefs.Test∷A.A"
-}
-local Golden_RecDataDefs_Test_I_AB = function(value0)
+PSLUA_Golden_RecDataDefs_Test_A = { ["$ctor"] = "Golden.RecDataDefs.Test∷A.A" }
+PSLUA_Golden_RecDataDefs_Test_AB = function(value0)
   return { ["$ctor"] = "Golden.RecDataDefs.Test∷A.AB", value0 = value0 }
 end
-local Golden_RecDataDefs_Test_I_B = {
-  ["$ctor"] = "Golden.RecDataDefs.Test∷B.B"
-}
-local Golden_RecDataDefs_Test_I_BA = function(value0)
+PSLUA_Golden_RecDataDefs_Test_B = { ["$ctor"] = "Golden.RecDataDefs.Test∷B.B" }
+PSLUA_Golden_RecDataDefs_Test_BA = function(value0)
   return { ["$ctor"] = "Golden.RecDataDefs.Test∷B.BA", value0 = value0 }
 end
-local Golden_RecDataDefs_Test_I_ab = Golden_RecDataDefs_Test_I_AB(Golden_RecDataDefs_Test_I_B)
+PSLUA_Golden_RecDataDefs_Test_ab = PSLUA_Golden_RecDataDefs_Test_AB(PSLUA_Golden_RecDataDefs_Test_B)
 return {
-  A = Golden_RecDataDefs_Test_I_A,
-  AB = Golden_RecDataDefs_Test_I_AB,
-  B = Golden_RecDataDefs_Test_I_B,
-  BA = Golden_RecDataDefs_Test_I_BA,
-  a = Golden_RecDataDefs_Test_I_A,
-  b = Golden_RecDataDefs_Test_I_B,
-  ab = Golden_RecDataDefs_Test_I_ab,
-  ba = Golden_RecDataDefs_Test_I_BA(Golden_RecDataDefs_Test_I_ab)
+  A = PSLUA_Golden_RecDataDefs_Test_A,
+  AB = PSLUA_Golden_RecDataDefs_Test_AB,
+  B = PSLUA_Golden_RecDataDefs_Test_B,
+  BA = PSLUA_Golden_RecDataDefs_Test_BA,
+  a = PSLUA_Golden_RecDataDefs_Test_A,
+  b = PSLUA_Golden_RecDataDefs_Test_B,
+  ab = PSLUA_Golden_RecDataDefs_Test_ab,
+  ba = PSLUA_Golden_RecDataDefs_Test_BA(PSLUA_Golden_RecDataDefs_Test_ab)
 }

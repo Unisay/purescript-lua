@@ -1,10 +1,10 @@
-local Golden_PatternMatching_Test2_I_bat
-Golden_PatternMatching_Test2_I_bat = function(n)
+local PSLUA_Golden_PatternMatching_Test2_bat
+PSLUA_Golden_PatternMatching_Test2_bat = function(n)
   if "Golden.PatternMatching.Test1∷N.Zero" == n["$ctor"] then
     return 1
   else
     if "Golden.PatternMatching.Test1∷N.Succ" == n["$ctor"] then
-      return Golden_PatternMatching_Test2_I_bat(n.value0)
+      return PSLUA_Golden_PatternMatching_Test2_bat(n.value0)
     else
       return error("No patterns matched")
     end
@@ -67,5 +67,5 @@ return {
       return 6
     end
   end,
-  bat = Golden_PatternMatching_Test2_I_bat
+  bat = PSLUA_Golden_PatternMatching_Test2_bat
 }

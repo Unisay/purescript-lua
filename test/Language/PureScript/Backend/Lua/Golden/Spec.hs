@@ -134,6 +134,7 @@ spec = do
                   , "--no-unused" -- TODO: harden eventually
                   , "--no-max-line-length"
                   , "--formatter plain"
+                  , "--allow-defined"
                   , toFilePath lua
                   ]
           (exitCode, out) ← readProcessInterleaved process

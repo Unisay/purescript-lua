@@ -81,8 +81,11 @@ runIdent = \case
   UnusedIdent → unusedIdent
   InternalIdent internalIdentData →
     case internalIdentData of
-      RuntimeLazyFactory → "$__runtime_lazy"
-      Lazy t → "$__lazy_" <> t
+      RuntimeLazyFactory → runtimeLazyName
+      Lazy t → "PSLUA_lazy_" <> t
+
+runtimeLazyName :: Text
+runtimeLazyName = "PSLUA_runtime_lazy"
 
 unusedIdent ∷ Text
 unusedIdent = "$__unused"

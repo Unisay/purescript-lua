@@ -122,4 +122,4 @@ reserved =
     ]
 
 join2 ∷ Name → Name → Name
-join2 (Name a) (Name b) = Name (a <> "_I_" <> b)
+join2 (Name a) (Name b) = Name (a <> "_" <> b)

@@ -18,6 +18,7 @@ import Language.PureScript.Backend.IR.Types
   , traverseExpBottomUp
   )
 import Language.PureScript.Backend.IR.Types qualified as IR
+import Language.PureScript.Names (runtimeLazyName)
 
 usesRuntimeLazy ∷ UberModule → Bool
 usesRuntimeLazy UberModule {uberModuleBindings, uberModuleExports} =
@@ -29,7 +30,7 @@ usesRuntimeLazy UberModule {uberModuleBindings, uberModuleExports} =
 
 findRuntimeLazyInExpr ∷ Exp → Bool
 findRuntimeLazyInExpr expr =
-  countFreeRef (Local (Name "$__runtime_lazy")) expr > 0
+  countFreeRef (Local (Name runtimeLazyName)) expr > 0
 
 usesPrimModule ∷ UberModule → Bool
 usesPrimModule UberModule {uberModuleBindings, uberModuleExports} =

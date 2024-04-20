@@ -1,7 +1,7 @@
-local Golden_RecordsAccess_Test_I_r = { x = 1, y = true }
+PSLUA_Golden_RecordsAccess_Test_r = { x = 1, y = true }
 return {
-  r = Golden_RecordsAccess_Test_I_r,
-  test1 = Golden_RecordsAccess_Test_I_r.x,
+  r = PSLUA_Golden_RecordsAccess_Test_r,
+  test1 = PSLUA_Golden_RecordsAccess_Test_r.x,
   test2 = function(v) return v.x end,
   test3 = function(v) return v.x end,
   test4 = function(v) return v.x end

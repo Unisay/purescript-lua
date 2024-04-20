@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module Language.PureScript.Backend.Lua
   ( fromUberModule
   , fromIR
@@ -68,22 +70,19 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
     foreignBindings ←
       forM (Linker.uberModuleForeigns uber) \(IR.QName modname name, irExp) → do
         exp ← asExpression <$> fromIR foreigns Set.empty modname irExp
-        pure (Lua.local1 (fromQName modname name) exp)
+        pure $ Lua.assign (Lua.VarName (fromQName modname name)) exp
     bindings ←
       Linker.uberModuleBindings uber & foldMapM \case
         IR.Standalone (IR.QName modname name, irExp) → do
           exp ← fromIR foreigns Set.empty modname irExp
-          pure $
-            DList.singleton
-              (Lua.local1 (fromQName modname name) (asExpression exp))
+          pure . DList.singleton $
+            Lua.assignVar (fromQName modname name) (asExpression exp)
         IR.RecursiveGroup recGroup → do
           recBinds ← forM (toList recGroup) \(IR.QName modname name, irExp) →
             (fromQName modname name,) . asExpression
               <$> fromIR foreigns Set.empty modname irExp
           let declarations = Lua.local0 . fst <$> DList.fromList recBinds
-              assignments = DList.fromList do
-                recBinds <&> \(name, exp) →
-                  Lua.assign (Lua.VarName name) exp
+              assignments = DList.fromList (uncurry Lua.assignVar <$> recBinds)
           pure $ declarations <> assignments
 
     returnExp ←
@@ -282,4 +281,4 @@ uniqueName prefix = do
   pure $ Lua.unsafeName (prefix <> show index)
 
 qualifyName ∷ ModuleName → Lua.Name → Lua.Name
-qualifyName modname = Name.join2 (fromModuleName modname)
+qualifyName modname = Fixture.psluaName . Name.join2 (fromModuleName modname)
