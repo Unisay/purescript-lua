@@ -25,8 +25,9 @@ Consider configuring [Cachix](https://docs.cachix.org/installation) as a binary 
 ```
 cachix use purescript-lua
 ```
+You can use this [template repository](https://github.com/Unisay/purescript-lua-template) to initialize your project.
 
-Here is an [example](https://github.com/Unisay/purescript-lua-example) project.
+Here is an another [example](https://github.com/Unisay/purescript-lua-example) project: Nginx server running Lua code using [OpenResty](https://openresty.org/).
 
 If you use [Spago](https://github.com/purescript/spago) to build your PureScript project, then you can configure `pslua` as a custom backend like this:
 
