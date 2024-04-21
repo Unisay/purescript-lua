@@ -82,7 +82,7 @@ runIdent = \case
   InternalIdent internalIdentData →
     case internalIdentData of
       RuntimeLazyFactory → runtimeLazyName
-      Lazy t → "PSLUA_lazy_" <> t
+      Lazy t → "Lazy_" <> t
 
 runtimeLazyName :: Text
 runtimeLazyName = "PSLUA_runtime_lazy"

@@ -28,7 +28,6 @@ import Language.PureScript.PSString
   , decodeStringEscaping
   )
 import Relude.Extra (toFst)
-import Relude.Unsafe qualified as Unsafe
 import Text.Megaparsec qualified as Megaparsec
 import Text.Pretty.Simple (pShow)
 import Text.Show (Show (..))
@@ -135,7 +134,10 @@ useAnnotation name = do
 mkImports ∷ RepM [ModuleName]
 mkImports = do
   Cfn.Module {moduleName, moduleImports} ← gets contextModule
-  pure $ filter (isIncluded moduleName) (snd <$> moduleImports)
+  pure $
+    -- it's ok to always add prim as an explicit import:
+    -- DCE removes it if it's not used.
+    ModuleName "Prim" : [i | (_ann, i) ← moduleImports, isIncluded moduleName i]
  where
   isIncluded ∷ PS.ModuleName → ModuleName → Bool
   isIncluded currentModule modname = modname /= currentModule
@@ -170,7 +172,7 @@ collectDataDeclarations cfnModules = Map.unions do
             | bind ← Cfn.moduleBindings cfnModule
             , Cfn.Constructor _ann tyName ctorName fields ← boundExp bind
             ]
-      , let ty = fst (Unsafe.head ctors) -- groupBy never makes an empty group
+      , let ty = fst (head (NE.fromList ctors)) -- groupBy never makes an empty group
       , let algebraicType = if length ctors == 1 then ProductType else SumType
       ]
  where

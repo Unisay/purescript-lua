@@ -1,5 +1,5 @@
-M = {}
-M.PSLUA_Golden_Annotations_M1_foreign = (function()
+local M = {}
+M.Golden_Annotations_M1_foreign = (function()
   local step = 2
   return {
     dontInlineClosure = function(i)
@@ -28,5 +28,5 @@ return {
       end
     end
   end,
-  inlineIntoMe2 = M.PSLUA_Golden_Annotations_M1_foreign.dontInlineClosure(M.PSLUA_Golden_Annotations_M1_foreign.inlineMeLambda(M.PSLUA_Golden_Annotations_M1_foreign.inlineMeLambda(17)))
+  inlineIntoMe2 = M.Golden_Annotations_M1_foreign.dontInlineClosure(M.Golden_Annotations_M1_foreign.inlineMeLambda(M.Golden_Annotations_M1_foreign.inlineMeLambda(17)))
 }

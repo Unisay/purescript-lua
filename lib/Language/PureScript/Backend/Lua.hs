@@ -4,7 +4,6 @@ module Language.PureScript.Backend.Lua
   ( fromUberModule
   , fromIR
   , fromName
-  -- , qualifyName
   , qualifyName
   , Error (..)
   ) where
@@ -23,7 +22,7 @@ import Data.Traversable (for)
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Linker qualified as Linker
-import Language.PureScript.Backend.IR.Query (usesPrimModule, usesRuntimeLazy)
+import Language.PureScript.Backend.IR.Query (usesRuntimeLazy)
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Key qualified as Key
 import Language.PureScript.Backend.Lua.Linker.Foreign qualified as Foreign
@@ -32,7 +31,7 @@ import Language.PureScript.Backend.Lua.Name qualified as Name
 import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Types (AppOrModule (..))
-import Language.PureScript.Names (ModuleName, runModuleName)
+import Language.PureScript.Names (ModuleName (..), runModuleName)
 import Language.PureScript.Names qualified as PS
 import Path (Abs, Dir, Path)
 import Prelude hiding (exp, local)
@@ -82,13 +81,9 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
           recBinds ← forM (toList recGroup) \(IR.QName modname name, irExp) →
             (modname,name,) . asExpression
               <$> fromIR foreigns Set.empty modname irExp
-          let declarations = DList.fromList do
-                (modname, name, _exp) ← recBinds
-                pure $ mkBinding modname (fromName name) Lua.Nil
-              assignments = DList.fromList do
-                (modname, name, exp) ← recBinds
-                pure $ mkBinding modname (fromName name) exp
-          pure $ declarations <> assignments
+          pure $ DList.fromList do
+            (modname, name, exp) ← recBinds
+            pure $ mkBinding modname (fromName name) exp
 
     returnExp ←
       case appOrModule of
@@ -111,12 +106,9 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
       )
 
   pure . mconcat $
-    [ [Lua.assign moduleVar (Lua.table []) | not (null bindings)]
-    , [ mkBinding Fixture.primModule Fixture.undefined Lua.Nil
-      | usesPrimModule uber
-      ]
-    , [Fixture.runtimeLazy | untag needsRuntimeLazy && usesRuntimeLazy uber]
+    [ [Fixture.runtimeLazy | untag needsRuntimeLazy && usesRuntimeLazy uber]
     , [Fixture.objectUpdate | UsesObjectUpdate ← [usesObjectUpdate]]
+    , [Lua.local1 Fixture.moduleName (Lua.table []) | not (null bindings)]
     , toList (DList.snoc bindings returnStat)
     ]
 
@@ -124,11 +116,8 @@ mkBinding ∷ ModuleName → Lua.Name → Lua.Exp → Lua.Statement
 mkBinding modname name =
   Lua.assign $
     Lua.VarField
-      (Lua.ann (Lua.var moduleVar))
+      (Lua.ann (Lua.varName Fixture.moduleName))
       (qualifyName modname name)
-
-moduleVar ∷ Lua.Var
-moduleVar = Lua.VarName [Lua.name|M|]
 
 asExpression ∷ Either Lua.Chunk Lua.Exp → Lua.Exp
 asExpression = \case
@@ -206,26 +195,29 @@ fromIR foreigns topLevelNames modname ir = case ir of
       Lua.functionCall (Lua.varName Fixture.objectUpdateName) [obj, vals]
   IR.Abs _ann param expr → do
     e ← goExp expr
-    luaParam ←
-      Lua.ParamNamed
-        <$> case param of
-          IR.ParamUnused _ann → uniqueName "unused"
-          IR.ParamNamed _ann name → pure (fromName name)
-    pure . Right $ Lua.functionDef [luaParam] [Lua.return e]
-  IR.App _ann expr param → do
+    let luaParams = case param of
+          IR.ParamUnused _ann → []
+          IR.ParamNamed _ann name → [ParamNamed (fromName name)]
+    pure . Right $ Lua.functionDef luaParams [Lua.return e]
+  IR.App _ann expr arg → do
     e ← goExp expr
-    a ← goExp param
-    pure . Right $ Lua.functionCall e [a]
+    Right . Lua.functionCall e <$> case arg of
+      -- PS sometimes inserts syntetic unused argument "Prim.undefined"
+      IR.Ref _ann (IR.Imported (IR.ModuleName "Prim") (IR.Name "undefined")) _ →
+        pure []
+      _ → goExp arg <&> \a → [a]
   IR.Ref _ann qualifiedName index →
     pure . Right $ case qualifiedName of
       IR.Local name
         | topLevelName ← qualifyName modname (fromName name)
         , Set.member topLevelName topLevelNames →
-            Lua.varField (Lua.var moduleVar) topLevelName
+            Lua.varField (Lua.varName Fixture.moduleName) topLevelName
       IR.Local name →
         Lua.varName (fromNameWithIndex name index)
       IR.Imported modname' name →
-        Lua.varField (Lua.var moduleVar) (qualifyName modname' (fromName name))
+        Lua.varField
+          (Lua.varName Fixture.moduleName)
+          (qualifyName modname' (fromName name))
   IR.Let _ann bindings bodyExp → do
     body ← go bodyExp
     recs ←
@@ -294,11 +286,5 @@ keyCtor = Lua.String "$ctor"
 --------------------------------------------------------------------------------
 -- Helpers ---------------------------------------------------------------------
 
-uniqueName ∷ MonadState Natural m ⇒ Text → m Lua.Name
-uniqueName prefix = do
-  index ← get
-  modify' (+ 1)
-  pure $ Lua.unsafeName (prefix <> show index)
-
 qualifyName ∷ ModuleName → Lua.Name → Lua.Name
-qualifyName modname = Fixture.psluaName . Name.join2 (fromModuleName modname)
+qualifyName modname = Name.join2 (fromModuleName modname)

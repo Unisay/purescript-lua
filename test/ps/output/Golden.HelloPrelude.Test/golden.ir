@@ -38,7 +38,7 @@ UberModule
               ( PropName "Apply0", Abs Nothing ( ParamUnused Nothing )
                 ( App Nothing
                   ( Ref Nothing
-                    ( Imported ( ModuleName "Effect" ) ( Name "PSLUA_lazy_applyEffect" ) ) 0
+                    ( Imported ( ModuleName "Effect" ) ( Name "Lazy_applyEffect" ) ) 0
                   )
                   ( LiteralInt Nothing 0 )
                 )
@@ -56,7 +56,7 @@ UberModule
               ( PropName "Apply0", Abs Nothing ( ParamUnused Nothing )
                 ( App Nothing
                   ( Ref Nothing
-                    ( Imported ( ModuleName "Effect" ) ( Name "PSLUA_lazy_applyEffect" ) ) 0
+                    ( Imported ( ModuleName "Effect" ) ( Name "Lazy_applyEffect" ) ) 0
                   )
                   ( LiteralInt Nothing 0 )
                 )
@@ -64,7 +64,7 @@ UberModule
             ]
           ),
           ( QName
-            { qnameModuleName = ModuleName "Effect", qnameName = Name "PSLUA_lazy_functorEffect"
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "Lazy_functorEffect"
             }, App Nothing
             ( App Nothing
               ( Ref Nothing ( Local ( Name "PSLUA_runtime_lazy" ) ) 0 )
@@ -106,7 +106,7 @@ UberModule
             )
           ),
           ( QName
-            { qnameModuleName = ModuleName "Effect", qnameName = Name "PSLUA_lazy_applyEffect"
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "Lazy_applyEffect"
             }, App Nothing
             ( App Nothing
               ( Ref Nothing ( Local ( Name "PSLUA_runtime_lazy" ) ) 0 )
@@ -186,7 +186,7 @@ UberModule
                   ( PropName "Functor0", Abs Nothing ( ParamUnused Nothing )
                     ( App Nothing
                       ( Ref Nothing
-                        ( Imported ( ModuleName "Effect" ) ( Name "PSLUA_lazy_functorEffect" ) ) 0
+                        ( Imported ( ModuleName "Effect" ) ( Name "Lazy_functorEffect" ) ) 0
                       )
                       ( LiteralInt Nothing 0 )
                     )
