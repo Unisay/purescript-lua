@@ -77,7 +77,7 @@ common shared
     , aeson                        ^>=2.2
     , array                        ^>=0.5.4.0
     , attoparsec                   ^>=0.14.4
-    , base                         ^>=4.18.2
+    , base                         ^>=4.19.1
     , containers                   ^>=0.6.5.1
     , data-fix                     ^>=0.3.2
     , deriving-compat              ^>=0.6.2
@@ -101,8 +101,8 @@ common shared
     , scientific                   ^>=0.3.7.0
     , string-interpolate           ^>=0.3.2.1
     , tagged                       ^>=0.8.6.1
-    , template-haskell             ^>=2.20
-    , text                         ^>=2.0.2
+    , template-haskell             ^>=2.21
+    , text                         ^>=2.1.1
     , transformers                 ^>=0.6.1.1
     , vector                       ^>=0.13
 
@@ -117,7 +117,7 @@ executable pslua
   build-depends:
     , optparse-applicative  ^>=0.18.1
     , pslua
-    , with-utf8             ^>=1.0.2.3
+    , with-utf8             ^>=1.1
 
 library
   import:          shared
@@ -183,12 +183,12 @@ test-suite spec
   build-depends:
     , call-stack                      ^>=0.4.0
     , exceptions                      ^>=0.10.7
-    , hedgehog                        ^>=1.2
+    , hedgehog                        ^>=1.4
     , hedgehog-corpus                 ^>=0.2
-    , hspec                           ^>=2.10.10
-    , hspec-core                      ^>=2.10.10
+    , hspec                           ^>=2.11.7
+    , hspec-core                      ^>=2.11.7
     , hspec-expectations-pretty-diff  ^>=0.7.2.6
-    , hspec-hedgehog                  ^>=0.0.1.2
+    , hspec-hedgehog                  ^>=0.1.1
     , HUnit                           ^>=1.6.2.0
     , pslua
     , typed-process                   ^>=0.2.10.1

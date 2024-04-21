@@ -19,7 +19,7 @@
           (final: prev: {
             psluaProject = final.haskell-nix.project' {
               src = ./.;
-              compiler-nix-name = "ghc964";
+              compiler-nix-name = "ghc98";
               evalSystem = "x86_64-linux";
               modules = let prof = false;
               in [{
@@ -34,11 +34,9 @@
               shell = {
                 tools = {
                   cabal = {};
-                  cabal-fmt = {};
                   fourmolu = {};
                   hlint = {};
                   haskell-language-server = {};
-                  nixfmt = {};
                 };
                 buildInputs = with pkgs; [
                   cachix

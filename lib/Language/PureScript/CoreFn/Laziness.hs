@@ -30,8 +30,8 @@ import Language.PureScript.Names
   , pattern ByNullSourcePos
   )
 import Language.PureScript.PSString (mkString)
-import Relude.Unsafe qualified as Unsafe
 import Prelude hiding (force)
+import qualified Data.List.NonEmpty as NE
 
 -- This module is responsible for ensuring that the bindings in recursive
 -- binding groups are initialized in a valid order, introducing run-time
@@ -408,25 +408,27 @@ searchReachable
   ⇒ Int
   → ((Int, force) → m (IM.MonoidalIntMap (Max force)))
   → A.Array Int (m (IM.MonoidalIntMap (Max force)))
-searchReachable maxIdx lookupEdges = mrtFlatten . Unsafe.head <$> mem
+searchReachable maxIdx lookupEdges = mrtFlatten . head <$> mem
  where
   -- This is a finite array of infinite lists, used to memoize all the search
   -- trees. `unsafeHead` is used above to pull the first tree out of each list
   -- in the array--the one corresponding to zero force, which is what's needed
   -- to initialize the corresponding identifier. (`unsafeHead` is safe here, of
   -- course: infinite lists.)
-  mem ∷ A.Array Int [MaxRoseTree m force]
+  mem ∷ A.Array Int (NonEmpty (MaxRoseTree m force))
   mem =
     A.listArray
       (0, maxIdx)
-      [ [ cutLoops <*> fmap (IM.mapWithKey memoizedNode) . lookupEdges $ (i, f)
+      [ NE.fromList
+        [ cutLoops <*> fmap (IM.mapWithKey memoizedNode) . lookupEdges $ (i, f)
         | f ← [toEnum 0 ..]
         ]
       | i ← [0 .. maxIdx]
       ]
 
   memoizedNode ∷ Int → Max force → MaxRoseNode m force
-  memoizedNode i (Max force) = MaxRoseNode force $ mem A.! i !! fromEnum force
+  memoizedNode i (Max force) =
+    MaxRoseNode force $ toList (mem A.! i) !! fromEnum force
 
   -- And this is the function that prevents the search from actually being
   -- infinite. It applies a filter to a `MaxRoseTree` at every level, looking for
