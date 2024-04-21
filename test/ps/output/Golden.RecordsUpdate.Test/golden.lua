@@ -1,3 +1,4 @@
+M = {}
 function PSLUA_object_update(o, patches)
   local o_copy = {}
   for k, v in pairs(o) do
@@ -10,14 +11,14 @@ function PSLUA_object_update(o, patches)
   end
   return o_copy
 end
-PSLUA_Golden_RecordsUpdate_Test_r = {
+M.PSLUA_Golden_RecordsUpdate_Test_r = {
   x = 1,
   y = true,
   z = { z = "foo", p = "a" }
 }
 return {
-  r = PSLUA_Golden_RecordsUpdate_Test_r,
-  test1 = PSLUA_object_update(PSLUA_Golden_RecordsUpdate_Test_r, { x = 2 }),
+  r = M.PSLUA_Golden_RecordsUpdate_Test_r,
+  test1 = PSLUA_object_update(M.PSLUA_Golden_RecordsUpdate_Test_r, { x = 2 }),
   test2 = function(v) return PSLUA_object_update(v, { y = false }) end,
   test3 = function(v)
     return PSLUA_object_update(v, { z = PSLUA_object_update(v.z, { p = "b" }) })

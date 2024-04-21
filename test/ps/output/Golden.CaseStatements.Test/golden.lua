@@ -1,11 +1,12 @@
-PSLUA_Golden_Values_Test_f = function(unused0) return true end
+M = {}
+M.PSLUA_Golden_Values_Test_f = function(unused0) return true end
 return {
   a = 1,
   b = "b",
   c = (function()
     local v = function(unused1) return 0 end
-    if PSLUA_Golden_Values_Test_f(2) then
-      if PSLUA_Golden_Values_Test_f(1) then return 42 else return v(true) end
+    if M.PSLUA_Golden_Values_Test_f(2) then
+      if M.PSLUA_Golden_Values_Test_f(1) then return 42 else return v(true) end
     else
       return v(true)
     end

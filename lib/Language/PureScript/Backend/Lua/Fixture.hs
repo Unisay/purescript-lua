@@ -6,15 +6,22 @@ import Data.String.Interpolate (__i)
 import Language.PureScript.Backend.Lua.Name (Name, name, unsafeName)
 import Language.PureScript.Backend.Lua.Name qualified as Name
 import Language.PureScript.Backend.Lua.Types hiding (var)
+import Language.PureScript.Backend.IR.Names (ModuleName(..))
 
 --------------------------------------------------------------------------------
 -- Hard-coded Lua pieces -------------------------------------------------------
 
-prim ∷ Statement
-prim = assignVar (primName [name|undefined|]) Nil
+prim ∷ Name
+prim = [name|Prim|]
+
+primModule :: ModuleName
+primModule = ModuleName "Prim"
+
+undefined ∷ Name
+undefined = primName [name|undefined|]
 
 primName ∷ Name → Name
-primName = psluaName . Name.join2 [name|Prim|]
+primName = psluaName . Name.join2 prim
 
 uniqueName ∷ MonadState Natural m ⇒ Text → m Name
 uniqueName prefix = do

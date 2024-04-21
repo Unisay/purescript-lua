@@ -4,7 +4,7 @@ module Language.PureScript.Backend.Lua
   ( fromUberModule
   , fromIR
   , fromName
-  , fromQName
+  -- , qualifyName
   , qualifyName
   , Error (..)
   ) where
@@ -66,23 +66,28 @@ fromUberModule
   → Linker.UberModule
   → ExceptT (Variant e) IO Lua.Chunk
 fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
-  (chunk, usesObjectUpdate) ← (`runAccumT` NoObjectUpdate) do
+  ((bindings, returnStat), usesObjectUpdate) ← (`runAccumT` NoObjectUpdate) do
     foreignBindings ←
       forM (Linker.uberModuleForeigns uber) \(IR.QName modname name, irExp) → do
         exp ← asExpression <$> fromIR foreigns Set.empty modname irExp
-        pure $ Lua.assign (Lua.VarName (fromQName modname name)) exp
+        pure $ mkBinding modname (fromName name) exp
+
     bindings ←
       Linker.uberModuleBindings uber & foldMapM \case
         IR.Standalone (IR.QName modname name, irExp) → do
           exp ← fromIR foreigns Set.empty modname irExp
           pure . DList.singleton $
-            Lua.assignVar (fromQName modname name) (asExpression exp)
+            mkBinding modname (fromName name) (asExpression exp)
         IR.RecursiveGroup recGroup → do
           recBinds ← forM (toList recGroup) \(IR.QName modname name, irExp) →
-            (fromQName modname name,) . asExpression
+            (modname,name,) . asExpression
               <$> fromIR foreigns Set.empty modname irExp
-          let declarations = Lua.local0 . fst <$> DList.fromList recBinds
-              assignments = DList.fromList (uncurry Lua.assignVar <$> recBinds)
+          let declarations = DList.fromList do
+                (modname, name, _exp) ← recBinds
+                pure $ mkBinding modname (fromName name) Lua.Nil
+              assignments = DList.fromList do
+                (modname, name, exp) ← recBinds
+                pure $ mkBinding modname (fromName name) exp
           pure $ declarations <> assignments
 
     returnExp ←
@@ -100,24 +105,35 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
          where
           name = IR.identToName ident
 
-    pure $
-      DList.fromList foreignBindings
-        <> DList.snoc bindings (Lua.Return (Lua.ann returnExp))
+    pure
+      ( DList.fromList foreignBindings <> bindings
+      , Lua.Return (Lua.ann returnExp)
+      )
 
   pure . mconcat $
-    [ [Fixture.prim | usesPrimModule uber]
+    [ [Lua.assign moduleVar (Lua.table []) | not (null bindings)]
+    , [ mkBinding Fixture.primModule Fixture.undefined Lua.Nil
+      | usesPrimModule uber
+      ]
     , [Fixture.runtimeLazy | untag needsRuntimeLazy && usesRuntimeLazy uber]
     , [Fixture.objectUpdate | UsesObjectUpdate ← [usesObjectUpdate]]
-    , DList.toList chunk
+    , toList (DList.snoc bindings returnStat)
     ]
+
+mkBinding ∷ ModuleName → Lua.Name → Lua.Exp → Lua.Statement
+mkBinding modname name =
+  Lua.assign $
+    Lua.VarField
+      (Lua.ann (Lua.var moduleVar))
+      (qualifyName modname name)
+
+moduleVar ∷ Lua.Var
+moduleVar = Lua.VarName [Lua.name|M|]
 
 asExpression ∷ Either Lua.Chunk Lua.Exp → Lua.Exp
 asExpression = \case
   Left chunk → Lua.chunkToExpression chunk
   Right expr → expr
-
-fromQName ∷ ModuleName → IR.Name → Lua.Name
-fromQName modname name = qualifyName modname (fromName name)
 
 fromName ∷ HasCallStack ⇒ IR.Name → Lua.Name
 fromName = Name.makeSafe . IR.nameToText
@@ -203,13 +219,13 @@ fromIR foreigns topLevelNames modname ir = case ir of
   IR.Ref _ann qualifiedName index →
     pure . Right $ case qualifiedName of
       IR.Local name
-        | topLevelName ← fromQName modname name
+        | topLevelName ← qualifyName modname (fromName name)
         , Set.member topLevelName topLevelNames →
-            Lua.varName topLevelName
+            Lua.varField (Lua.var moduleVar) topLevelName
       IR.Local name →
         Lua.varName (fromNameWithIndex name index)
       IR.Imported modname' name →
-        Lua.varName (fromQName modname' name)
+        Lua.varField (Lua.var moduleVar) (qualifyName modname' (fromName name))
   IR.Let _ann bindings bodyExp → do
     body ← go bodyExp
     recs ←
@@ -218,18 +234,22 @@ fromIR foreigns topLevelNames modname ir = case ir of
           DList.singleton . Lua.local1 (fromName name) <$> goExp expr
         IR.RecursiveGroup grp → do
           let binds =
-                toList grp <&> \(_ann, irName, _) → do
-                  let name =
-                        if Set.member (fromQName modname irName) topLevelNames
-                          then fromQName modname irName
-                          else fromName irName
-                  Lua.Local name Nothing
-          assignments ← forM (toList grp) \(_ann, irName, expr) → do
-            let name =
-                  if Set.member (fromQName modname irName) topLevelNames
-                    then fromQName modname irName
-                    else fromName irName
-            Lua.assign (Lua.VarName name) <$> goExp expr
+                toList grp <&> \(_ann, fromName → name, _) →
+                  Lua.Local
+                    ( if Set.member (qualifyName modname name) topLevelNames
+                        then qualifyName modname name
+                        else name
+                    )
+                    Nothing
+          assignments ← forM (toList grp) \(_ann, fromName → name, expr) →
+            goExp expr
+              <&> Lua.assign
+                ( Lua.VarName
+                    ( if Set.member (qualifyName modname name) topLevelNames
+                        then qualifyName modname name
+                        else name
+                    )
+                )
           pure $ DList.fromList binds <> DList.fromList assignments
     pure . Left . DList.toList $
       recs <> either DList.fromList (DList.singleton . Lua.return) body

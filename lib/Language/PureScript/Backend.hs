@@ -44,6 +44,7 @@ compileModules outputDir foreignDir appOrModule = do
   let needsRuntimeLazy = Tagged (any untag needsRuntimeLazys)
   chunk ← Lua.fromUberModule foreignDir needsRuntimeLazy appOrModule uberModule
   pure CompilationResult {lua = optimizeChunk chunk, ir = uberModule}
+
 linkerMode ∷ AppOrModule → Linker.LinkMode
 linkerMode = \case
   AsModule psModuleName → Linker.LinkAsModule psModuleName

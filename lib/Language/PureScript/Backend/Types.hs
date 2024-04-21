@@ -9,5 +9,5 @@ data AppOrModule
 
 entryPointModule ∷ AppOrModule → PS.ModuleName
 entryPointModule = \case
-  AsApplication modul _ident → modul
-  AsModule modul → modul
+  AsApplication modname _ident → modname
+  AsModule modname → modname

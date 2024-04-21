@@ -206,7 +206,7 @@ UberModule
         )
         ( ObjectProp ( Just Always )
           ( ForeignImport Nothing
-            ( ModuleName "Data.Unit" ) ".spago/prelude/v7.1.0/src/Data/Unit.purs"
+            ( ModuleName "Data.Unit" ) ".spago/prelude/v7.1.1/src/Data/Unit.purs"
             [ ( Nothing, Name "unit" ) ]
           )
           ( PropName "unit" )

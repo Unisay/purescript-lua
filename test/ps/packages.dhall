@@ -1,15 +1,10 @@
-let upstream =
-      https://github.com/Unisay/purescript-lua-package-sets/releases/download/psc-0.15.15-20240321/packages.dhall
-        sha256:5b0a1f05293f3dfc6de9e2d87c5afab1cac35e2d9b38693f032f3e9a86a1090d
+let upstream-ps =
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.15-20240419/packages.dhall
+        sha256:50c4ee579bf2c38671ac97df821c2cc4221fb3f6ad79c807bb6e4597ab6d1e95
 
-in  upstream
-  with effect =
-    { dependencies = [ "prelude" ]
-    , repo = "https://github.com/Unisay/purescript-lua-effect.git"
-    , version = "v4.1.0"
-    }
-  with prelude =
-    { dependencies = [] : List Text
-    , repo = "https://github.com/Unisay/purescript-lua-prelude.git"
-    , version = "v7.1.0"
-    }
+let upstream-lua =
+      https://github.com/Unisay/purescript-lua-package-sets/releases/download/psc-0.15.15-20240416/packages.dhall
+        sha256:e68b7752ca4dee0f0578a2e40159caf6d1290a711777931b20d10d807823b52d
+
+in  upstream-ps // upstream-lua
+
