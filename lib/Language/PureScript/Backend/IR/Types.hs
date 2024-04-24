@@ -2,7 +2,7 @@
 
 module Language.PureScript.Backend.IR.Types where
 
-import Control.Lens (Prism', prism')
+import Control.Lens (Prism', Traversal', makePrisms, prism')
 import Data.Deriving (deriveEq1, deriveOrd1)
 import Data.Map qualified as Map
 import Data.MonoidMap (MonoidMap)
@@ -61,6 +61,19 @@ instance Semigroup Info where
 instance Monoid Info where
   mempty = Info mempty
 
+data AlgebraicType = SumType | ProductType
+  deriving stock (Generic, Eq, Ord, Show, Enum, Bounded)
+
+newtype Index = Index {unIndex ∷ Natural}
+  deriving newtype (Show, Eq, Ord, Num, Enum, Real, Integral)
+
+data Parameter ann = ParamUnused ann | ParamNamed ann Name
+  deriving stock (Show, Eq, Ord)
+
+paramName ∷ Parameter ann → Maybe Name
+paramName (ParamUnused _ann) = Nothing
+paramName (ParamNamed _ann name) = Just name
+
 data RawExp ann
   = LiteralInt ann Integer
   | LiteralFloat ann Double
@@ -114,16 +127,6 @@ getAnn = \case
   Exception ann _ → ann
   ForeignImport ann _ _ _ → ann
 
-newtype Index = Index {unIndex ∷ Natural}
-  deriving newtype (Show, Eq, Ord, Num, Enum, Real, Integral)
-
-data Parameter ann = ParamUnused ann | ParamNamed ann Name
-  deriving stock (Show, Eq, Ord)
-
-paramName ∷ Parameter ann → Maybe Name
-paramName (ParamUnused _ann) = Nothing
-paramName (ParamNamed _ann name) = Just name
-
 isLiteral ∷ RawExp ann → Bool
 isLiteral = (||) <$> isNonRecursiveLiteral <*> isRecursiveLiteral
 
@@ -141,9 +144,6 @@ isRecursiveLiteral = \case
   LiteralArray {} → True
   LiteralObject {} → True
   _ → False
-
-data AlgebraicType = SumType | ProductType
-  deriving stock (Generic, Eq, Ord, Show, Enum, Bounded)
 
 ctorId ∷ ModuleName → TyName → CtorName → Text
 ctorId modName tyName ctorName =
@@ -367,49 +367,40 @@ annotateExpM around annotateExp annotateParam annotateName =
   mkAnn ∷ RawExp ann → m (RawExp ann')
   mkAnn = annotateExpM around annotateExp annotateParam annotateName
 
-traverseExpBottomUp
-  ∷ ∀ ann m
-   . Monad m
-  ⇒ (RawExp ann → m (RawExp ann))
-  → (RawExp ann → m (RawExp ann))
-traverseExpBottomUp visit = go
- where
-  go ∷ RawExp ann → m (RawExp ann)
-  go e =
-    visit =<< case e of
-      LiteralArray ann as →
-        LiteralArray ann <$> traverse go as
-      LiteralObject ann props →
-        LiteralObject ann <$> traverse (traverse go) props
-      ReflectCtor ann a →
-        ReflectCtor ann <$> go a
-      DataArgumentByIndex ann idx a →
-        DataArgumentByIndex ann idx <$> go a
-      Eq ann a b →
-        Eq ann <$> go a <*> go b
-      ArrayLength ann a →
-        ArrayLength ann <$> go a
-      ArrayIndex ann a idx → do
-        a' ← go a
-        pure $ ArrayIndex ann a' idx
-      ObjectProp ann a prp → do
-        a' ← go a
-        pure $ ObjectProp ann a' prp
-      ObjectUpdate ann a ps →
-        ObjectUpdate ann
-          <$> go a
-          <*> traverse (traverse go) ps
-      App ann a b →
-        App ann <$> go a <*> go b
-      Abs ann arg a →
-        Abs ann arg <$> go a
-      Let ann bs body →
-        Let ann
-          <$> traverse (traverse (\(a, n, expr) → (a,n,) <$> go expr)) bs
-          <*> go body
-      IfThenElse ann p th el →
-        IfThenElse ann <$> go p <*> go th <*> go el
-      _ → pure e
+{-# INLINE subexpressions #-}
+
+-- | Get all the direct child 'RawExp's of the given 'RawExp'
+subexpressions ∷ Traversal' (RawExp ann) (RawExp ann)
+subexpressions go = \case
+  LiteralArray ann as →
+    LiteralArray ann <$> traverse go as
+  LiteralObject ann props →
+    LiteralObject ann <$> traverse (traverse go) props
+  ReflectCtor ann a →
+    ReflectCtor ann <$> go a
+  DataArgumentByIndex ann idx a →
+    DataArgumentByIndex ann idx <$> go a
+  Eq ann a b →
+    Eq ann <$> go a <*> go b
+  ArrayLength ann a →
+    ArrayLength ann <$> go a
+  ArrayIndex ann a idx →
+    ArrayIndex ann <$> go a <*> pure idx
+  ObjectProp ann a prp →
+    ObjectProp ann <$> go a <*> pure prp
+  ObjectUpdate ann a ps →
+    ObjectUpdate ann <$> go a <*> traverse (traverse go) ps
+  App ann a b →
+    App ann <$> go a <*> go b
+  Abs ann arg a →
+    Abs ann arg <$> go a
+  Let ann bs body →
+    Let ann
+      <$> traverse (traverse (\(a, n, expr) → (a,n,) <$> go expr)) bs
+      <*> go body
+  IfThenElse ann p th el →
+    IfThenElse ann <$> go p <*> go th <*> go el
+  e → pure e
 
 data RewriteMod = Recurse | Stop
   deriving stock (Show, Eq, Ord)
@@ -760,3 +751,7 @@ shift offset namespace minIndex expression =
     _ → expression
  where
   go = shift offset namespace minIndex
+
+$(makePrisms ''AlgebraicType)
+$(makePrisms ''Parameter)
+$(makePrisms ''RawExp)

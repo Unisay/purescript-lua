@@ -1,6 +1,7 @@
 module Language.PureScript.Backend.IR.Query where
 
-import Control.Monad.Trans.Accum (Accum, add, execAccum)
+import Control.Lens.Plated (transformMOf)
+import Control.Monad.Trans.Accum (add, execAccum)
 import Data.Map qualified as Map
 import Data.Set qualified as Set
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
@@ -15,7 +16,7 @@ import Language.PureScript.Backend.IR.Types
   , countFreeRef
   , countFreeRefs
   , listGrouping
-  , traverseExpBottomUp
+  , subexpressions
   )
 import Language.PureScript.Backend.IR.Types qualified as IR
 import Language.PureScript.Names (runtimeLazyName)
@@ -48,7 +49,7 @@ findPrimModuleInExpr expr =
 
 collectBoundNames ∷ Exp → Set Name
 collectBoundNames =
-  (`execAccum` Set.empty) . traverseExpBottomUp @_ @(Accum (Set Name)) \e →
+  (`execAccum` Set.empty) . transformMOf subexpressions \e →
     case e of
       IR.Abs _ann (IR.ParamNamed _paramAnn name) _body →
         e <$ add (Set.singleton name)
