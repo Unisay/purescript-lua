@@ -96,8 +96,20 @@ UberModule
           ( Nothing, Name "z", LiteralInt Nothing 1 ) :|
           [ RecursiveGroup
             (
-              ( Nothing, Name "a", Ref Nothing ( Local ( Name "b" ) ) 0 ) :|
-              [ ( Nothing, Name "b", Ref Nothing ( Local ( Name "a" ) ) 0 ) ]
+              ( Nothing, Name "a", Abs Nothing ( ParamUnused Nothing )
+                ( App Nothing
+                  ( Ref Nothing ( Local ( Name "b" ) ) 0 )
+                  ( Ref Nothing ( Local ( Name "z" ) ) 0 )
+                )
+              ) :|
+              [
+                ( Nothing, Name "b", Abs Nothing ( ParamUnused Nothing )
+                  ( App Nothing
+                    ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+                    ( Ref Nothing ( Local ( Name "z" ) ) 0 )
+                  )
+                )
+              ]
             ), Standalone
             ( Nothing, Name "f", Abs Nothing ( ParamUnused Nothing )
               ( Ref Nothing ( Local ( Name "a" ) ) 0 )

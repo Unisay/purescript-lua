@@ -1,5 +1,5 @@
 { name = "test-project"
-, dependencies = [ "effect", "prelude" ]
+, dependencies = [ "console", "effect", "prelude" ]
 , packages = ./packages.dhall
 , sources = [ "golden/**/*.purs" ]
 }

@@ -10,5 +10,7 @@ return {
       return M.Golden_NameShadowing_Test_f(M.Golden_NameShadowing_Test_f(x)(x1))(M.Golden_NameShadowing_Test_f(42)(1))
     end
   end,
-  c = M.Golden_NameShadowing_Test_f
+  c = function(y)
+    return function(x1) return M.Golden_NameShadowing_Test_f(x1)(y) end
+  end
 }

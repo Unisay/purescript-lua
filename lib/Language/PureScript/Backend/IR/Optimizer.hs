@@ -171,6 +171,13 @@ idempotently = fix $ \i f a →
   let a' = f a
    in if a' == a then a else i f a'
 
+--         if a' == a
+--           then tr "FIXPOINT" a a
+--           else tr "RETRYING" a' (i f a')
+--  where
+--   tr ∷ Show x ⇒ String → x → y → y
+--   tr l x y = trace ("\n\n" <> l <> "\n" <> (toString . pShow) x <> "\n") y
+
 optimizeModule ∷ UberModule → UberModule
 optimizeModule UberModule {..} =
   UberModule
@@ -271,8 +278,9 @@ betaReduce =
 etaReduce ∷ RewriteRule Ann
 etaReduce =
   pure . \case
-    Abs _ (ParamNamed _ _param) (App _ m (Ref _ (Local _) 0)) →
-      Rewritten Recurse m
+    Abs _ (ParamNamed _ param) (App _ m (Ref _ (Local param') 0))
+      | param == param' →
+          Rewritten Recurse m
     _ → NoChange
 
 betaReduceUnusedParams ∷ RewriteRule Ann

@@ -65,6 +65,12 @@
                   yamlfmt
                 ];
               };
+
+              crossPlatforms =
+                p:
+                pkgs.lib.optionals pkgs.stdenv.hostPlatform.isx86_64 (
+                  pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [ p.musl64 ]
+                );
             };
           })
         ];
