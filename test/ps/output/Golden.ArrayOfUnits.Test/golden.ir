@@ -1,0 +1,577 @@
+UberModule
+  { uberModuleBindings =
+    [ Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Unit", qnameName = Name "foreign"
+        }, ForeignImport Nothing
+        ( ModuleName "Data.Unit" ) ".spago/prelude/v7.2.0/src/Data/Unit.purs"
+        [ ( Just Always, Name "unit" ) ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Semiring", qnameName = Name "foreign"
+        }, ForeignImport Nothing
+        ( ModuleName "Data.Semiring" ) ".spago/prelude/v7.2.0/src/Data/Semiring.purs"
+        [ ( Nothing, Name "intAdd" ), ( Nothing, Name "intMul" ) ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Foldable", qnameName = Name "foreign"
+        }, ForeignImport Nothing
+        ( ModuleName "Data.Foldable" ) ".spago/foldable-traversable/v6.1.0/src/Data/Foldable.purs"
+        [ ( Nothing, Name "foldrArray" ), ( Nothing, Name "foldlArray" ) ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Effect", qnameName = Name "foreign"
+        }, ForeignImport Nothing
+        ( ModuleName "Effect" ) ".spago/effect/v4.1.0/src/Effect.purs"
+        [ ( Nothing, Name "pureE" ), ( Nothing, Name "bindE" ) ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Control.Semigroupoid", qnameName = Name "semigroupoidFn"
+        }, LiteralObject Nothing
+        [
+          ( PropName "compose", Abs Nothing
+            ( ParamNamed Nothing ( Name "f" ) )
+            ( Abs Nothing
+              ( ParamNamed Nothing ( Name "g" ) )
+              ( Abs Nothing
+                ( ParamNamed Nothing ( Name "x" ) )
+                ( App Nothing
+                  ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                  ( App Nothing
+                    ( Ref Nothing ( Local ( Name "g" ) ) 0 )
+                    ( Ref Nothing ( Local ( Name "x" ) ) 0 )
+                  )
+                )
+              )
+            )
+          )
+        ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Semiring", qnameName = Name "semiringInt"
+        }, LiteralObject Nothing
+        [
+          ( PropName "add", ObjectProp ( Just Always )
+            ( Ref Nothing ( Imported ( ModuleName "Data.Semiring" ) ( Name "foreign" ) ) 0 )
+            ( PropName "intAdd" )
+          ),
+          ( PropName "zero", LiteralInt Nothing 0 ),
+          ( PropName "mul", ObjectProp ( Just Always )
+            ( Ref Nothing ( Imported ( ModuleName "Data.Semiring" ) ( Name "foreign" ) ) 0 )
+            ( PropName "intMul" )
+          ),
+          ( PropName "one", LiteralInt Nothing 1 )
+        ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Control.Apply", qnameName = Name "apply" }, Abs Nothing
+        ( ParamNamed Nothing ( Name "dict" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "dict" ) ) 0 ) ( PropName "apply" ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "pure"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "dict" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "dict" ) ) 0 ) ( PropName "pure" ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Control.Bind", qnameName = Name "bind" }, Abs Nothing
+        ( ParamNamed Nothing ( Name "dict" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "dict" ) ) 0 ) ( PropName "bind" ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Foldable", qnameName = Name "foldr" }, Abs Nothing
+        ( ParamNamed Nothing ( Name "dict" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "dict" ) ) 0 ) ( PropName "foldr" ) )
+      ), RecursiveGroup
+      (
+        ( QName
+          { qnameModuleName = ModuleName "Data.Foldable", qnameName = Name "foldableArray"
+          }, LiteralObject Nothing
+          [
+            ( PropName "foldr", ObjectProp ( Just Always )
+              ( Ref Nothing ( Imported ( ModuleName "Data.Foldable" ) ( Name "foreign" ) ) 0 )
+              ( PropName "foldrArray" )
+            ),
+            ( PropName "foldl", ObjectProp ( Just Always )
+              ( Ref Nothing ( Imported ( ModuleName "Data.Foldable" ) ( Name "foreign" ) ) 0 )
+              ( PropName "foldlArray" )
+            ),
+            ( PropName "foldMap", Abs Nothing
+              ( ParamNamed Nothing ( Name "dictMonoid" ) )
+              ( Abs Nothing
+                ( ParamNamed Nothing ( Name "f" ) )
+                ( App Nothing
+                  ( App Nothing
+                    ( App Nothing
+                      ( Ref Nothing
+                        ( Imported ( ModuleName "Data.Foldable" ) ( Name "foldr" ) ) 0
+                      )
+                      ( Ref Nothing
+                        ( Imported ( ModuleName "Data.Foldable" ) ( Name "foldableArray" ) ) 0
+                      )
+                    )
+                    ( Abs Nothing
+                      ( ParamNamed Nothing ( Name "x" ) )
+                      ( App Nothing
+                        ( ObjectProp Nothing
+                          ( App Nothing
+                            ( ObjectProp Nothing
+                              ( Ref Nothing ( Local ( Name "dictMonoid" ) ) 0 )
+                              ( PropName "Semigroup0" )
+                            )
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
+                            )
+                          )
+                          ( PropName "append" )
+                        )
+                        ( App Nothing
+                          ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                          ( Ref Nothing ( Local ( Name "x" ) ) 0 )
+                        )
+                      )
+                    )
+                  )
+                  ( ObjectProp Nothing
+                    ( Ref Nothing ( Local ( Name "dictMonoid" ) ) 0 )
+                    ( PropName "mempty" )
+                  )
+                )
+              )
+            )
+          ]
+        ) :| []
+      ), RecursiveGroup
+      (
+        ( QName
+          { qnameModuleName = ModuleName "Effect", qnameName = Name "monadEffect"
+          }, LiteralObject Nothing
+          [
+            ( PropName "Applicative0", Abs Nothing ( ParamUnused Nothing )
+              ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0 )
+            ),
+            ( PropName "Bind1", Abs Nothing ( ParamUnused Nothing )
+              ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "bindEffect" ) ) 0 )
+            )
+          ]
+        ) :|
+        [
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "bindEffect"
+            }, LiteralObject Nothing
+            [
+              ( PropName "bind", ObjectProp ( Just Always )
+                ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "foreign" ) ) 0 )
+                ( PropName "bindE" )
+              ),
+              ( PropName "Apply0", Abs Nothing ( ParamUnused Nothing )
+                ( App Nothing
+                  ( Ref Nothing
+                    ( Imported ( ModuleName "Effect" ) ( Name "Lazy_applyEffect" ) ) 0
+                  )
+                  ( LiteralInt Nothing 0 )
+                )
+              )
+            ]
+          ),
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "applicativeEffect"
+            }, LiteralObject Nothing
+            [
+              ( PropName "pure", ObjectProp ( Just Always )
+                ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "foreign" ) ) 0 )
+                ( PropName "pureE" )
+              ),
+              ( PropName "Apply0", Abs Nothing ( ParamUnused Nothing )
+                ( App Nothing
+                  ( Ref Nothing
+                    ( Imported ( ModuleName "Effect" ) ( Name "Lazy_applyEffect" ) ) 0
+                  )
+                  ( LiteralInt Nothing 0 )
+                )
+              )
+            ]
+          ),
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "Lazy_functorEffect"
+            }, App Nothing
+            ( App Nothing
+              ( Ref Nothing ( Local ( Name "PSLUA_runtime_lazy" ) ) 0 )
+              ( LiteralString Nothing "functorEffect" )
+            )
+            ( Abs Nothing ( ParamUnused Nothing )
+              ( LiteralObject Nothing
+                [
+                  ( PropName "map", Abs Nothing
+                    ( ParamNamed Nothing ( Name "f" ) )
+                    ( App Nothing
+                      ( App Nothing
+                        ( Ref Nothing
+                          ( Imported ( ModuleName "Control.Apply" ) ( Name "apply" ) ) 0
+                        )
+                        ( App Nothing
+                          ( ObjectProp Nothing
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
+                            )
+                            ( PropName "Apply0" )
+                          )
+                          ( Ref Nothing ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
+                        )
+                      )
+                      ( App Nothing
+                        ( App Nothing
+                          ( Ref Nothing
+                            ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0
+                          )
+                          ( Ref Nothing
+                            ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
+                          )
+                        )
+                        ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                      )
+                    )
+                  )
+                ]
+              )
+            )
+          ),
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "Lazy_applyEffect"
+            }, App Nothing
+            ( App Nothing
+              ( Ref Nothing ( Local ( Name "PSLUA_runtime_lazy" ) ) 0 )
+              ( LiteralString Nothing "applyEffect" )
+            )
+            ( Abs Nothing ( ParamUnused Nothing )
+              ( LiteralObject Nothing
+                [
+                  ( PropName "apply", Let Nothing
+                    ( Standalone
+                      ( Nothing, Name "bind", App Nothing
+                        ( Ref Nothing
+                          ( Imported ( ModuleName "Control.Bind" ) ( Name "bind" ) ) 0
+                        )
+                        ( App Nothing
+                          ( ObjectProp Nothing
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Effect" ) ( Name "monadEffect" ) ) 0
+                            )
+                            ( PropName "Bind1" )
+                          )
+                          ( Ref Nothing ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
+                        )
+                      ) :| []
+                    )
+                    ( Abs Nothing
+                      ( ParamNamed Nothing ( Name "f" ) )
+                      ( Abs Nothing
+                        ( ParamNamed Nothing ( Name "a" ) )
+                        ( App Nothing
+                          ( App Nothing
+                            ( Ref Nothing ( Local ( Name "bind" ) ) 0 )
+                            ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                          )
+                          ( Abs Nothing
+                            ( ParamNamed Nothing ( Name "f'" ) )
+                            ( App Nothing
+                              ( App Nothing
+                                ( Ref Nothing ( Local ( Name "bind" ) ) 0 )
+                                ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+                              )
+                              ( Abs Nothing
+                                ( ParamNamed Nothing ( Name "a'" ) )
+                                ( App Nothing
+                                  ( App Nothing
+                                    ( Ref Nothing
+                                      ( Imported
+                                        ( ModuleName "Control.Applicative" )
+                                        ( Name "pure" )
+                                      ) 0
+                                    )
+                                    ( App Nothing
+                                      ( ObjectProp Nothing
+                                        ( Ref Nothing
+                                          ( Imported
+                                            ( ModuleName "Effect" )
+                                            ( Name "monadEffect" )
+                                          ) 0
+                                        )
+                                        ( PropName "Applicative0" )
+                                      )
+                                      ( Ref Nothing
+                                        ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
+                                      )
+                                    )
+                                  )
+                                  ( App Nothing
+                                    ( Ref Nothing ( Local ( Name "f'" ) ) 0 )
+                                    ( Ref Nothing ( Local ( Name "a'" ) ) 0 )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+                  ( PropName "Functor0", Abs Nothing ( ParamUnused Nothing )
+                    ( App Nothing
+                      ( Ref Nothing
+                        ( Imported ( ModuleName "Effect" ) ( Name "Lazy_functorEffect" ) ) 0
+                      )
+                      ( LiteralInt Nothing 0 )
+                    )
+                  )
+                ]
+              )
+            )
+          )
+        ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Effect.Console", qnameName = Name "logShow" }, Abs Nothing
+        ( ParamNamed Nothing ( Name "dictShow" ) )
+        ( Abs Nothing
+          ( ParamNamed Nothing ( Name "a" ) )
+          ( App Nothing
+            ( ObjectProp ( Just Always )
+              ( ForeignImport Nothing
+                ( ModuleName "Effect.Console" ) ".spago/console/v6.1.0/src/Effect/Console.purs"
+                [ ( Nothing, Name "log" ) ]
+              )
+              ( PropName "log" )
+            )
+            ( App Nothing
+              ( ObjectProp Nothing
+                ( Ref Nothing ( Local ( Name "dictShow" ) ) 0 )
+                ( PropName "show" )
+              )
+              ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+            )
+          )
+        )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "main", Let Nothing
+        ( Standalone
+          ( Nothing, Name "arr", LiteralArray Nothing
+            [ ObjectProp ( Just Always )
+              ( Ref Nothing ( Imported ( ModuleName "Data.Unit" ) ( Name "foreign" ) ) 0 )
+              ( PropName "unit" ), ObjectProp ( Just Always )
+              ( Ref Nothing ( Imported ( ModuleName "Data.Unit" ) ( Name "foreign" ) ) 0 )
+              ( PropName "unit" ), ObjectProp ( Just Always )
+              ( Ref Nothing ( Imported ( ModuleName "Data.Unit" ) ( Name "foreign" ) ) 0 )
+              ( PropName "unit" )
+            ]
+          ) :| []
+        )
+        ( App Nothing
+          ( App Nothing
+            ( App Nothing
+              ( ObjectProp Nothing
+                ( LiteralObject Nothing
+                  [
+                    ( PropName "discard", Ref Nothing
+                      ( Imported ( ModuleName "Control.Bind" ) ( Name "bind" ) ) 0
+                    )
+                  ]
+                )
+                ( PropName "discard" )
+              )
+              ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "bindEffect" ) ) 0 )
+            )
+            ( App Nothing
+              ( App Nothing
+                ( App Nothing
+                  ( App Nothing
+                    ( Ref Nothing ( Imported ( ModuleName "Data.Foldable" ) ( Name "foldr" ) ) 0 )
+                    ( Ref Nothing
+                      ( Imported ( ModuleName "Data.Foldable" ) ( Name "foldableArray" ) ) 0
+                    )
+                  )
+                  ( App Nothing
+                    ( App Nothing
+                      ( ObjectProp Nothing
+                        ( Ref Nothing
+                          ( Imported
+                            ( ModuleName "Control.Semigroupoid" )
+                            ( Name "semigroupoidFn" )
+                          ) 0
+                        )
+                        ( PropName "compose" )
+                      )
+                      ( Abs Nothing
+                        ( ParamNamed Nothing ( Name "a" ) )
+                        ( App Nothing
+                          ( App Nothing
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Control.Apply" ) ( Name "apply" ) ) 0
+                            )
+                            ( App Nothing
+                              ( ObjectProp Nothing
+                                ( Ref Nothing
+                                  ( Imported
+                                    ( ModuleName "Effect" )
+                                    ( Name "applicativeEffect" )
+                                  ) 0
+                                )
+                                ( PropName "Apply0" )
+                              )
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
+                              )
+                            )
+                          )
+                          ( App Nothing
+                            ( App Nothing
+                              ( ObjectProp Nothing
+                                ( App Nothing
+                                  ( ObjectProp Nothing
+                                    ( App Nothing
+                                      ( ObjectProp Nothing
+                                        ( Ref Nothing
+                                          ( Imported
+                                            ( ModuleName "Effect" )
+                                            ( Name "applicativeEffect" )
+                                          ) 0
+                                        )
+                                        ( PropName "Apply0" )
+                                      )
+                                      ( Ref Nothing
+                                        ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
+                                      )
+                                    )
+                                    ( PropName "Functor0" )
+                                  )
+                                  ( Ref Nothing
+                                    ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
+                                  )
+                                )
+                                ( PropName "map" )
+                              )
+                              ( Abs Nothing ( ParamUnused Nothing )
+                                ( ObjectProp Nothing
+                                  ( LiteralObject Nothing
+                                    [
+                                      ( PropName "identity", Abs Nothing
+                                        ( ParamNamed Nothing ( Name "x" ) )
+                                        ( Ref Nothing ( Local ( Name "x" ) ) 0 )
+                                      ),
+                                      ( PropName "Semigroupoid0", Abs Nothing ( ParamUnused Nothing )
+                                        ( Ref Nothing
+                                          ( Imported
+                                            ( ModuleName "Control.Semigroupoid" )
+                                            ( Name "semigroupoidFn" )
+                                          ) 0
+                                        )
+                                      )
+                                    ]
+                                  )
+                                  ( PropName "identity" )
+                                )
+                              )
+                            )
+                            ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+                          )
+                        )
+                      )
+                    )
+                    ( App Nothing
+                      ( Ref Nothing
+                        ( Imported ( ModuleName "Effect.Console" ) ( Name "logShow" ) ) 0
+                      )
+                      ( LiteralObject Nothing
+                        [
+                          ( PropName "show", Abs Nothing ( ParamUnused Nothing )
+                            ( LiteralString Nothing "unit" )
+                          )
+                        ]
+                      )
+                    )
+                  )
+                )
+                ( App Nothing
+                  ( App Nothing
+                    ( Ref Nothing
+                      ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0
+                    )
+                    ( Ref Nothing
+                      ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
+                    )
+                  )
+                  ( ObjectProp ( Just Always )
+                    ( Ref Nothing ( Imported ( ModuleName "Data.Unit" ) ( Name "foreign" ) ) 0 )
+                    ( PropName "unit" )
+                  )
+                )
+              )
+              ( Ref Nothing ( Local ( Name "arr" ) ) 0 )
+            )
+          )
+          ( Abs Nothing ( ParamUnused Nothing )
+            ( App Nothing
+              ( App Nothing
+                ( Ref Nothing ( Imported ( ModuleName "Effect.Console" ) ( Name "logShow" ) ) 0 )
+                ( LiteralObject Nothing
+                  [
+                    ( PropName "show", ObjectProp ( Just Always )
+                      ( ForeignImport Nothing
+                        ( ModuleName "Data.Show" ) ".spago/prelude/v7.2.0/src/Data/Show.purs"
+                        [ ( Nothing, Name "showIntImpl" ) ]
+                      )
+                      ( PropName "showIntImpl" )
+                    )
+                  ]
+                )
+              )
+              ( App Nothing
+                ( App Nothing
+                  ( App Nothing
+                    ( ObjectProp Nothing
+                      ( Ref Nothing
+                        ( Imported ( ModuleName "Data.Foldable" ) ( Name "foldableArray" ) ) 0
+                      )
+                      ( PropName "foldl" )
+                    )
+                    ( Abs Nothing
+                      ( ParamNamed Nothing ( Name "c" ) )
+                      ( Abs Nothing ( ParamUnused Nothing )
+                        ( App Nothing
+                          ( App Nothing
+                            ( ObjectProp Nothing
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Data.Semiring" ) ( Name "semiringInt" ) ) 0
+                              )
+                              ( PropName "add" )
+                            )
+                            ( ObjectProp Nothing
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Data.Semiring" ) ( Name "semiringInt" ) ) 0
+                              )
+                              ( PropName "one" )
+                            )
+                          )
+                          ( Ref Nothing ( Local ( Name "c" ) ) 0 )
+                        )
+                      )
+                    )
+                  )
+                  ( ObjectProp Nothing
+                    ( Ref Nothing
+                      ( Imported ( ModuleName "Data.Semiring" ) ( Name "semiringInt" ) ) 0
+                    )
+                    ( PropName "zero" )
+                  )
+                )
+                ( Ref Nothing ( Local ( Name "arr" ) ) 0 )
+              )
+            )
+          )
+        )
+      )
+    ]
+  }

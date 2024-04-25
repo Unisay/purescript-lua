@@ -19,7 +19,6 @@ import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
 import Language.PureScript.Backend.Types (AppOrModule (..))
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
-import Language.PureScript.Names (ModuleName)
 import Language.PureScript.Names qualified as PS
 import Path
   ( Abs
@@ -38,6 +37,7 @@ import Path
   )
 import Path.IO
   ( AnyPath (makeRelativeToCurrentDir)
+  , doesFileExist
   , ensureDir
   , makeAbsolute
   , walkDirAccum
@@ -111,14 +111,47 @@ spec = do
                   }
                 uberModule
         -- lua golden
+        let evalGolden =
+              modulePath </> $(mkRelDir "eval") </> $(mkRelFile "golden.txt")
         let luaGolden = modulePath </> $(mkRelFile "golden.lua")
         let luaActual = modulePath </> $(mkRelFile "actual.lua")
         luaTestName ← runIO do
           toFilePath <$> makeRelativeToCurrentDir luaGolden
         it luaTestName do
           defaultGolden luaGolden (Just luaActual) do
-            uberModule ← compileCorefn (Tagged (Rel psOutputPath)) moduleName
-            compileIr moduleName uberModule
+            appOrModule ←
+              (doesFileExist evalGolden) <&> \case
+                True → AsApplication moduleName (PS.Ident "main")
+                False → AsModule moduleName
+            cfn ← compileCorefn (Tagged (Rel psOutputPath)) moduleName
+            compileIr appOrModule cfn
+
+    describe "golden files should evaluate" do
+      let
+        collectEvaluatableLuas ∷ MonadIO m ⇒ Path Rel Dir → m [Path Abs File]
+        collectEvaluatableLuas = walkDirAccum Nothing \_dir _subdirs files →
+          pure [file | file ← files, toFilePath (filename file) == "golden.txt"]
+
+      luas ← runIO do collectEvaluatableLuas psOutputPath
+      for_ luas \lua → do
+        let evalDir = parent lua
+        let resActual = evalDir </> $(mkRelFile "actual.txt")
+        let resGolden = evalDir </> $(mkRelFile "golden.txt")
+        let luaGolden = parent evalDir </> $(mkRelFile "golden.lua")
+        luaTestName ← runIO do makeRelativeToCurrentDir lua
+        it (toFilePath luaTestName) do
+          defaultGolden resGolden (Just resActual) do
+            let process = fromString $ "lua " ++ toFilePath luaGolden
+            (exitCode, out) ← readProcessInterleaved process
+            let niceOut =
+                  decodeUtf8 out
+                    & lines
+                    & fmap Text.stripStart
+                    & filter (not . Text.null)
+                    & unlines
+                    & toString
+            exitCode `shouldBe` ExitSuccess `annotatingWith` niceOut
+            pure $ toText niceOut
 
     describe "golden files should typecheck" do
       luas ← runIO do collectLuas psOutputPath
@@ -185,11 +218,11 @@ compileCorefn outputDir uberModuleName = do
   let uberModule = Linker.makeUberModule (LinkAsModule uberModuleName) modules
   pure $ optimizedUberModule uberModule
 
-compileIr ∷ (MonadIO m, MonadMask m) ⇒ ModuleName → IR.UberModule → m Text
-compileIr modname uberModule = withCurrentDir [reldir|test/ps|] do
+compileIr ∷ (MonadIO m, MonadMask m) ⇒ AppOrModule → IR.UberModule → m Text
+compileIr appOrModule uberModule = withCurrentDir [reldir|test/ps|] do
   foreignPath ← Tagged <$> makeAbsolute [reldir|foreign|]
   luaChunk ←
-    Lua.fromUberModule foreignPath (Tagged True) (AsModule modname) uberModule
+    Lua.fromUberModule foreignPath (Tagged True) appOrModule uberModule
       & handleLuaError
       & Oops.runOops
       & liftIO

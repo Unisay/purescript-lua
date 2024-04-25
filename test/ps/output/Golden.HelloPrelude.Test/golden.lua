@@ -70,4 +70,4 @@ M.Effect_Lazy_applyEffect = PSLUA_runtime_lazy("applyEffect")(function()
     Functor0 = function() return M.Effect_Lazy_functorEffect(0) end
   }
 end)
-return { main = M.Control_Applicative_pure(M.Effect_applicativeEffect)(nil) }
+return { main = M.Control_Applicative_pure(M.Effect_applicativeEffect)({}) }
