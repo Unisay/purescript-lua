@@ -1,4 +1,4 @@
-module Language.PureScript.Backend.Types where
+module Language.PureScript.Backend.AppOrModule where
 
 import Language.PureScript.Names qualified as PS
 

@@ -9,6 +9,7 @@ import Data.List qualified as List
 import Data.String qualified as String
 import Data.Tagged (Tagged (..))
 import Data.Text qualified as Text
+import Language.PureScript.Backend.AppOrModule (AppOrModule (..))
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.Linker (LinkMode (..))
 import Language.PureScript.Backend.IR.Linker qualified as IR
@@ -17,7 +18,6 @@ import Language.PureScript.Backend.IR.Optimizer (optimizedUberModule)
 import Language.PureScript.Backend.Lua qualified as Lua
 import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
-import Language.PureScript.Backend.Types (AppOrModule (..))
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Language.PureScript.Names qualified as PS
 import Path
@@ -120,7 +120,7 @@ spec = do
         it luaTestName do
           defaultGolden luaGolden (Just luaActual) do
             appOrModule ←
-              (doesFileExist evalGolden) <&> \case
+              doesFileExist evalGolden <&> \case
                 True → AsApplication moduleName (PS.Ident "main")
                 False → AsModule moduleName
             cfn ← compileCorefn (Tagged (Rel psOutputPath)) moduleName

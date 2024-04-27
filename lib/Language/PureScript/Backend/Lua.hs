@@ -28,7 +28,7 @@ import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Language.PureScript.Backend.Lua.Name qualified as Name
 import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
-import Language.PureScript.Backend.Types (AppOrModule (..))
+import Language.PureScript.Backend.AppOrModule (AppOrModule (..))
 import Language.PureScript.Names (ModuleName (..), runModuleName)
 import Language.PureScript.Names qualified as PS
 import Path (Abs, Dir, Path)

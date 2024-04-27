@@ -140,7 +140,7 @@ library
     Language.PureScript.Backend.Lua.Printer
     Language.PureScript.Backend.Lua.Traversal
     Language.PureScript.Backend.Lua.Types
-    Language.PureScript.Backend.Types
+    Language.PureScript.Backend.AppOrModule
     Language.PureScript.Comments
     Language.PureScript.CoreFn
     Language.PureScript.CoreFn.Expr

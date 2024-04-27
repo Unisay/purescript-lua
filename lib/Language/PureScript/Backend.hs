@@ -10,7 +10,7 @@ import Language.PureScript.Backend.IR.Optimizer (optimizedUberModule)
 import Language.PureScript.Backend.Lua qualified as Lua
 import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
 import Language.PureScript.Backend.Lua.Types qualified as Lua
-import Language.PureScript.Backend.Types (AppOrModule (..), entryPointModule)
+import Language.PureScript.Backend.AppOrModule (AppOrModule (..), entryPointModule)
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
 import Path (Abs, Dir, Path, SomeBase)
 import Prelude hiding (show)
