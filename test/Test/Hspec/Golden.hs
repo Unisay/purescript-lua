@@ -10,6 +10,7 @@ where
 
 import Path (Abs, File, Path, parent, toFilePath)
 import Path.IO (createDirIfMissing, doesFileExist)
+import System.Environment.Blank (getEnv)
 import Test.Hspec.Core.Spec
   ( Example (..)
   , FailureReason (..)
@@ -78,6 +79,8 @@ fromGoldenResult = \case
     Result "Golden and Actual output hasn't changed" Success
   FirstExecutionSucceed →
     Result "First time execution. Golden file created." Success
+  GoldenFileOverwritten →
+    Result "Golden file overwritten" Success
   FirstExecutionFail →
     Result
       "First time execution. Golden file created."
@@ -107,6 +110,7 @@ defaultGolden goldenFile actualFile produceOutput =
 data GoldenResult
   = MissmatchOutput String String
   | SameOutput
+  | GoldenFileOverwritten
   | FirstExecutionSucceed
   | FirstExecutionFail
 
@@ -134,10 +138,15 @@ runGolden Golden {..} = do
           else FirstExecutionSucceed
     else do
       contentGolden ← readFromFile goldenFile
-      pure
-        if contentGolden == output
-          then SameOutput
-          else
-            MissmatchOutput
-              (encodePretty contentGolden)
-              (encodePretty output)
+      overwriteGolden ← isJust <$> getEnv "UPDATE_GOLDEN"
+      if contentGolden == output
+        then pure SameOutput
+        else
+          if overwriteGolden
+            then
+              GoldenFileOverwritten <$ writeToFile goldenFile output
+            else
+              pure $
+                MissmatchOutput
+                  (encodePretty contentGolden)
+                  (encodePretty output)
