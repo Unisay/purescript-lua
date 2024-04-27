@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module Language.PureScript.Backend.Lua
   ( fromUberModule
   , fromIR
@@ -105,12 +103,20 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
       , Lua.Return (Lua.ann returnExp)
       )
 
-  pure . mconcat $
-    [ [Fixture.runtimeLazy | untag needsRuntimeLazy && usesRuntimeLazy uber]
-    , [Fixture.objectUpdate | UsesObjectUpdate ← [usesObjectUpdate]]
-    , [Lua.local1 Fixture.moduleName (Lua.table []) | not (null bindings)]
-    , toList (DList.snoc bindings returnStat)
-    ]
+  pure $
+    DList.fromList
+      [ Fixture.runtimeLazy
+      | untag needsRuntimeLazy && usesRuntimeLazy uber
+      ]
+      <> DList.fromList
+        [ Fixture.objectUpdate
+        | UsesObjectUpdate ← [usesObjectUpdate]
+        ]
+      <> DList.fromList
+        [ Lua.local1 Fixture.moduleName (Lua.table [])
+        | not (null bindings)
+        ]
+      <> DList.snoc bindings returnStat
 
 mkBinding ∷ ModuleName → Lua.Name → Lua.Exp → Lua.Statement
 mkBinding modname name =
@@ -205,7 +211,7 @@ fromIR foreigns topLevelNames modname ir = case ir of
       -- PS sometimes inserts syntetic unused argument "Prim.undefined"
       IR.Ref _ann (IR.Imported (IR.ModuleName "Prim") (IR.Name "undefined")) _ →
         pure []
-      _ → goExp arg <&> \a → [a]
+      _ → goExp arg <&> (: [])
   IR.Ref _ann qualifiedName index →
     pure . Right $ case qualifiedName of
       IR.Local name
@@ -243,8 +249,8 @@ fromIR foreigns topLevelNames modname ir = case ir of
                     )
                 )
           pure $ DList.fromList binds <> DList.fromList assignments
-    pure . Left . DList.toList $
-      recs <> either DList.fromList (DList.singleton . Lua.return) body
+    pure . Left $
+      recs <> either id (DList.singleton . Lua.return) body
   IR.IfThenElse _ann cond th el → do
     thenExp ← go th
     elseExp ← go el
@@ -252,7 +258,10 @@ fromIR foreigns topLevelNames modname ir = case ir of
     let
       thenBranch = either id (pure . Lua.return) thenExp
       elseBranch = either id (pure . Lua.return) elseExp
-    pure $ Left [Lua.ifThenElse condExp thenBranch elseBranch]
+    pure $
+      Left $
+        DList.singleton $
+          Lua.ifThenElse condExp (toList thenBranch) (toList elseBranch)
   IR.Exception _ann msg →
     pure . Right $ Lua.error msg
   IR.ForeignImport _ann _moduleName path annotatedNames → do
@@ -272,7 +281,12 @@ fromIR foreigns topLevelNames modname ir = case ir of
             ]
     pure case header of
       Nothing → Right foreignExports
-      Just fh → Left $ Lua.ForeignSourceStat fh : [Lua.return foreignExports]
+      Just fh →
+        Left $
+          DList.fromList
+            [ Lua.ForeignSourceStat fh
+            , Lua.return foreignExports
+            ]
  where
   go ∷ IR.Exp → LuaM e (Either Lua.Chunk Lua.Exp)
   go = fromIR foreigns topLevelNames modname

@@ -25,7 +25,7 @@ data DceMode = PreserveTopLevel | PreserveReturned
 type Label = Text
 type Key = Int
 
-eliminateDeadCode ∷ DceMode → Lua.Chunk → Lua.Chunk
+eliminateDeadCode ∷ DceMode → [Lua.Statement] → [Lua.Statement]
 eliminateDeadCode dceMode chunk = do
   unNodesStatement <$> dceChunk statementWithNodes
  where

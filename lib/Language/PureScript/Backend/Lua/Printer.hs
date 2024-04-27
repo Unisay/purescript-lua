@@ -31,7 +31,7 @@ type ADoc = Doc ()
 type PADoc = (Precedence, ADoc)
 
 printLuaChunk ∷ Lua.Chunk → ADoc
-printLuaChunk = vsep . fmap printStatement
+printLuaChunk = vsep . fmap printStatement . toList
 
 printStatement ∷ Lua.Statement → ADoc
 printStatement = \case

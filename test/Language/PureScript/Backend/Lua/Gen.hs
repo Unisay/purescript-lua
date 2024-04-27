@@ -12,7 +12,7 @@ import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
 import Prelude hiding (local, return)
 
-chunk ∷ Gen Lua.Chunk
+chunk ∷ Gen [Lua.Statement]
 chunk = Gen.list (Range.linear 1 16) statement
 
 statement ∷ Gen Lua.Statement

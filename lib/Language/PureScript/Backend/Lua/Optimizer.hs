@@ -15,7 +15,7 @@ import Language.PureScript.Backend.Lua.Types
   , Exp
   , ExpF (..)
   , Statement
-  , StatementF (Local, Return)
+  , StatementF (..)
   , TableRowF (..)
   , VarF (..)
   , functionDef
@@ -34,7 +34,7 @@ substituteVarForValue name inlinee =
   runIdentity . everywhereInChunkM (pure . subst) pure
  where
   subst = \case
-    Lua.Var (Lua.unAnn → Lua.VarName varName) | varName == name → inlinee
+    Lua.Var (unAnn → Lua.VarName varName) | varName == name → inlinee
     expr → expr
 
 countRefs ∷ Statement → Map Lua.Name (Sum Natural)
@@ -42,7 +42,7 @@ countRefs = everywhereStatM pure countRefsInExpression >>> (`execAccum` mempty)
  where
   countRefsInExpression ∷ Exp → Accum (Map Lua.Name (Sum Natural)) Exp
   countRefsInExpression = \case
-    expr@(Lua.Var (Lua.unAnn → Lua.VarName name)) →
+    expr@(Lua.Var (unAnn → Lua.VarName name)) →
       add (Map.singleton name (Sum 1)) $> expr
     expr → pure expr
 
@@ -63,6 +63,28 @@ type RewriteRule = Exp → Exp
 
 rewriteExpWithRule ∷ RewriteRule → Exp → Exp
 rewriteExpWithRule rule = everywhereExp rule identity
+
+{-
+  Local
+    name
+    ( Just
+        ( Ann
+            (Function args [Ann (Return (Ann (Function innerArgs innerBody)))])
+          )
+      ) →
+      let args' = fmap unAnn (args <> innerArgs)
+          val = functionDef args' (fmap unAnn innerBody)
+       in DList.snoc acc $ Lua.local1 name val
+  Assign
+    name
+    ( Ann
+        (Function args [Ann (Return (Ann (Function innerArgs innerBody)))])
+      )
+      | length args + length innerArgs <= minApplications name →
+          let args' = fmap unAnn (args <> innerArgs)
+              val = functionDef args' (fmap unAnn innerBody)
+           in DList.snoc acc (Lua.assign (unAnn name) val)
+ -}
 
 --------------------------------------------------------------------------------
 -- Rewrite rules for expressions -----------------------------------------------

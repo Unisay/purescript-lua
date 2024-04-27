@@ -2,6 +2,7 @@
 
 module Language.PureScript.Backend.Lua.Types where
 
+import Data.DList (DList)
 import Language.PureScript.Backend.Lua.Name (Name)
 import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Prettyprinter (Pretty)
@@ -16,7 +17,7 @@ import Prelude hiding
   , return
   )
 
-type Chunk = [Statement]
+type Chunk = DList Statement
 
 newtype ChunkName = ChunkName Text
   deriving stock (Show)
@@ -235,7 +236,7 @@ var = Var . ann
 assign ∷ Var → Exp → Statement
 assign v e = Assign (ann v) (ann e)
 
-assignVar :: Name -> Exp -> Statement
+assignVar ∷ Name → Exp → Statement
 assignVar name = assign (VarName name)
 
 local ∷ Name → Maybe Exp → Statement
@@ -247,14 +248,14 @@ local1 name expr = Local name (Just (ann expr))
 local0 ∷ Name → Statement
 local0 name = Local name Nothing
 
-ifThenElse ∷ Exp → Chunk → Chunk → Statement
+ifThenElse ∷ Exp → [Statement] → [Statement] → Statement
 ifThenElse i t e = IfThenElse (ann i) (ann <$> t) (ann <$> e)
 
 return ∷ Exp → Statement
 return = Return . ann
 
 chunkToExpression ∷ Chunk → Exp
-chunkToExpression ss = functionCall (Function [] (ann <$> ss)) []
+chunkToExpression ss = functionCall (Function [] (ann <$> toList ss)) []
 
 -- Expressions -----------------------------------------------------------------
 
@@ -270,7 +271,7 @@ varIndex e1 e2 = Var (ann (VarIndex (ann e1) (ann e2)))
 varField ∷ Exp → Name → Exp
 varField e n = Var (ann (VarField (ann e) n))
 
-functionDef ∷ [Param] → Chunk → Exp
+functionDef ∷ [Param] → [Statement] → Exp
 functionDef params body = Function (ann <$> params) (ann <$> body)
 
 functionCall ∷ Exp → [Exp] → Exp
@@ -291,7 +292,7 @@ pun n = TableRowNV n (ann (varName n))
 thunk ∷ Exp → Exp
 thunk e = scope [Return (ann e)]
 
-scope ∷ Chunk → Exp
+scope ∷ [Statement] → Exp
 scope body = functionCall (Function [] (ann <$> body)) []
 
 -- Unary operators -------------------------------------------------------------
