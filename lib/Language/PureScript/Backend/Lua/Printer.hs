@@ -35,15 +35,15 @@ printLuaChunk = vsep . fmap printStatement . toList
 
 printStatement ∷ Lua.Statement → ADoc
 printStatement = \case
-  Lua.Assign (Ann variable) (Ann expr) →
+  Lua.Assign _ann variable expr →
     printAssign variable expr
-  Lua.Local name value →
-    printLocal name (printedExp . unAnn <$> value)
-  Lua.IfThenElse (Ann predicate) thenBlock elseBlock →
-    printIfThenElse predicate (unAnn <$> thenBlock) (unAnn <$> elseBlock)
-  Lua.Return (Ann expr) →
+  Lua.Local _ann name value →
+    printLocal name (printedExp <$> value)
+  Lua.IfThenElse _ann predicate thenBlock elseBlock →
+    printIfThenElse predicate thenBlock elseBlock
+  Lua.Return _ann expr →
     "return" <+> printedExp expr
-  Lua.ForeignSourceStat code →
+  Lua.ForeignSourceStat _ann code →
     pretty code
 
 printAssign ∷ Lua.Var → Lua.Exp → ADoc
@@ -55,28 +55,34 @@ printedExp = snd . printExp
 
 printExp ∷ Lua.Exp → PADoc
 printExp = \case
-  Lua.Nil → (PrecAtom, "nil")
-  Lua.Boolean b → (PrecAtom, if b then "true" else "false")
-  Lua.Float f → (PrecAtom, pretty f)
-  Lua.Integer i → (PrecAtom, pretty i)
-  Lua.String t → (PrecAtom, dquotes (pretty t))
-  Lua.Function args body →
+  Lua.Nil _ann →
+    (PrecAtom, "nil")
+  Lua.Boolean _ann b →
+    (PrecAtom, if b then "true" else "false")
+  Lua.Float _ann f →
+    (PrecAtom, pretty f)
+  Lua.Integer _ann i →
+    (PrecAtom, pretty i)
+  Lua.String _ann t →
+    (PrecAtom, dquotes (pretty t))
+  Lua.Function _ann args body →
     let argNames =
           args >>= \case
-            Ann (ParamNamed n) → [n]
-            Ann ParamUnused → []
-     in (PrecFunction, printFunction argNames (unAnn <$> body))
-  Lua.TableCtor rows → (PrecTable, printTableCtor (unAnn <$> rows))
-  Lua.UnOp op (Ann a) → printUnaryOp op (printExp a)
-  Lua.BinOp op (Ann l) (Ann r) → printBinaryOp op (printExp l) (printExp r)
-  Lua.Var (Ann v) → (PrecAtom, printVar v)
-  Lua.FunctionCall (Ann prefix) args →
-    ( PrecPrefix
-    , printFunctionCall
-        (printExp prefix)
-        (printExp . unAnn <$> args)
-    )
-  Lua.ForeignSourceExp code → (PrecFunction, pretty code)
+            Lua.ParamNamed _ann n → [n]
+            Lua.ParamUnused _ann → []
+     in (PrecFunction, printFunction argNames body)
+  Lua.TableCtor _ann rows →
+    (PrecTable, printTableCtor rows)
+  Lua.UnOp _ann op a →
+    printUnaryOp op (printExp a)
+  Lua.BinOp _ann op l r →
+    printBinaryOp op (printExp l) (printExp r)
+  Lua.Var _ann v →
+    (PrecAtom, printVar v)
+  Lua.FunctionCall _ann prefix args →
+    (PrecPrefix, printFunctionCall (printExp prefix) (printExp <$> args))
+  Lua.ForeignSourceExp _ann code →
+    (PrecFunction, pretty code)
 
 printUnaryOp ∷ Lua.UnaryOp → PADoc → PADoc
 printUnaryOp op (_, a) = (prec op, pretty (sym op) <> parens a)
@@ -100,16 +106,16 @@ printTableCtor tableRows = sep [lbrace, flex rows, rbrace]
 
 printRow ∷ Lua.TableRow → ADoc
 printRow = \case
-  Lua.TableRowKV (Ann kexp) (Ann vexp) →
+  Lua.TableRowKV _ann kexp vexp →
     brackets (printedExp kexp) <+> "=" <+> printedExp vexp
-  Lua.TableRowNV name (Ann vexp) →
+  Lua.TableRowNV _ann name vexp →
     printName name <+> "=" <+> printedExp vexp
 
 printVar ∷ Lua.Var → ADoc
 printVar = \case
-  Lua.VarName name → printName name
-  Lua.VarIndex (Ann e) (Ann i) → printedExp e <> brackets (printedExp i)
-  Lua.VarField (Ann e) n → wrapPrec PrecAtom (printExp e) <> "." <> printName n
+  Lua.VarName _ann name → printName name
+  Lua.VarIndex _ann e i → printedExp e <> brackets (printedExp i)
+  Lua.VarField _ann e n → wrapPrec PrecAtom (printExp e) <> "." <> printName n
 
 printFunctionCall ∷ PADoc → [PADoc] → ADoc
 printFunctionCall prefix args =

@@ -7,7 +7,7 @@ import Data.List.NonEmpty qualified as NE
 import Data.Tagged (Tagged (..))
 import Data.Text (splitOn)
 import Data.Text qualified as Text
-import Language.PureScript.Backend.Types (AppOrModule (..))
+import Language.PureScript.Backend.AppOrModule (AppOrModule (..))
 import Language.PureScript.Names qualified as PS
 import Options.Applicative
   ( Parser

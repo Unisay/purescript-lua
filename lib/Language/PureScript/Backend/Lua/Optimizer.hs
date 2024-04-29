@@ -20,9 +20,8 @@ import Language.PureScript.Backend.Lua.Types
   , VarF (..)
   , functionDef
   , return
-  , unAnn
-  , pattern Ann
   )
+
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prelude hiding (return)
 
@@ -34,7 +33,7 @@ substituteVarForValue name inlinee =
   runIdentity . everywhereInChunkM (pure . subst) pure
  where
   subst = \case
-    Lua.Var (unAnn → Lua.VarName varName) | varName == name → inlinee
+    Lua.Var _ (Lua.VarName _ varName) | varName == name → inlinee
     expr → expr
 
 countRefs ∷ Statement → Map Lua.Name (Sum Natural)
@@ -42,7 +41,7 @@ countRefs = everywhereStatM pure countRefsInExpression >>> (`execAccum` mempty)
  where
   countRefsInExpression ∷ Exp → Accum (Map Lua.Name (Sum Natural)) Exp
   countRefsInExpression = \case
-    expr@(Lua.Var (unAnn → Lua.VarName name)) →
+    expr@(Lua.Var _ (Lua.VarName _ name)) →
       add (Map.singleton name (Sum 1)) $> expr
     expr → pure expr
 
@@ -68,18 +67,18 @@ rewriteExpWithRule rule = everywhereExp rule identity
   Local
     name
     ( Just
-        ( Ann
-            (Function args [Ann (Return (Ann (Function innerArgs innerBody)))])
-          )
+
+            (Function args [ Return ( Function innerArgs innerBody)])
+
       ) →
       let args' = fmap unAnn (args <> innerArgs)
           val = functionDef args' (fmap unAnn innerBody)
        in DList.snoc acc $ Lua.local1 name val
   Assign
     name
-    ( Ann
-        (Function args [Ann (Return (Ann (Function innerArgs innerBody)))])
-      )
+
+        (Function args [ Return ( Function innerArgs innerBody)])
+
       | length args + length innerArgs <= minApplications name →
           let args' = fmap unAnn (args <> innerArgs)
               val = functionDef args' (fmap unAnn innerBody)
@@ -91,42 +90,40 @@ rewriteExpWithRule rule = everywhereExp rule identity
 
 pushDeclarationsDownTheInnerScope ∷ RewriteRule
 pushDeclarationsDownTheInnerScope = \case
-  Function outerArgs outerBody
+  Function _ outerArgs outerBody
     | Just lastStatement ← viaNonEmpty last outerBody
-    , Ann (Return (Ann (Function innerArgs innerBody))) ← lastStatement
-    , declarations ← unAnn <$> List.init outerBody
+    , Return _ (Function _ innerArgs innerBody) ← lastStatement
+    , declarations ← List.init outerBody
     , not (null declarations)
     , all isDeclaration declarations →
         functionDef
-          (fmap unAnn outerArgs)
-          [ return $
-              functionDef
-                (fmap unAnn innerArgs)
-                (declarations <> fmap unAnn innerBody)
-          ]
+          outerArgs
+          [return $ functionDef innerArgs (declarations <> innerBody)]
   e → e
  where
   isDeclaration ∷ Statement → Bool
   isDeclaration = \case
-    Local _ _ → True
+    Local {} → True
+    Assign {} → True
     _ → False
 
 removeScopeWhenInsideEmptyFunction ∷ RewriteRule
 removeScopeWhenInsideEmptyFunction = \case
   Function
+    _
     outerArgs
-    [Ann (Return (Ann (FunctionCall (Ann (Function [] body)) [])))] →
-      Function outerArgs body
+    [Return _ (FunctionCall _ (Function _ [] body) [])] →
+      functionDef outerArgs body
   e → e
 
 -- | Rewrites '{ foo = 1, bar = 2 }.foo' to '1'
 reduceTableDefinitionAccessor ∷ RewriteRule
 reduceTableDefinitionAccessor = \case
-  Var (Ann (VarField (Ann (TableCtor rows)) accessedField)) →
-    fromMaybe Nil $
+  Var _ (VarField _ (TableCtor _ rows) accessedField) →
+    fromMaybe Lua.nil $
       listToMaybe
         [ fieldValue
-        | (_ann, TableRowNV tableField (Ann fieldValue)) ← rows
+        | TableRowNV _ tableField fieldValue ← rows
         , tableField == accessedField
         ]
   e → e

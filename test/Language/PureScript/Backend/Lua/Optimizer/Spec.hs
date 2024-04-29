@@ -8,7 +8,6 @@ import Language.PureScript.Backend.Lua.Optimizer
   , removeScopeWhenInsideEmptyFunction
   , rewriteExpWithRule
   )
-import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Test.Hspec (Spec, describe, it)
 import Test.Hspec.Expectations.Pretty (assertEqual)
@@ -20,19 +19,19 @@ spec = describe "Lua AST Optimizer" do
     it "removes scope when inside an empty function" do
       let original ∷ Lua.Exp =
             Lua.functionDef
-              [ParamNamed [name|a|]]
+              [Lua.paramNamed [name|a|]]
               [ Lua.return
                   ( Lua.functionDef
-                      [ParamNamed [name|b|]]
+                      [Lua.paramNamed [name|b|]]
                       [Lua.return (Lua.scope [Lua.return (Lua.varName [name|c|])])]
                   )
               ]
           expected ∷ Lua.Exp =
             Lua.functionDef
-              [ParamNamed [name|a|]]
+              [Lua.paramNamed [name|a|]]
               [ Lua.return
                   ( Lua.functionDef
-                      [ParamNamed [name|b|]]
+                      [Lua.paramNamed [name|b|]]
                       [Lua.return (Lua.varName [name|c|])]
                   )
               ]
@@ -42,23 +41,23 @@ spec = describe "Lua AST Optimizer" do
     it "pushes declarations down into an inner scope" do
       let original ∷ Lua.Exp =
             Lua.functionDef
-              [ParamNamed [name|a|], ParamNamed [name|b|]]
-              [ Lua.local1 [name|i|] (Lua.Integer 42)
-              , Lua.local1 [name|j|] (Lua.Integer 43)
+              [Lua.paramNamed [name|a|], Lua.paramNamed [name|b|]]
+              [ Lua.local1 [name|i|] (Lua.integer 42)
+              , Lua.local1 [name|j|] (Lua.integer 43)
               , Lua.return
                   ( Lua.functionDef
-                      [ParamNamed [name|d|]]
+                      [Lua.paramNamed [name|d|]]
                       [Lua.return (Lua.varName [name|c|])]
                   )
               ]
           expected ∷ Lua.Exp =
             Lua.functionDef
-              [ParamNamed [name|a|], ParamNamed [name|b|]]
+              [Lua.paramNamed [name|a|], Lua.paramNamed [name|b|]]
               [ Lua.return
                   ( Lua.functionDef
-                      [ParamNamed [name|d|]]
-                      [ Lua.local1 [name|i|] (Lua.Integer 42)
-                      , Lua.local1 [name|j|] (Lua.Integer 43)
+                      [Lua.paramNamed [name|d|]]
+                      [ Lua.local1 [name|i|] (Lua.integer 42)
+                      , Lua.local1 [name|j|] (Lua.integer 43)
                       , Lua.return (Lua.varName [name|c|])
                       ]
                   )

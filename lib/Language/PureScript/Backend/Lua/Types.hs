@@ -2,6 +2,7 @@
 
 module Language.PureScript.Backend.Lua.Types where
 
+import Control.Lens (Lens', lens)
 import Data.DList (DList)
 import Language.PureScript.Backend.Lua.Name (Name)
 import Language.PureScript.Backend.Lua.Name qualified as Lua
@@ -23,38 +24,36 @@ newtype ChunkName = ChunkName Text
   deriving stock (Show)
   deriving newtype (Pretty)
 
-type Annotated (a ∷ Type) (f ∷ Type → Type) = (a, f a)
-
-pattern Ann ∷ b → (a, b)
+{- pattern Ann ∷ b → (a, b)
 pattern Ann fa ← (_ann, fa)
-{-# COMPLETE Ann #-}
+{-# COMPLETE Ann #-} -}
 
-data ParamF a
-  = ParamNamed Name
-  | ParamUnused
+data ParamF ann
+  = ParamNamed ann Name
+  | ParamUnused ann
 
-type Param = ParamF ()
+type Param = ParamF Ann
 
 deriving stock instance Eq a ⇒ Eq (ParamF a)
 deriving stock instance Ord a ⇒ Ord (ParamF a)
 deriving stock instance Show a ⇒ Show (ParamF a)
 
-data VarF a
-  = VarName Name
-  | VarIndex (Annotated a ExpF) (Annotated a ExpF)
-  | VarField (Annotated a ExpF) Name
+data VarF ann
+  = VarName ann Name
+  | VarIndex ann (ExpF ann) (ExpF ann)
+  | VarField ann (ExpF ann) Name
 
-type Var = VarF ()
+type Var = VarF Ann
 
 deriving stock instance Eq a ⇒ Eq (VarF a)
 deriving stock instance Ord a ⇒ Ord (VarF a)
 deriving stock instance Show a ⇒ Show (VarF a)
 
 data TableRowF ann
-  = TableRowKV (Annotated ann ExpF) (Annotated ann ExpF)
-  | TableRowNV Name (Annotated ann ExpF)
+  = TableRowKV ann (ExpF ann) (ExpF ann)
+  | TableRowNV ann Name (ExpF ann)
 
-type TableRow = TableRowF ()
+type TableRow = TableRowF Ann
 
 deriving stock instance Eq a ⇒ Eq (TableRowF a)
 deriving stock instance Ord a ⇒ Ord (TableRowF a)
@@ -94,6 +93,87 @@ instance HasSymbol UnaryOp where
     Negate → "-"
     LogicalNot → "not"
     BitwiseNot → "~"
+
+newtype Ann = Ann ()
+  deriving stock (Eq, Ord, Show)
+
+newAnn ∷ Ann
+newAnn = Ann ()
+
+annL ∷ ∀ f a. HasAnn f ⇒ Lens' (f a) a
+annL = lens annOf setAnn
+
+class HasAnn f where
+  annOf ∷ f a → a
+  setAnn ∷ f a → a → f a
+
+instance HasAnn VarF where
+  annOf = \case
+    VarName a _ → a
+    VarIndex a _ _ → a
+    VarField a _ _ → a
+  setAnn f a = case f of
+    VarName _ n → VarName a n
+    VarIndex _ e1 e2 → VarIndex a e1 e2
+    VarField _ e n → VarField a e n
+
+instance HasAnn ParamF where
+  annOf = \case
+    ParamNamed a _ → a
+    ParamUnused a → a
+  setAnn f a = case f of
+    ParamNamed _ n → ParamNamed a n
+    ParamUnused _ → ParamUnused a
+
+instance HasAnn TableRowF where
+  annOf = \case
+    TableRowKV a _ _ → a
+    TableRowNV a _ _ → a
+  setAnn f a = case f of
+    TableRowKV _ k v → TableRowKV a k v
+    TableRowNV _ n e → TableRowNV a n e
+
+instance HasAnn ExpF where
+  annOf = \case
+    Nil a → a
+    Boolean a _ → a
+    Integer a _ → a
+    Float a _ → a
+    String a _ → a
+    Function a _ _ → a
+    TableCtor a _ → a
+    UnOp a _ _ → a
+    BinOp a _ _ _ → a
+    Var a _ → a
+    FunctionCall a _ _ → a
+    ForeignSourceExp a _ → a
+  setAnn expr a = case expr of
+    Nil _ → Nil a
+    Boolean _ b → Boolean a b
+    Integer _ i → Integer a i
+    Float _ f → Float a f
+    String _ s → String a s
+    Function _ p s → Function a p s
+    TableCtor _ r → TableCtor a r
+    UnOp _ o e → UnOp a o e
+    BinOp _ o e1 e2 → BinOp a o e1 e2
+    Var _ v → Var a v
+    FunctionCall _ f args → FunctionCall a f args
+    ForeignSourceExp _ src → ForeignSourceExp a src
+
+instance HasAnn StatementF where
+  annOf = \case
+    Assign a _ _ → a
+    Local a _ _ → a
+    IfThenElse a _ _ _ → a
+    Return a _ → a
+    ForeignSourceStat a _ → a
+  setAnn f a = case f of
+    Assign _ v e → Assign a v e
+    Local _ n e → Local a n e
+    IfThenElse _ p t e → IfThenElse a p t e
+    Return _ e → Return a e
+    ForeignSourceStat _ src → ForeignSourceStat a src
 
 data BinaryOp
   = Or
@@ -183,39 +263,40 @@ instance HasSymbol BinaryOp where
     Exp → "^"
 
 data ExpF ann
-  = Nil
-  | Boolean Bool
-  | Integer Integer
-  | Float Double
-  | String Text
-  | Function [Annotated ann ParamF] [Annotated ann StatementF]
-  | TableCtor [Annotated ann TableRowF]
-  | UnOp UnaryOp (Annotated ann ExpF)
-  | BinOp BinaryOp (Annotated ann ExpF) (Annotated ann ExpF)
-  | Var (Annotated ann VarF)
-  | FunctionCall (Annotated ann ExpF) [Annotated ann ExpF]
-  | ForeignSourceExp Text
+  = Nil ann
+  | Boolean ann Bool
+  | Integer ann Integer
+  | Float ann Double
+  | String ann Text
+  | Function ann [ParamF ann] [StatementF ann]
+  | TableCtor ann [TableRowF ann]
+  | UnOp ann UnaryOp (ExpF ann)
+  | BinOp ann BinaryOp (ExpF ann) (ExpF ann)
+  | Var ann (VarF ann)
+  | FunctionCall ann (ExpF ann) [ExpF ann]
+  | ForeignSourceExp ann Text
 
-type Exp = ExpF ()
+type Exp = ExpF Ann
 
 deriving stock instance Eq a ⇒ Eq (ExpF a)
 deriving stock instance Ord a ⇒ Ord (ExpF a)
 deriving stock instance Show a ⇒ Show (ExpF a)
 
 data StatementF ann
-  = Assign (Annotated ann VarF) (Annotated ann ExpF)
-  | Local Name (Maybe (Annotated ann ExpF))
+  = Assign ann (VarF ann) (ExpF ann)
+  | Local ann Name (Maybe (ExpF ann))
   | IfThenElse
-      (Annotated ann ExpF)
+      ann
+      (ExpF ann)
       -- ^ predicate
-      [Annotated ann StatementF]
+      [StatementF ann]
       -- ^ then block
-      [Annotated ann StatementF]
+      [StatementF ann]
       -- ^ else block
-  | Return (Annotated ann ExpF)
-  | ForeignSourceStat Text
+  | Return ann (ExpF ann)
+  | ForeignSourceStat ann Text
 
-type Statement = StatementF ()
+type Statement = StatementF Ann
 
 deriving stock instance Eq a ⇒ Eq (StatementF a)
 deriving stock instance Ord a ⇒ Ord (StatementF a)
@@ -224,160 +305,185 @@ deriving stock instance Show a ⇒ Show (StatementF a)
 --------------------------------------------------------------------------------
 -- Smarter constructors --------------------------------------------------------
 
-ann ∷ f () → Annotated () f
-ann f = ((), f)
-
-unAnn ∷ Annotated a f → f a
-unAnn = snd
-
 var ∷ Var → Exp
-var = Var . ann
+var = Var newAnn
 
 assign ∷ Var → Exp → Statement
-assign v e = Assign (ann v) (ann e)
+assign = Assign newAnn
 
 assignVar ∷ Name → Exp → Statement
-assignVar name = assign (VarName name)
+assignVar name = assign (VarName newAnn name)
 
 local ∷ Name → Maybe Exp → Statement
-local name expr = Local name (ann <$> expr)
+local = Local newAnn
 
 local1 ∷ Name → Exp → Statement
-local1 name expr = Local name (Just (ann expr))
+local1 name expr = Local newAnn name (Just expr)
 
 local0 ∷ Name → Statement
-local0 name = Local name Nothing
+local0 name = Local newAnn name Nothing
 
 ifThenElse ∷ Exp → [Statement] → [Statement] → Statement
-ifThenElse i t e = IfThenElse (ann i) (ann <$> t) (ann <$> e)
+ifThenElse = IfThenElse newAnn
 
 return ∷ Exp → Statement
-return = Return . ann
+return = Return newAnn
+
+foreignStatement ∷ Text → Statement
+foreignStatement = ForeignSourceStat newAnn
 
 chunkToExpression ∷ Chunk → Exp
-chunkToExpression ss = functionCall (Function [] (ann <$> toList ss)) []
+chunkToExpression = scope . toList
 
 -- Expressions -----------------------------------------------------------------
 
+nil ∷ Exp
+nil = Nil newAnn
+
+boolean ∷ Bool → Exp
+boolean = Boolean newAnn
+
+integer ∷ Integer → Exp
+integer = Integer newAnn
+
+float ∷ Double → Exp
+float = Float newAnn
+
+string ∷ Text → Exp
+string = String newAnn
+
 table ∷ [TableRow] → Exp
-table = TableCtor . fmap ann
-
-varName ∷ Name → Exp
-varName = Var . ann . VarName
-
-varIndex ∷ Exp → Exp → Exp
-varIndex e1 e2 = Var (ann (VarIndex (ann e1) (ann e2)))
-
-varField ∷ Exp → Name → Exp
-varField e n = Var (ann (VarField (ann e) n))
+table = TableCtor newAnn
 
 functionDef ∷ [Param] → [Statement] → Exp
-functionDef params body = Function (ann <$> params) (ann <$> body)
+functionDef = Function newAnn
 
 functionCall ∷ Exp → [Exp] → Exp
-functionCall f args = FunctionCall (ann f) (ann <$> args)
+functionCall = FunctionCall newAnn
+
+foreignExpression ∷ Text → Exp
+foreignExpression = ForeignSourceExp newAnn
 
 unOp ∷ UnaryOp → Exp → Exp
-unOp op e = UnOp op (ann e)
+unOp = UnOp newAnn
 
 binOp ∷ BinaryOp → Exp → Exp → Exp
-binOp op e1 e2 = BinOp op (ann e1) (ann e2)
+binOp = BinOp newAnn
 
 error ∷ Text → Exp
-error msg = functionCall (varName [Lua.name|error|]) [String msg]
+error msg = functionCall (varName [Lua.name|error|]) [String newAnn msg]
 
 pun ∷ Name → TableRow
-pun n = TableRowNV n (ann (varName n))
+pun n = TableRowNV newAnn n (varName n)
 
 thunk ∷ Exp → Exp
-thunk e = scope [Return (ann e)]
+thunk e = scope [return e]
 
 scope ∷ [Statement] → Exp
-scope body = functionCall (Function [] (ann <$> body)) []
+scope body = functionCall (functionDef [] body) []
 
 -- Unary operators -------------------------------------------------------------
 
 hash ∷ Exp → Exp
-hash = UnOp HashOp . ann
+hash = UnOp newAnn HashOp
 
 negate ∷ Exp → Exp
-negate = UnOp Negate . ann
+negate = UnOp newAnn Negate
 
 logicalNot ∷ Exp → Exp
-logicalNot = UnOp LogicalNot . ann
+logicalNot = UnOp newAnn LogicalNot
 
 bitwiseNot ∷ Exp → Exp
-bitwiseNot = UnOp BitwiseNot . ann
+bitwiseNot = UnOp newAnn BitwiseNot
 
 -- Binary operators ------------------------------------------------------------
 
 or ∷ Exp → Exp → Exp
-or e1 e2 = BinOp Or (ann e1) (ann e2)
+or = BinOp newAnn Or
 
 and ∷ Exp → Exp → Exp
-and e1 e2 = BinOp And (ann e1) (ann e2)
+and = BinOp newAnn And
 
 lessThan ∷ Exp → Exp → Exp
-lessThan e1 e2 = BinOp LessThan (ann e1) (ann e2)
+lessThan = BinOp newAnn LessThan
 
 greaterThan ∷ Exp → Exp → Exp
-greaterThan e1 e2 = BinOp GreaterThan (ann e1) (ann e2)
+greaterThan = BinOp newAnn GreaterThan
 
 lessThanOrEqualTo ∷ Exp → Exp → Exp
-lessThanOrEqualTo e1 e2 = BinOp LessThanOrEqualTo (ann e1) (ann e2)
+lessThanOrEqualTo = BinOp newAnn LessThanOrEqualTo
 
 greaterThanOrEqualTo ∷ Exp → Exp → Exp
-greaterThanOrEqualTo e1 e2 = BinOp GreaterThanOrEqualTo (ann e1) (ann e2)
+greaterThanOrEqualTo = BinOp newAnn GreaterThanOrEqualTo
 
 notEqualTo ∷ Exp → Exp → Exp
-notEqualTo e1 e2 = BinOp NotEqualTo (ann e1) (ann e2)
+notEqualTo = BinOp newAnn NotEqualTo
 
 equalTo ∷ Exp → Exp → Exp
-equalTo e1 e2 = BinOp EqualTo (ann e1) (ann e2)
+equalTo = BinOp newAnn EqualTo
 
 bitOr ∷ Exp → Exp → Exp
-bitOr e1 e2 = BinOp BitOr (ann e1) (ann e2)
+bitOr = BinOp newAnn BitOr
 
 bitXor ∷ Exp → Exp → Exp
-bitXor e1 e2 = BinOp BitXor (ann e1) (ann e2)
+bitXor = BinOp newAnn BitXor
 
 bitAnd ∷ Exp → Exp → Exp
-bitAnd e1 e2 = BinOp BitAnd (ann e1) (ann e2)
+bitAnd = BinOp newAnn BitAnd
 
 bitShiftRight ∷ Exp → Exp → Exp
-bitShiftRight e1 e2 = BinOp BitShiftRight (ann e1) (ann e2)
+bitShiftRight = BinOp newAnn BitShiftRight
 
 bitShiftLeft ∷ Exp → Exp → Exp
-bitShiftLeft e1 e2 = BinOp BitShiftLeft (ann e1) (ann e2)
+bitShiftLeft = BinOp newAnn BitShiftLeft
 
 concat ∷ Exp → Exp → Exp
-concat e1 e2 = BinOp Concat (ann e1) (ann e2)
+concat = BinOp newAnn Concat
 
 add ∷ Exp → Exp → Exp
-add e1 e2 = BinOp Add (ann e1) (ann e2)
+add = BinOp newAnn Add
 
 sub ∷ Exp → Exp → Exp
-sub e1 e2 = BinOp Sub (ann e1) (ann e2)
+sub = BinOp newAnn Sub
 
 mul ∷ Exp → Exp → Exp
-mul e1 e2 = BinOp Mul (ann e1) (ann e2)
+mul = BinOp newAnn Mul
 
 floatDiv ∷ Exp → Exp → Exp
-floatDiv e1 e2 = BinOp FloatDiv (ann e1) (ann e2)
+floatDiv = BinOp newAnn FloatDiv
 
 floorDiv ∷ Exp → Exp → Exp
-floorDiv e1 e2 = BinOp FloorDiv (ann e1) (ann e2)
+floorDiv = BinOp newAnn FloorDiv
 
 mod ∷ Exp → Exp → Exp
-mod e1 e2 = BinOp Mod (ann e1) (ann e2)
+mod = BinOp newAnn Mod
 
 exponent ∷ Exp → Exp → Exp
-exponent e1 e2 = BinOp Exp (ann e1) (ann e2)
+exponent = BinOp newAnn Exp
 
 -- Table Rows ------------------------------------------------------------------
 
 tableRowKV ∷ Exp → Exp → TableRow
-tableRowKV k v = TableRowKV (ann k) (ann v)
+tableRowKV = TableRowKV newAnn
 
 tableRowNV ∷ Name → Exp → TableRow
-tableRowNV n v = TableRowNV n (ann v)
+tableRowNV = TableRowNV newAnn
+
+-- Params ----------------------------------------------------------------------
+
+paramNamed ∷ Name → Param
+paramNamed = ParamNamed newAnn
+
+paramUnused ∷ Param
+paramUnused = ParamUnused newAnn
+
+-- Variables -------------------------------------------------------------------
+
+varName ∷ Name → Exp
+varName = var . VarName newAnn
+
+varIndex ∷ Exp → Exp → Exp
+varIndex = (var .) . VarIndex newAnn
+
+varField ∷ Exp → Name → Exp
+varField = (var .) . VarField newAnn

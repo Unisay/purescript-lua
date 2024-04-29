@@ -6,7 +6,6 @@ import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
 import Language.PureScript.Backend.Lua.Name (Name, unsafeName)
 import Language.PureScript.Backend.Lua.Printer (printStatement)
-import Language.PureScript.Backend.Lua.Types (ParamF (..))
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
@@ -47,7 +46,7 @@ recursiveStatements = [(2, ifThenElse)]
 
 foreignSourceCode ∷ Gen Lua.Statement
 foreignSourceCode =
-  Lua.ForeignSourceStat
+  Lua.foreignStatement
     . renderStrict
     . layoutPretty defaultLayoutOptions
     . printStatement
@@ -85,27 +84,27 @@ nonRecursiveExpressions =
   ]
 
 nil ∷ Gen Lua.Exp
-nil = Gen.constant Lua.Nil
+nil = Gen.constant Lua.nil
 
 literalBool ∷ Gen Lua.Exp
-literalBool = Lua.Boolean <$> Gen.bool
+literalBool = Lua.boolean <$> Gen.bool
 
 literalInt ∷ Gen Lua.Exp
-literalInt = Lua.Integer <$> Gen.integral integerRange
+literalInt = Lua.integer <$> Gen.integral integerRange
  where
   integerRange ∷ Range Integer
   integerRange = fromIntegral <$> (Range.exponentialBounded ∷ Range Int64)
 
 literalFloat ∷ Gen Lua.Exp
 literalFloat =
-  Lua.Float
+  Lua.float
     <$> Gen.double (Range.exponentialFloatFrom 0 (-1234567890.0) 1234567890)
 
 literalString ∷ Gen Lua.Exp
-literalString = Lua.String <$> Gen.text (Range.linear 1 16) Gen.unicode
+literalString = Lua.string <$> Gen.text (Range.linear 1 16) Gen.unicode
 
 nonRecursiveVar ∷ Gen Lua.Var
-nonRecursiveVar = Gen.frequency [(1, Lua.VarName <$> name)]
+nonRecursiveVar = Gen.frequency [(1, Lua.VarName Lua.newAnn <$> name)]
 
 recursiveExpressions ∷ [(Int, Gen Lua.Exp)]
 recursiveExpressions =
@@ -122,7 +121,7 @@ function =
   Lua.functionDef
     <$> Gen.list
       (Range.linear 0 5)
-      (maybe ParamUnused ParamNamed <$> Gen.maybe name)
+      (maybe Lua.paramUnused Lua.paramNamed <$> Gen.maybe name)
     <*> chunk
 
 unOp ∷ Gen Lua.Exp

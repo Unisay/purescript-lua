@@ -27,7 +27,7 @@ runtimeLazyName = psluaName [name|runtime_lazy|]
 
 runtimeLazy ∷ Statement
 runtimeLazy =
-  ForeignSourceStat
+  foreignStatement
     [__i|
     local function #{Name.toText runtimeLazyName}(name)
       return function(init)
@@ -56,7 +56,7 @@ objectUpdateName = psluaName [name|object_update|]
 
 objectUpdate ∷ Statement
 objectUpdate =
-  ForeignSourceStat
+  foreignStatement
     [__i|
     local function #{Name.toText objectUpdateName}(o, patches)
       local o_copy = {}
