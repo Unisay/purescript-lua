@@ -5,6 +5,7 @@ import Hedgehog (Gen, Range)
 import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
 import Language.PureScript.Backend.Lua.Name (Name, unsafeName)
+import Language.PureScript.Backend.Lua.Optimizer (AppliedHow (..))
 import Language.PureScript.Backend.Lua.Printer (printStatement)
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
@@ -13,6 +14,15 @@ import Prelude hiding (local, return)
 
 chunk ∷ Gen [Lua.Statement]
 chunk = Gen.list (Range.linear 1 16) statement
+
+term ∷ Gen Lua.Term
+term =
+  Gen.frequency
+    [ (6, Lua.S <$> statement)
+    , (7, Lua.E <$> expression)
+    , (1, Lua.V <$> nonRecursiveVar)
+    , (1, Lua.R <$> tableRow)
+    ]
 
 statement ∷ Gen Lua.Statement
 statement = Gen.recursiveFrequency nonRecursiveStatements recursiveStatements
@@ -136,10 +146,16 @@ table = Lua.table <$> Gen.list (Range.linear 0 5) tableRow
 recursiveVar ∷ Gen Lua.Exp
 recursiveVar = do
   Gen.choice
-    [ Lua.varIndex <$> expression <*> expression
-    , Lua.varField <$> expression <*> name
+    [ fmap Lua.var . Lua.varIndex <$> expression <*> expression
+    , fmap Lua.var . Lua.varField <$> expression <*> name
     ]
 
 functionCall ∷ Gen Lua.Exp
 functionCall =
   Lua.functionCall <$> expression <*> Gen.list (Range.linear 0 5) expression
+
+appliedHow ∷ Gen AppliedHow
+appliedHow = Gen.enumBounded
+
+knownAppliedHow ∷ Gen AppliedHow
+knownAppliedHow = Gen.filter (/= Unknown) appliedHow

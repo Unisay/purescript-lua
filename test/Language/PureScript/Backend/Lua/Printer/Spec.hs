@@ -17,18 +17,18 @@ spec = do
     (rendered . Printer.printName) [Lua.name|foo|] `shouldBe` "foo"
 
   it "VarName" do
-    renderedExpression (Lua.varName [Lua.name|foo|]) `shouldBe` "foo"
+    renderedExpression (Lua.varNameExp [Lua.name|foo|]) `shouldBe` "foo"
 
   describe "VarField" do
     it "var.field" do
-      let e = Lua.varName [Lua.name|expr|]
+      let e = Lua.varNameExp [Lua.name|expr|]
           f = [Lua.name|foo|]
-      renderedExpression (Lua.varField e f) `shouldBe` "expr.foo"
+      renderedExpression (Lua.varFieldExp e f) `shouldBe` "expr.foo"
 
     it "({field = 1}).field" do
       let e = Lua.table [Lua.tableRowNV f (Lua.integer 1)]
           f = [Lua.name|foo|]
-      renderedExpression (Lua.varField e f) `shouldBe` "({ foo = 1 }).foo"
+      renderedExpression (Lua.varFieldExp e f) `shouldBe` "({ foo = 1 }).foo"
 
     it "Assignment" do
       let s = Lua.assignVar [Lua.name|foo|] (Lua.boolean True)
@@ -102,7 +102,7 @@ spec = do
     it "multi-liner" do
       let params = Lua.paramNamed <$> [[Lua.name|aaa|], [Lua.name|bbb|]]
       let result =
-            Lua.varName
+            Lua.varNameExp
               [Lua.name|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa|]
       let stats = [Lua.assignVar [Lua.name|x|] Lua.nil]
       let expr = Lua.functionDef params (stats <> [Lua.return result])
@@ -118,7 +118,7 @@ spec = do
             Lua.functionCall
               ( Lua.functionDef
                   [Lua.paramNamed [Lua.name|a|], Lua.paramNamed [Lua.name|b|]]
-                  [Lua.return (Lua.varName [Lua.name|a|])]
+                  [Lua.return (Lua.varNameExp [Lua.name|a|])]
               )
               [Lua.integer 1, Lua.integer 2]
       renderedExpression expr
@@ -127,19 +127,19 @@ spec = do
   describe "expression" do
     describe "unary" do
       it "hash" do
-        renderedExpression (Lua.hash (Lua.varName [Lua.name|foo|]))
+        renderedExpression (Lua.hash (Lua.varNameExp [Lua.name|foo|]))
           `shouldBe` "#(foo)"
 
       it "negate" do
-        renderedExpression (Lua.negate (Lua.varName [Lua.name|foo|]))
+        renderedExpression (Lua.negate (Lua.varNameExp [Lua.name|foo|]))
           `shouldBe` "-(foo)"
 
       it "logicalNot" do
-        renderedExpression (Lua.logicalNot (Lua.varName [Lua.name|foo|]))
+        renderedExpression (Lua.logicalNot (Lua.varNameExp [Lua.name|foo|]))
           `shouldBe` "not(foo)"
 
       it "bitwiseNot" do
-        renderedExpression (Lua.bitwiseNot (Lua.varName [Lua.name|foo|]))
+        renderedExpression (Lua.bitwiseNot (Lua.varNameExp [Lua.name|foo|]))
           `shouldBe` "~(foo)"
 
     describe "binary" do

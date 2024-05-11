@@ -1,0 +1,33 @@
+UberModule
+  { uberModuleBindings =
+    [ Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.Uncurrying.Test", qnameName = Name "f"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "i" ) )
+        ( Abs Nothing ( ParamUnused Nothing )
+          ( Abs Nothing ( ParamUnused Nothing ) ( Ref Nothing ( Local ( Name "i" ) ) 0 ) )
+        )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "f", Ref Nothing
+        ( Imported ( ModuleName "Golden.Uncurrying.Test" ) ( Name "f" ) ) 0
+      ),
+      ( Name "call2", App Nothing
+        ( App Nothing
+          ( Ref Nothing ( Imported ( ModuleName "Golden.Uncurrying.Test" ) ( Name "f" ) ) 0 )
+          ( LiteralInt Nothing 1 )
+        ) ( LiteralBool Nothing True )
+      ),
+      ( Name "call3", App Nothing
+        ( App Nothing
+          ( App Nothing
+            ( Ref Nothing ( Imported ( ModuleName "Golden.Uncurrying.Test" ) ( Name "f" ) ) 0 )
+            ( LiteralInt Nothing 2 )
+          ) ( LiteralBool Nothing False )
+        )
+        ( LiteralChar Nothing 'a' )
+      )
+    ]
+  }

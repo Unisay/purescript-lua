@@ -15,6 +15,7 @@ module Language.PureScript.Backend.Lua.Name
   ) where
 
 import Data.Char qualified as Char
+import Data.Data (Data)
 import Data.Set qualified as Set
 import Data.Text qualified as Text
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
@@ -24,6 +25,7 @@ import Text.Megaparsec.Char qualified as M
 import Prelude hiding (toText)
 
 newtype Name = Name {toText ∷ Text}
+  deriving stock (Data)
   deriving newtype (Eq, Ord, Show, Pretty)
 
 name ∷ QuasiQuoter

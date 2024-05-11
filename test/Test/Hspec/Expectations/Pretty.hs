@@ -10,7 +10,10 @@ import Test.HUnit.Lang
 import Text.Pretty.Simple (pShow)
 
 shouldBe ∷ (HasCallStack, Eq a, Show a) ⇒ a → a → Assertion
-shouldBe expected actual = assertEqual "" actual expected
+shouldBe expected actual = assertEqualPretty "" actual expected
+
+assertEqualPretty ∷ (HasCallStack, Eq a, Show a) ⇒ String → a → a → Assertion
+assertEqualPretty = assertEqualShowing (toString . pShow)
 
 {- | Asserts that the specified actual value is equal to the expected value.
  The output message will contain the prefix, the expected value, and the
@@ -19,16 +22,18 @@ shouldBe expected actual = assertEqual "" actual expected
  If the prefix is the empty string (i.e., @\"\"@), then the prefix is omitted
  and only the expected and actual values are output.
 -}
-assertEqual
-  ∷ (HasCallStack, Eq a, Show a)
-  ⇒ String
+assertEqualShowing
+  ∷ (HasCallStack, Eq a)
+  ⇒ (a → String)
+  -- ^ A function to convert the expected value to a string
+  → String
   -- ^ The message prefix
   → a
   -- ^ The expected value
   → a
   -- ^ The actual value
   → Assertion
-assertEqual preface expected actual =
+assertEqualShowing shower preface expected actual =
   unless (actual == expected) do
     prefaceMsg
       `deepseq` expectedMsg
@@ -41,8 +46,8 @@ assertEqual preface expected actual =
   prefaceMsg
     | null preface = Nothing
     | otherwise = Just preface
-  expectedMsg = toString $ pShow expected
-  actualMsg = toString $ pShow actual
+  expectedMsg = shower expected
+  actualMsg = shower actual
 
 location ∷ HasCallStack ⇒ Maybe SrcLoc
 location = case reverse Data.CallStack.callStack of

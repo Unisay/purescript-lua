@@ -1,7 +1,7 @@
 module Language.PureScript.Backend.Lua.DCE where
 
 import Control.Lens ((%~))
-import Control.Monad.Trans.Accum (add, execAccum)
+import Control.Lens.Plated qualified as Plated
 import Data.DList (DList)
 import Data.DList qualified as DList
 import Data.Graph (Graph, Vertex, graphFromEdges, reachable)
@@ -12,12 +12,17 @@ import Language.PureScript.Backend.Lua.Name (Name)
 import Language.PureScript.Backend.Lua.Name qualified as Name
 import Language.PureScript.Backend.Lua.Traversal
   ( Annotator (..)
-  , Visitor (..)
+  , Rewrites (..)
   , annotateStatementInsideOutM
-  , makeVisitor
-  , visitStatementM
+  , makeRewrites
+  , rewriteStatementM
   )
-import Language.PureScript.Backend.Lua.Types (Ann, HasAnn (..), annL, annOf)
+import Language.PureScript.Backend.Lua.Types
+  ( Ann
+  , HasAnn (..)
+  , annL
+  , annOf
+  )
 import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Prelude hiding (exp)
 
@@ -39,10 +44,7 @@ eliminateDeadCode dceMode stats = dceChunk annotatedStatements
   nodesEdges ∷ [NodeEdges]
   nodesEdges = DList.toList (adjacencyList annotatedStatements)
 
-  dceChunk ∷ [Lua.StatementF DceAnn] → [Lua.Statement]
   dceChunk = foldMap $ toList . dceStatement
-
-  dceStatement ∷ Lua.StatementF DceAnn → Maybe Lua.Statement
   dceStatement statement =
     case statement of
       Lua.Local dceAnn name value →
@@ -69,7 +71,7 @@ eliminateDeadCode dceMode stats = dceChunk annotatedStatements
       guard (Set.member vertex reachableVertices) $> preserved
 
   dceExpression ∷ Lua.ExpF DceAnn → Lua.Exp
-  dceExpression = \case
+  dceExpression expr = case expr of
     Lua.Nil dceAnn →
       Lua.Nil (unDceAnn dceAnn)
     Lua.Boolean dceAnn b →
@@ -125,7 +127,9 @@ eliminateDeadCode dceMode stats = dceChunk annotatedStatements
       Lua.VarField (unDceAnn dceAnn) (dceExpression e) name
 
   reachableVertices ∷ Set Vertex
-  reachableVertices = Set.fromList $ reachable graph =<< dceEntryVertices
+  reachableVertices =
+    let reachables = reachable graph
+     in Set.fromList (dceEntryVertices >>= reachables)
 
   dceEntryVertices ∷ [Vertex]
   dceEntryVertices =
@@ -147,35 +151,37 @@ adjacencyList = (`go` mempty)
     → DList NodeEdges
     → DList NodeEdges
   go [] acc = acc
-  go (statement : nextStatements) acc = go nextStatements do
-    acc <> case statement of
-      Lua.Local _ann name value →
-        DList.cons
-          ( "Local(" <> Name.toText name <> ")"
-          , keyOf statement
-          , toList
-              let keys = findAssignments name nextStatements
-               in maybe keys (\expr → DList.cons (keyOf expr) keys) value
-          )
-          (maybe mempty expressionAdjacencyList value)
-      Lua.Assign _ann variable value →
-        DList.cons
-          ("Assign", keyOf statement, [keyOf variable, keyOf value])
-          (varAdjacencyList variable <> expressionAdjacencyList value)
-      Lua.IfThenElse _ann cond th el →
-        DList.cons
-          ( "IfThenElse"
-          , keyOf statement
-          , keyOf cond : DList.toList (findReturns th <> findReturns el)
-          )
-          (expressionAdjacencyList cond)
-          <> go th mempty
-          <> go el mempty
-      Lua.Return _ann e →
-        DList.cons
-          ("Return", keyOf statement, [keyOf e])
-          (expressionAdjacencyList e)
-      _ → mempty
+  go (statement : nextStatements) acc =
+    go nextStatements $
+      acc <> case statement of
+        Lua.Local _ann name value →
+          DList.cons
+            ( "Local(" <> Name.toText name <> ")"
+            , keyOf statement
+            , toList
+                let keys = findAssignments name nextStatements
+                 in maybe keys (\expr → DList.cons (keyOf expr) keys) value
+            )
+            (maybe mempty expressionAdjacencyList value)
+        Lua.Assign _ann variable value →
+          DList.cons
+            ("Assign", keyOf statement, [keyOf variable, keyOf value])
+            (varAdjacencyList variable <> expressionAdjacencyList value)
+        Lua.IfThenElse _ann cond th el →
+          DList.cons
+            ( "IfThenElse"
+            , keyOf statement
+            , keyOf cond : DList.toList (findReturns th <> findReturns el)
+            )
+            (expressionAdjacencyList cond)
+            <> go th DList.empty
+            <> go el DList.empty
+        Lua.Return _ann e →
+          DList.cons
+            ("Return", keyOf statement, [keyOf e])
+            (expressionAdjacencyList e)
+        Lua.ForeignSourceStat {} →
+          pure ("ForeignSourceStat", keyOf statement, [])
 
 expressionAdjacencyList ∷ Lua.ExpF DceAnn → DList NodeEdges
 expressionAdjacencyList expr =
@@ -270,29 +276,24 @@ findReturnStatements = foldMap \statement →
     _ → DList.empty
 
 findAssignments ∷ Name → [Lua.StatementF DceAnn] → DList Key
-findAssignments name = foldMap do
-  (`execAccum` DList.empty)
-    . visitStatementM
-      makeVisitor
-        { beforeStat = \statement →
-            case statement of
-              Lua.Assign _ (Lua.VarName _ name') _val
-                | name' == name →
-                    add (DList.singleton (keyOf statement)) $> statement
-              _ → pure statement
-        }
+findAssignments name =
+  foldMap $
+    Lua.S >>> Plated.para \term rs →
+      case term of
+        Lua.S (Lua.Assign ann (Lua.VarName _ name') _val)
+          | name' == name →
+              DList.cons (annKey ann) (fold rs)
+        _ → fold rs
 
 findVars ∷ Name → [Lua.StatementF DceAnn] → DList Key
-findVars name = foldMap do
-  (`execAccum` DList.empty)
-    . visitStatementM
-      makeVisitor
-        { beforeExp = \expr →
-            case expr of
-              Lua.Var _ann (Lua.VarName _ name')
-                | name' == name → add (DList.singleton (keyOf expr)) $> expr
-              _ → pure expr
-        }
+findVars name =
+  foldMap $
+    Lua.S >>> Plated.para \term rs →
+      case term of
+        Lua.E (Lua.Var ann (Lua.VarName _ name'))
+          | name' == name →
+              DList.cons (annKey ann) (fold rs)
+        _ → fold rs
 
 --------------------------------------------------------------------------------
 -- Annotating statements with graph keys ---------------------------------------
@@ -314,7 +315,10 @@ unDceAnn ∷ DceAnn → Ann
 unDceAnn (DceAnn a _key _scope) = a
 
 keyOf ∷ HasAnn f ⇒ f DceAnn → Key
-keyOf f = let DceAnn _ann key _scopes = annOf f in key
+keyOf = annKey . annOf
+
+annKey ∷ DceAnn → Key
+annKey (DceAnn _ key _) = key
 
 scopesOf ∷ HasAnn f ⇒ f DceAnn → [Scope]
 scopesOf f = let DceAnn _ann _key scopes = annOf f in scopes
@@ -339,13 +343,13 @@ assignKeys =
 assignScopes
   ∷ ∀ m. MonadScopes m ⇒ [Lua.StatementF DceAnn] → m [Lua.StatementF DceAnn]
 assignScopes = traverse do
-  visitStatementM
-    makeVisitor
+  rewriteStatementM
+    makeRewrites
       { beforeStat = beforeStat
-      , afterStat = afterStat
-      , beforeExp = beforeExp
+      , beforeExpr = beforeExpr
       , beforeVar = updateScopes
       , beforeRow = updateScopes
+      , afterStat = afterStat
       }
  where
   beforeStat ∷ Lua.StatementF DceAnn → m (Lua.StatementF DceAnn)
@@ -362,12 +366,13 @@ assignScopes = traverse do
       _ → pure stat
 
   afterStat ∷ Lua.StatementF DceAnn → m (Lua.StatementF DceAnn)
-  afterStat = \case
-    stat@Lua.Return {} → dropScope $> stat
-    other → pure other
+  afterStat statement =
+    case statement of
+      Lua.Return {} → dropScope $> statement
+      _ → pure statement
 
-  beforeExp ∷ Lua.ExpF DceAnn → m (Lua.ExpF DceAnn)
-  beforeExp expr =
+  beforeExpr ∷ Lua.ExpF DceAnn → m (Lua.ExpF DceAnn)
+  beforeExpr expr =
     case expr of
       Lua.Function (DceAnn ann key _scopes) argNodes body → do
         _ ← addScope

@@ -57,8 +57,8 @@ M.Effect_Lazy_applyEffect = PSLUA_runtime_lazy("applyEffect")(function()
   return {
     apply = (function()
       return function(f)
-        local bind = (M.Effect_monadEffect.Bind1()).bind
         return function(a)
+          local bind = (M.Effect_monadEffect.Bind1()).bind
           return bind(f)(function(fPrime)
             return bind(a)(function(aPrime)
               return M.Control_Applicative_pure(M.Effect_monadEffect.Applicative0())(fPrime(aPrime))

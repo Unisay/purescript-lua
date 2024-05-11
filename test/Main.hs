@@ -10,6 +10,7 @@ import Language.PureScript.Backend.Lua.Golden.Spec qualified as Golden
 import Language.PureScript.Backend.Lua.Linker.Foreign.Spec qualified as LuaLinkerForeign
 import Language.PureScript.Backend.Lua.Optimizer.Spec qualified as LuaOptimizer
 import Language.PureScript.Backend.Lua.Printer.Spec qualified as Printer
+import Language.PureScript.Backend.Lua.Traversal.Spec qualified as LuaTraversal
 import Test.Hspec (hspec)
 
 main ∷ IO ()
@@ -18,6 +19,7 @@ main = hspec do
   Inliner.spec
   Golden.spec
   IrDce.spec
+  LuaTraversal.spec
   LuaDce.spec
   Types.spec
   IROptimizer.spec

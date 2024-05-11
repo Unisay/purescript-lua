@@ -2,6 +2,8 @@
 
 module Language.PureScript.Backend.Lua.Traversal where
 
+import Control.Lens (Plated)
+import Data.Data (Data)
 import Language.PureScript.Backend.Lua.Types
 import Prelude hiding (local)
 
@@ -14,10 +16,10 @@ everywhereStat
 everywhereStat f g = runIdentity . everywhereStatM (pure . f) (pure . g)
 
 everywhereInChunkM
-  ∷ Monad m
+  ∷ (Monad m, Traversable t)
   ⇒ (Exp → m Exp)
   → (Statement → m Statement)
-  → (Chunk → m Chunk)
+  → (t Statement → m (t Statement))
 everywhereInChunkM f g = traverse (everywhereStatM g f)
 
 everywhereExpM
@@ -30,9 +32,9 @@ everywhereExpM f g = goe
  where
   goe = \case
     Var _ann v → case v of
-      VarIndex _ann e1 e2 → f =<< varIndex <$> goe e1 <*> goe e2
-      VarField _ann e n → f . (`varField` n) =<< goe e
-      VarName _ann n → f (varName n)
+      VarIndex _ann e1 e2 → f . var =<< varIndex <$> goe e1 <*> goe e2
+      VarField _ann e n → f . var . (`varField` n) =<< goe e
+      VarName _ann n → f (var (varName n))
     Function _ann names statements →
       f . functionDef names
         =<< forM statements (everywhereStatM g f)
@@ -94,10 +96,10 @@ annotateStatementInsideOutM
   ∷ ∀ m f f'. Monad m ⇒ Annotator m f f' → StatementF f → m (StatementF f')
 annotateStatementInsideOutM annotator@Annotator {..} = \case
   Assign ann variable value → do
-    visitedVars ← goV variable
-    visitedVals ← goE value
+    visitedVar ← goV variable
+    visitedVal ← goE value
     ann' ← withAnn ann
-    annotateStat $ Assign ann' visitedVars visitedVals
+    annotateStat $ Assign ann' visitedVar visitedVal
   Local ann names vals → do
     ann' ← withAnn ann
     annotateStat . Local ann' names =<< forM vals goE
@@ -206,93 +208,111 @@ annotateVarInsideOutM annotator@Annotator {..} = \case
   goE = annotateExpInsideOutM annotator
 
 --------------------------------------------------------------------------------
--- Outside-in ------------------------------------------------------------------
+-- Visiting (for effect) outside-in --------------------------------------------
 
-data Visitor m a = Visitor
-  { aroundChunk ∷ [StatementF a] → m [StatementF a]
-  , beforeStat ∷ StatementF a → m (StatementF a)
-  , afterStat ∷ StatementF a → m (StatementF a)
-  , beforeExp ∷ ExpF a → m (ExpF a)
-  , afterExp ∷ ExpF a → m (ExpF a)
+visitTermM
+  ∷ ∀ m ann
+   . Monad m
+  ⇒ TermF ann
+  -- ^ The term to visit
+  → (TermF ann → m [TermF ann])
+  -- ^ How to get the subterms of a term
+  → m ()
+visitTermM term subterms = subterms term >>= traverse_ (`visitTermM` subterms)
+
+--------------------------------------------------------------------------------
+-- Rewriting -------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+data Rewrites m a = Rewrites
+  { beforeStat ∷ StatementF a → m (StatementF a)
+  , beforeExpr ∷ ExpF a → m (ExpF a)
   , beforeVar ∷ VarF a → m (VarF a)
-  , afterVar ∷ VarF a → m (VarF a)
   , beforeRow ∷ TableRowF a → m (TableRowF a)
+  , afterStat ∷ StatementF a → m (StatementF a)
+  , afterExp ∷ ExpF a → m (ExpF a)
+  , afterVar ∷ VarF a → m (VarF a)
   , afterRow ∷ TableRowF a → m (TableRowF a)
   }
 
-makeVisitor ∷ Applicative m ⇒ Visitor m a
-makeVisitor =
-  Visitor
-    { aroundChunk = pure
-    , beforeStat = pure
-    , afterStat = pure
-    , beforeExp = pure
-    , afterExp = pure
+makeRewrites ∷ ∀ m a. Monad m ⇒ Rewrites m a
+makeRewrites =
+  Rewrites
+    { beforeStat = pure
+    , beforeExpr = pure
     , beforeVar = pure
-    , afterVar = pure
     , beforeRow = pure
+    , afterStat = pure
+    , afterExp = pure
+    , afterVar = pure
     , afterRow = pure
     }
 
-visitStatementM ∷ Monad m ⇒ Visitor m a → (StatementF a → m (StatementF a))
-visitStatementM visitor@Visitor {..} stat =
-  beforeStat stat >>= \case
+rewriteChunkM ∷ Monad m ⇒ Rewrites m a → [StatementF a] → m [StatementF a]
+rewriteChunkM rewrites = traverse (rewriteStatementM rewrites)
+
+rewriteStatementM ∷ Monad m ⇒ Rewrites m a → (StatementF a → m (StatementF a))
+rewriteStatementM rewrites@Rewrites {..} =
+  beforeStat >=> \case
     Assign ann variable value → do
-      visitedVars ← visitVarM visitor variable
-      visitedVals ← visitExpM visitor value
-      afterStat $ Assign ann visitedVars visitedVals
+      rewriteedVar ← rewriteVarM rewrites variable
+      rewriteedVal ← rewriteExpM rewrites value
+      afterStat $ Assign ann rewriteedVar rewriteedVal
     Local ann names vals →
-      afterStat . Local ann names =<< forM vals (visitExpM visitor)
+      afterStat . Local ann names =<< forM vals (rewriteExpM rewrites)
     IfThenElse ann p tb eb → do
-      iPred ← visitExpM visitor p
-      iThen ← traverse (visitStatementM visitor) tb
-      iElse ← traverse (visitStatementM visitor) eb
+      iPred ← rewriteExpM rewrites p
+      iThen ← traverse (rewriteStatementM rewrites) tb
+      iElse ← traverse (rewriteStatementM rewrites) eb
       afterStat $ IfThenElse ann iPred iThen iElse
     Return ann e →
-      afterStat . Return ann =<< visitExpM visitor e
-    other →
-      afterStat other
+      afterStat . Return ann =<< rewriteExpM rewrites e
+    ForeignSourceStat ann src →
+      afterStat $ ForeignSourceStat ann src
 
-visitExpM ∷ ∀ m a. Monad m ⇒ Visitor m a → (ExpF a → m (ExpF a))
-visitExpM visitor@Visitor {..} expf = do
-  beforeExp expf >>= \case
-    Var ann v →
-      afterExp . Var ann =<< visitVarM visitor v
-    Function ann names stats →
-      afterExp . Function ann names =<< forM stats (visitStatementM visitor)
-    TableCtor ann rows →
-      TableCtor ann <$> forM rows do
-        beforeRow >=> \case
-          TableRowKV ann' k v →
-            afterRow
-              =<< TableRowKV ann'
-                <$> visitExpM visitor k
-                <*> visitExpM visitor v
-          TableRowNV ann' n e →
-            afterRow . TableRowNV ann' n =<< visitExpM visitor e
-    UnOp ann op e →
-      afterExp . UnOp ann op =<< visitExpM visitor e
-    BinOp ann op e1 e2 →
-      afterExp
-        =<< BinOp ann op
-          <$> visitExpM visitor e1
-          <*> visitExpM visitor e2
-    FunctionCall ann fn args →
-      afterExp
-        =<< FunctionCall ann
-          <$> visitExpM visitor fn
-          <*> forM args (visitExpM visitor)
-    other → afterExp other
+rewriteExpM ∷ ∀ m a. Monad m ⇒ Rewrites m a → (ExpF a → m (ExpF a))
+rewriteExpM rewrites@Rewrites {..} expf = do
+  beforeExpr expf >>= \case
+    ex → case ex of
+      Var ann v →
+        afterExp . Var ann =<< rewriteVarM rewrites v
+      Function ann names stats →
+        afterExp . Function ann names =<< forM stats (rewriteStatementM rewrites)
+      TableCtor ann rows →
+        TableCtor ann <$> forM rows do
+          beforeRow >=> \case
+            TableRowKV ann' k v →
+              afterRow
+                =<< TableRowKV ann'
+                  <$> rewriteExpM rewrites k
+                  <*> rewriteExpM rewrites v
+            TableRowNV ann' n e →
+              afterRow . TableRowNV ann' n =<< rewriteExpM rewrites e
+      UnOp ann op e →
+        afterExp . UnOp ann op =<< rewriteExpM rewrites e
+      BinOp ann op e1 e2 →
+        afterExp
+          =<< BinOp ann op
+            <$> rewriteExpM rewrites e1
+            <*> rewriteExpM rewrites e2
+      FunctionCall ann fn args →
+        afterExp
+          =<< FunctionCall ann
+            <$> rewriteExpM rewrites fn
+            <*> forM args (rewriteExpM rewrites)
+      other → afterExp other
 
-visitVarM ∷ ∀ m a. Monad m ⇒ Visitor m a → (VarF a → m (VarF a))
-visitVarM visitor@Visitor {..} variable =
-  beforeVar variable >>= \case
+rewriteVarM ∷ ∀ m a. Monad m ⇒ Rewrites m a → (VarF a → m (VarF a))
+rewriteVarM rewrites@Rewrites {..} =
+  beforeVar >=> \case
     VarName ann qualifiedName →
       afterVar $ VarName ann qualifiedName
     VarIndex ann e1 e2 →
       afterVar
         =<< VarIndex ann
-          <$> visitExpM visitor e1
-          <*> visitExpM visitor e2
+          <$> rewriteExpM rewrites e1
+          <*> rewriteExpM rewrites e2
     VarField ann e name →
-      afterVar . (\x → VarField ann x name) =<< visitExpM visitor e
+      afterVar . (\x → VarField ann x name) =<< rewriteExpM rewrites e

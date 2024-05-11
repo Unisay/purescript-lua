@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+
+args=''
+for arg in "$@"
+do
+  args="$args '$arg'"
+done
+
+watchman-make -p '**/*.hs' -r "clear && cabal test $args"

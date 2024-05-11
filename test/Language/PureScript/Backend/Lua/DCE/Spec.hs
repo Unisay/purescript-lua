@@ -8,7 +8,8 @@ import Hedgehog (annotateShow, forAll, (===))
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
 import Language.PureScript.Backend.Lua.DCE
-  ( DceMode (PreserveReturned)
+  ( DceAnn (..)
+  , DceMode (PreserveReturned)
   , MonadScopes (..)
   )
 import Language.PureScript.Backend.Lua.DCE qualified as DCE
@@ -30,19 +31,19 @@ spec = describe "Lua Dead Code Elimination" do
     let chunk =
           [ Lua.local name1 . Just $
               Lua.functionDef [Lua.paramNamed name2] [Lua.return expr1]
-          , Lua.return $ Lua.functionCall (Lua.varName name1) [expr2]
+          , Lua.return $ Lua.functionCall (Lua.varNameExp name1) [expr2]
           ]
     let chunk' =
           [ Lua.local name1 . Just $
               Lua.functionDef [Lua.paramUnused] [Lua.return expr1]
-          , Lua.return $ Lua.functionCall (Lua.varName name1) [expr2]
+          , Lua.return $ Lua.functionCall (Lua.varNameExp name1) [expr2]
           ]
     DCE.eliminateDeadCode PreserveReturned chunk === chunk'
 
   test "Eliminates unused local binding" do
     [usedLocal@(Lua.Local _ann name _val), unusedLocal1, unusedLocal2] ←
       forAll . fmap toList $ Gen.set (Range.singleton 3) Gen.local
-    let fnCall ∷ Lua.Exp = Lua.functionCall (Lua.varName name) []
+    let fnCall ∷ Lua.Exp = Lua.functionCall (Lua.varNameExp name) []
     let chunk = [unusedLocal1, usedLocal, unusedLocal2, Lua.return fnCall]
     annotateShow chunk
     DCE.eliminateDeadCode PreserveReturned chunk
@@ -51,7 +52,7 @@ spec = describe "Lua Dead Code Elimination" do
   test "Eliminates unused local binding inside a function" do
     [usedLocal@(Lua.Local _ann name _val), unusedLocal1, unusedLocal2] ←
       forAll . fmap toList $ Gen.set (Range.singleton 3) Gen.local
-    let fnCall ∷ Lua.Exp = Lua.functionCall (Lua.varName name) []
+    let fnCall ∷ Lua.Exp = Lua.functionCall (Lua.varNameExp name) []
     let body = [unusedLocal1, usedLocal, unusedLocal2, Lua.return fnCall]
         body' = [usedLocal, Lua.return fnCall]
     let chunk =
@@ -63,10 +64,10 @@ spec = describe "Lua Dead Code Elimination" do
   test "Doesn't eliminate local binding used transitively" do
     name0 ← forAll Gen.name
     localDef@(Lua.Local _ann name1 _val) ← forAll Gen.local
-    let retCall = Lua.return (Lua.functionCall (Lua.varName name0) [])
+    let retCall = Lua.return (Lua.functionCall (Lua.varNameExp name0) [])
         chunk =
           [ localDef
-          , Lua.local name0 (Just (Lua.varName name1))
+          , Lua.local name0 (Just (Lua.varNameExp name1))
           , retCall
           ]
     annotateShow chunk
@@ -76,7 +77,7 @@ spec = describe "Lua Dead Code Elimination" do
     localDef@(Lua.Local _ann name _val) ← forAll Gen.local
     name_ ← forAll $ mfilter (/= name) Gen.name
     value_ ← forAll Gen.expression
-    let retCall = Lua.return (Lua.functionCall (Lua.varName name) [])
+    let retCall = Lua.return (Lua.functionCall (Lua.varNameExp name) [])
     let chunk =
           [ localDef
           , Lua.local name_ Nothing
@@ -89,7 +90,7 @@ spec = describe "Lua Dead Code Elimination" do
   test "Doesn't eliminate used assign statement" do
     name ← forAll Gen.name
     value_ ← forAll Gen.expression
-    let retCall = Lua.return (Lua.functionCall (Lua.varName name) [])
+    let retCall = Lua.return (Lua.functionCall (Lua.varNameExp name) [])
     let chunk =
           [ Lua.local name Nothing
           , Lua.assignVar name value_
@@ -102,9 +103,31 @@ spec = describe "Lua Dead Code Elimination" do
     let name = Fixture.runtimeLazyName
     let chunk =
           [ Fixture.runtimeLazy
-          , Lua.return (Lua.functionCall (Lua.varName name) [])
+          , Lua.return (Lua.functionCall (Lua.varNameExp name) [])
           ]
     DCE.eliminateDeadCode PreserveReturned chunk === chunk
+
+  test "findAssignments" do
+    let name = [Lua.name|a|]
+    let chunk =
+          [ Lua.Local
+              (DceAnn Lua.newAnn 1 [])
+              name
+              (Just (Lua.Integer (DceAnn Lua.newAnn 11 []) 11))
+          , Lua.Assign
+              (DceAnn Lua.newAnn 2 [])
+              (Lua.VarName (DceAnn Lua.newAnn 20 []) name)
+              (Lua.Integer (DceAnn Lua.newAnn 21 []) 2)
+          , Lua.Return (DceAnn Lua.newAnn 3 []) $
+              Lua.FunctionCall
+                (DceAnn Lua.newAnn 3 [])
+                ( Lua.Var
+                    (DceAnn Lua.newAnn 31 [])
+                    (Lua.VarName (DceAnn Lua.newAnn 32 []) name)
+                )
+                []
+          ]
+    DCE.findAssignments name chunk === pure 2
 
   test "scopes" do
     name ← forAll Gen.name
@@ -117,7 +140,7 @@ spec = describe "Lua Dead Code Elimination" do
                     [Lua.return (Lua.integer 1)]
                     [Lua.return (Lua.integer 2)]
                 ]
-          , Lua.return (Lua.functionCall (Lua.varName name) [])
+          , Lua.return (Lua.functionCall (Lua.varNameExp name) [])
           ]
     annotateShow $ scopeAssignmentTraces chunk
     DCE.eliminateDeadCode PreserveReturned chunk === chunk
@@ -133,7 +156,7 @@ spec = describe "Lua Dead Code Elimination" do
                     [Lua.return (Lua.integer 1)]
                     [Lua.return (Lua.integer 2)]
                 ]
-          , Lua.return (Lua.functionCall (Lua.varName n1) [])
+          , Lua.return (Lua.functionCall (Lua.varNameExp n1) [])
           ]
 
     scopeAssignmentTraces chunk

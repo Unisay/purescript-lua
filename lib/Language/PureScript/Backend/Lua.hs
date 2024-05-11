@@ -17,6 +17,7 @@ import Data.Set qualified as Set
 import Data.Tagged (Tagged (..), untag)
 import Data.Text qualified as Text
 import Data.Traversable (for)
+import Language.PureScript.Backend.AppOrModule (AppOrModule (..))
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Linker qualified as Linker
@@ -27,7 +28,6 @@ import Language.PureScript.Backend.Lua.Linker.Foreign qualified as Foreign
 import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Language.PureScript.Backend.Lua.Name qualified as Name
 import Language.PureScript.Backend.Lua.Types qualified as Lua
-import Language.PureScript.Backend.AppOrModule (AppOrModule (..))
 import Language.PureScript.Names (ModuleName (..), runModuleName)
 import Language.PureScript.Names qualified as PS
 import Path (Abs, Dir, Path)
@@ -120,8 +120,9 @@ fromUberModule foreigns needsRuntimeLazy appOrModule uber = (`evalStateT` 0) do
 mkBinding ∷ ModuleName → Lua.Name → Lua.Exp → Lua.Statement
 mkBinding modname name =
   Lua.assign $
-    Lua.VarField Lua.newAnn
-      (Lua.varName Fixture.moduleName)
+    Lua.VarField
+      Lua.newAnn
+      (Lua.var (Lua.varName Fixture.moduleName))
       (qualifyName modname name)
 
 asExpression ∷ Either Lua.Chunk Lua.Exp → Lua.Exp
@@ -170,9 +171,10 @@ fromIR foreigns topLevelNames modname ir = case ir of
     Right . Lua.table <$> for kvs \(prop, exp) →
       Lua.tableRowNV (fromPropName prop) <$> goExp exp
   IR.ReflectCtor _ann e →
-    Right . (`Lua.varIndex` keyCtor) <$> goExp e
+    Right . Lua.var . (`Lua.varIndex` keyCtor) <$> goExp e
   IR.DataArgumentByIndex _ann i e →
-    Right . (`Lua.varField` Lua.unsafeName ("value" <> show i)) <$> goExp e
+    Right . Lua.var . (`Lua.varField` Lua.unsafeName ("value" <> show i))
+      <$> goExp e
   IR.Eq _ann l r →
     Right <$> liftA2 Lua.equalTo (goExp l) (goExp r)
   IR.Ctor _ann _algebraicTy ctorModName ctorTyName ctorName fieldNames →
@@ -183,13 +185,15 @@ fromIR foreigns topLevelNames modname ir = case ir of
     ctorId = IR.ctorId ctorModName ctorTyName ctorName
     ctorRow = Lua.tableRowKV keyCtor (Lua.string ctorId)
     args = Name.unsafeName . IR.renderFieldName <$> fieldNames
-    attributes = args <&> ap Lua.tableRowNV Lua.varName
+    attributes = args <&> ap Lua.tableRowNV (Lua.var . Lua.varName)
   IR.ArrayLength _ann e →
     Right . Lua.hash <$> goExp e
   IR.ArrayIndex _ann expr index →
-    Right . flip Lua.varIndex (Lua.integer (fromIntegral index)) <$> goExp expr
+    Right . Lua.var . (`Lua.varIndex` Lua.integer (fromIntegral index))
+      <$> goExp expr
   IR.ObjectProp _ann expr propName →
-    Right . flip Lua.varField (fromPropName propName) <$> goExp expr
+    Right . Lua.var . (`Lua.varField` fromPropName propName)
+      <$> goExp expr
   IR.ObjectUpdate _ann expr propValues → do
     add UsesObjectUpdate
     obj ← goExp expr
@@ -197,7 +201,9 @@ fromIR foreigns topLevelNames modname ir = case ir of
       Lua.table <$> for (toList propValues) \(propName, e) →
         Lua.tableRowNV (fromPropName propName) <$> goExp e
     pure . Right $
-      Lua.functionCall (Lua.varName Fixture.objectUpdateName) [obj, vals]
+      Lua.functionCall
+        (Lua.var (Lua.varName Fixture.objectUpdateName))
+        [obj, vals]
   IR.Abs _ann param expr → do
     e ← goExp expr
     let luaParams = case param of
@@ -216,13 +222,17 @@ fromIR foreigns topLevelNames modname ir = case ir of
       IR.Local name
         | topLevelName ← qualifyName modname (fromName name)
         , Set.member topLevelName topLevelNames →
-            Lua.varField (Lua.varName Fixture.moduleName) topLevelName
+            Lua.var $
+              Lua.varField
+                (Lua.var (Lua.varName Fixture.moduleName))
+                topLevelName
       IR.Local name →
-        Lua.varName (fromNameWithIndex name index)
+        Lua.var (Lua.varName (fromNameWithIndex name index))
       IR.Imported modname' name →
-        Lua.varField
-          (Lua.varName Fixture.moduleName)
-          (qualifyName modname' (fromName name))
+        Lua.var $
+          Lua.varField
+            (Lua.var (Lua.varName Fixture.moduleName))
+            (qualifyName modname' (fromName name))
   IR.Let _ann bindings bodyExp → do
     body ← go bodyExp
     recs ←
@@ -241,7 +251,8 @@ fromIR foreigns topLevelNames modname ir = case ir of
           assignments ← forM (toList grp) \(_ann, fromName → name, expr) →
             goExp expr
               <&> Lua.assign
-                ( Lua.VarName Lua.newAnn
+                ( Lua.VarName
+                    Lua.newAnn
                     ( if Set.member (qualifyName modname name) topLevelNames
                         then qualifyName modname name
                         else name

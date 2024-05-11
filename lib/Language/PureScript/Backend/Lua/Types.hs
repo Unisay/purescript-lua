@@ -1,8 +1,10 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Language.PureScript.Backend.Lua.Types where
 
-import Control.Lens (Lens', lens)
+import Control.Lens (Lens', Plated (plate), lens)
+import Control.Lens.TH (makePrisms)
 import Data.DList (DList)
 import Language.PureScript.Backend.Lua.Name (Name)
 import Language.PureScript.Backend.Lua.Name qualified as Lua
@@ -23,10 +25,6 @@ type Chunk = DList Statement
 newtype ChunkName = ChunkName Text
   deriving stock (Show)
   deriving newtype (Pretty)
-
-{- pattern Ann ∷ b → (a, b)
-pattern Ann fa ← (_ann, fa)
-{-# COMPLETE Ann #-} -}
 
 data ParamF ann
   = ParamNamed ann Name
@@ -303,10 +301,147 @@ deriving stock instance Ord a ⇒ Ord (StatementF a)
 deriving stock instance Show a ⇒ Show (StatementF a)
 
 --------------------------------------------------------------------------------
+-- Terms -----------------------------------------------------------------------
+
+data TermF a
+  = E (ExpF a)
+  | S (StatementF a)
+  | V (VarF a)
+  | R (TableRowF a)
+  deriving stock (Eq, Ord, Show)
+
+$(makePrisms ''TermF)
+
+type Term = TermF Ann
+
+instance Plated (TermF a) where
+  plate f t = case t of
+    E e →
+      case e of
+        Nil {} →
+          pure t
+        Boolean {} →
+          pure t
+        Integer {} →
+          pure t
+        Float {} →
+          pure t
+        String {} →
+          pure t
+        ForeignSourceExp {} →
+          pure t
+        Var ann v →
+          E . Var ann <$> mapV f v
+        Function ann params body →
+          E . Function ann params <$> traverse (mapS f) body
+        TableCtor ann rows →
+          E . TableCtor ann <$> traverse (mapR f) rows
+        UnOp ann op e1 →
+          E . UnOp ann op <$> mapE f e1
+        BinOp ann op e1 e2 →
+          E <$> liftA2 (BinOp ann op) (mapE f e1) (mapE f e2)
+        FunctionCall ann expr args →
+          E <$> liftA2 (FunctionCall ann) (mapE f expr) (traverse (mapE f) args)
+    S s →
+      case s of
+        Assign ann v e →
+          S <$> liftA2 (Assign ann) (mapV f v) (mapE f e)
+        Local ann name expr →
+          S . Local ann name <$> traverse (mapE f) expr
+        Return ann e →
+          S . Return ann <$> mapE f e
+        ForeignSourceStat {} →
+          pure t
+        IfThenElse ann p tb eb →
+          S
+            <$> liftA3
+              (IfThenElse ann)
+              (mapE f p)
+              (traverse (mapS f) tb)
+              (traverse (mapS f) eb)
+    V v →
+      case v of
+        VarName {} →
+          pure t
+        VarIndex ann e1 e2 →
+          V <$> liftA2 (VarIndex ann) (mapE f e1) (mapE f e2)
+        VarField ann e name →
+          V <$> liftA2 (VarField ann) (mapE f e) (pure name)
+    R r →
+      case r of
+        TableRowKV ann k v →
+          R <$> liftA2 (TableRowKV ann) (mapE f k) (mapE f v)
+        TableRowNV ann name e →
+          R <$> liftA2 (TableRowNV ann) (pure name) (mapE f e)
+
+mapS ∷ Functor f ⇒ (TermF a → f (TermF a)) → StatementF a → f (StatementF a)
+mapS tf s = tf (S s) <&> \case S s' → s'; _ → s
+
+mapE ∷ Functor f ⇒ (TermF a → f (TermF a)) → ExpF a → f (ExpF a)
+mapE tf e = tf (E e) <&> \case E e' → e'; _ → e
+
+mapV ∷ Functor f ⇒ (TermF a → f (TermF a)) → VarF a → f (VarF a)
+mapV tf v = tf (V v) <&> \case V v' → v'; _ → v
+
+mapR ∷ Functor f ⇒ (TermF a → f (TermF a)) → TableRowF a → f (TableRowF a)
+mapR tf r = tf (R r) <&> \case R r' → r'; _ → r
+
+termSubterms ∷ TermF a → [TermF a]
+termSubterms = \case
+  E e → exprSubterms e
+  S s → statementSubterms s
+  V v → varSubterms v
+  R r → rowSubterms r
+
+exprSubterms ∷ ExpF a → [TermF a]
+exprSubterms = \case
+  Nil _ → []
+  Boolean _ _ → []
+  Integer _ _ → []
+  Float _ _ → []
+  String _ _ → []
+  ForeignSourceExp _ _ → []
+  Var _ v → [V v]
+  Function _ _params body → map S body
+  TableCtor _ rs → map R rs
+  UnOp _ _ e → [E e]
+  BinOp _ _ e1 e2 → [E e1, E e2]
+  FunctionCall _ f args → E f : map E args
+
+statementSubterms ∷ StatementF a → [TermF a]
+statementSubterms = \case
+  Assign _ v e → [V v, E e]
+  Local _ _name es → map E (maybeToList es)
+  Return _ e → [E e]
+  ForeignSourceStat _ _ → []
+  IfThenElse _ p tb eb →
+    E p : concatMap statementSubterms tb ++ concatMap statementSubterms eb
+
+varSubterms ∷ VarF a → [TermF a]
+varSubterms = \case
+  VarName _ _ → []
+  VarIndex _ e1 e2 → [E e1, E e2]
+  VarField _ e _ → [E e]
+
+rowSubterms ∷ TableRowF a → [TermF a]
+rowSubterms = \case
+  TableRowKV _ k v → [E k, E v]
+  TableRowNV _ _ e → [E e]
+
+--------------------------------------------------------------------------------
 -- Smarter constructors --------------------------------------------------------
 
 var ∷ Var → Exp
 var = Var newAnn
+
+varNameExp ∷ Name → Exp
+varNameExp = var . varName
+
+varFieldExp ∷ Exp → Name → Exp
+varFieldExp n = var . varField n
+
+varIndexExp ∷ Exp → Exp → Exp
+varIndexExp n = var . varIndex n
 
 assign ∷ Var → Exp → Statement
 assign = Assign newAnn
@@ -371,10 +506,10 @@ binOp ∷ BinaryOp → Exp → Exp → Exp
 binOp = BinOp newAnn
 
 error ∷ Text → Exp
-error msg = functionCall (varName [Lua.name|error|]) [String newAnn msg]
+error msg = functionCall (var (varName [Lua.name|error|])) [String newAnn msg]
 
 pun ∷ Name → TableRow
-pun n = TableRowNV newAnn n (varName n)
+pun n = TableRowNV newAnn n (var (varName n))
 
 thunk ∷ Exp → Exp
 thunk e = scope [return e]
@@ -479,11 +614,11 @@ paramUnused = ParamUnused newAnn
 
 -- Variables -------------------------------------------------------------------
 
-varName ∷ Name → Exp
-varName = var . VarName newAnn
+varName ∷ Name → Var
+varName = VarName newAnn
 
-varIndex ∷ Exp → Exp → Exp
-varIndex = (var .) . VarIndex newAnn
+varField ∷ Exp → Name → Var
+varField = VarField newAnn
 
-varField ∷ Exp → Name → Exp
-varField = (var .) . VarField newAnn
+varIndex ∷ Exp → Exp → Var
+varIndex = VarIndex newAnn
