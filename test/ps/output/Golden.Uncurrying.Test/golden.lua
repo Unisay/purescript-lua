@@ -1,9 +1,10 @@
 local M = {}
-M.Golden_Uncurrying_Test_f = function(i)
-  return function() return function() return i end end
+M.Golden_Uncurrying_Test_uncurryFirst2Args = function(i)
+  return function() return i end
 end
 return {
-  f = M.Golden_Uncurrying_Test_f,
-  call2 = M.Golden_Uncurrying_Test_f(1)(true),
-  call3 = M.Golden_Uncurrying_Test_f(2)(false)("a")
+  call2 = M.Golden_Uncurrying_Test_uncurryFirst2Args(1, true),
+  call3 = M.Golden_Uncurrying_Test_uncurryFirst2Args(2, false)("a"),
+  call4 = function() return 1 end,
+  call5 = function() return 3 end
 }

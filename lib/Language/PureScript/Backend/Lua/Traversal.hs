@@ -2,8 +2,6 @@
 
 module Language.PureScript.Backend.Lua.Traversal where
 
-import Control.Lens (Plated)
-import Data.Data (Data)
 import Language.PureScript.Backend.Lua.Types
 import Prelude hiding (local)
 
@@ -222,9 +220,6 @@ visitTermM term subterms = subterms term >>= traverse_ (`visitTermM` subterms)
 
 --------------------------------------------------------------------------------
 -- Rewriting -------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------
 
 data Rewrites m a = Rewrites
   { beforeStat ∷ StatementF a → m (StatementF a)

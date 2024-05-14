@@ -7,12 +7,12 @@ import Language.PureScript.Backend.IR.Names
   , Name (..)
   , Qualified (Imported)
   )
+import Language.PureScript.Backend.IR.Query (countFreeRefs)
 import Language.PureScript.Backend.IR.Types
   ( Exp
   , Grouping (..)
   , abstraction
   , application
-  , countFreeRefs
   , lets
   , literalInt
   , noAnn

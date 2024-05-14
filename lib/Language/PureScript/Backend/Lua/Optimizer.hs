@@ -116,7 +116,7 @@ rewriteCurried var (map Lua.S → statTerms) =
       Just $ mapMaybe ((^? Lua._S) . rewriteCurriedTerm var 2) statTerms
 
 appliedHow ∷ Lua.Var → [Lua.Term] → AppliedHow
-appliedHow var terms = foldMap appliedHowInTerm terms
+appliedHow var = foldMap appliedHowInTerm
  where
   appliedHowInTerm =
     foldTree (\x xs → fold (x : xs)) . Plated.para \term subterms →
@@ -287,7 +287,7 @@ collapseFunCalls n e
     expr → st {appliedExpr = Just expr}
 
   normalizeArgs ∷ (Foldable f, Applicative f) ⇒ f Lua.Exp → f Lua.Exp
-  normalizeArgs xs = if length xs == 0 then pure Lua.nil else xs
+  normalizeArgs xs = if null xs then pure Lua.nil else xs
 
 data Res = Pass
   { resTerm ∷ Lua.Term

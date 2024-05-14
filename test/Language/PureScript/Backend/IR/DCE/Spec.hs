@@ -14,13 +14,13 @@ import Language.PureScript.Backend.IR.Names
   , Qualified (Local)
   , moduleNameFromString
   )
+import Language.PureScript.Backend.IR.Query (countFreeRefs)
 import Language.PureScript.Backend.IR.Types
   ( Ann
   , Exp
   , Grouping (..)
   , abstraction
   , application
-  , countFreeRefs
   , exception
   , lets
   , noAnn

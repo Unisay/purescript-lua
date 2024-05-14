@@ -11,7 +11,8 @@ import Language.PureScript.Backend.IR.Names
   , moduleNameFromString
   )
 import Language.PureScript.Backend.IR.Optimizer
-  ( optimizedExpression
+  ( etaReduce
+  , optimizedExpression
   , optimizedUberModule
   , renameShadowedNamesInExpr
   )
@@ -33,6 +34,7 @@ import Language.PureScript.Backend.IR.Types
   , paramUnused
   , refLocal
   , refLocal0
+  , rewriteExpTopDown
   )
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
@@ -59,6 +61,23 @@ spec = describe "IR Optimizer" do
       arg ← forAll Gen.exp
       let f = abstraction paramUnused body
       body === optimizedExpression (application f arg)
+
+    test "does eta reduction" do
+      n ← forAll Gen.name
+      e ← forAll Gen.exp
+      let p = paramNamed n
+          r = refLocal n 0
+          a = abstraction p (application e r)
+      rewriteExpTopDown etaReduce a === e
+
+    test "does not do eta reduction when r is free in e" do
+      n ← forAll Gen.name
+      let p = paramNamed n
+          r = refLocal n 0
+          a =
+            abstraction p $
+              application (ifThenElse (literalBool True) r (literalInt 2)) r
+      rewriteExpTopDown etaReduce a === a
 
   describe "inlines expressions" do
     test "inlines literals" do

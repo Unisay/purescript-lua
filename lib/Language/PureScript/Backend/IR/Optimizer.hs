@@ -12,7 +12,11 @@ import Language.PureScript.Backend.IR.Names
   , Qualified (Local)
   , qualifiedQName
   )
-import Language.PureScript.Backend.IR.Query (collectBoundNames)
+import Language.PureScript.Backend.IR.Query
+  ( collectBoundNames
+  , countFreeRef
+  , countFreeRefs
+  )
 import Language.PureScript.Backend.IR.Types
   ( Ann
   , Exp
@@ -23,8 +27,6 @@ import Language.PureScript.Backend.IR.Types
   , RewriteRule
   , Rewritten (..)
   , bindingExprs
-  , countFreeRef
-  , countFreeRefs
   , getAnn
   , isNonRecursiveLiteral
   , literalBool
@@ -171,12 +173,12 @@ idempotently = fix $ \i f a →
   let a' = f a
    in if a' == a then a else i f a'
 
---         if a' == a
---           then tr "FIXPOINT" a a
---           else tr "RETRYING" a' (i f a')
+--       if a' == a
+--         then tr "FIXPOINT" a a
+--         else tr "RETRYING" a' (i f a')
 --  where
 --   tr ∷ Show x ⇒ String → x → y → y
---   tr l x y = trace ("\n\n" <> l <> "\n" <> (toString . pShow) x <> "\n") y
+--   tr l x = trace ("\n\n" <> l <> "\n" <> (toString . pShow) x <> "\n")
 
 optimizeModule ∷ UberModule → UberModule
 optimizeModule UberModule {..} =
@@ -279,7 +281,7 @@ etaReduce ∷ RewriteRule Ann
 etaReduce =
   pure . \case
     Abs _ (ParamNamed _ param) (App _ m (Ref _ (Local param') 0))
-      | param == param' →
+      | param == param' && countFreeRef (Local param) m == 0 →
           Rewritten Recurse m
     _ → NoChange
 
