@@ -14,7 +14,7 @@ import Language.PureScript.Backend.IR.Names
   , PropName
   , Qualified (..)
   , TyName (renderTyName)
-  , runModuleName
+  , moduleNameToText
   )
 import Prelude hiding (show)
 
@@ -145,7 +145,7 @@ isRecursiveLiteral = \case
 
 ctorId ∷ ModuleName → TyName → CtorName → Text
 ctorId modName tyName ctorName =
-  runModuleName modName
+  moduleNameToText modName
     <> "∷"
     <> renderTyName tyName
     <> "."

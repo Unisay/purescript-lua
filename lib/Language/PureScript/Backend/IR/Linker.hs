@@ -6,7 +6,7 @@ import Data.Graph (graphFromEdges', reverseTopSort)
 import Data.Map qualified as Map
 import Language.PureScript.Backend.IR.Inliner qualified as Inline
 import Language.PureScript.Backend.IR.Names
-  ( ModuleName (..)
+  ( ModuleName
   , Name (..)
   , PropName (PropName)
   , QName (QName)

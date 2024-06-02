@@ -10,6 +10,7 @@ import Data.String qualified as String
 import Data.Tagged (Tagged (..))
 import Data.Text qualified as Text
 import Language.PureScript.Backend.AppOrModule (AppOrModule (..))
+import Language.PureScript.Backend.IR (ModuleName)
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.Linker (LinkMode (..))
 import Language.PureScript.Backend.IR.Linker qualified as IR
@@ -18,8 +19,8 @@ import Language.PureScript.Backend.IR.Optimizer (optimizedUberModule)
 import Language.PureScript.Backend.Lua qualified as Lua
 import Language.PureScript.Backend.Lua.Optimizer (optimizeChunk)
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
+import Language.PureScript.CoreFn qualified as Cfn
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
-import Language.PureScript.Names qualified as PS
 import Path
   ( Abs
   , Dir
@@ -89,7 +90,7 @@ spec = do
       for_ corefns \corefn → do
         let modulePath = parent corefn
             moduleName =
-              PS.ModuleName
+              Cfn.unsafeModuleNameFromText
                 . toText
                 . FilePath.dropTrailingPathSeparator
                 . toFilePath
@@ -121,7 +122,7 @@ spec = do
           defaultGolden luaGolden (Just luaActual) do
             appOrModule ←
               doesFileExist evalGolden <&> \case
-                True → AsApplication moduleName (PS.Ident "main")
+                True → AsApplication moduleName (Cfn.Ident "main")
                 False → AsModule moduleName
             cfn ← compileCorefn (Tagged (Rel psOutputPath)) moduleName
             compileIr appOrModule cfn
@@ -201,7 +202,7 @@ compileCorefn
   ∷ ∀ m
    . (MonadIO m, MonadFail m)
   ⇒ Tagged "output" (SomeBase Dir)
-  → PS.ModuleName
+  → ModuleName
   → m IR.UberModule
 compileCorefn outputDir uberModuleName = do
   cfnModules ←

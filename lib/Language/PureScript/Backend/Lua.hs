@@ -18,9 +18,11 @@ import Data.Tagged (Tagged (..), untag)
 import Data.Text qualified as Text
 import Data.Traversable (for)
 import Language.PureScript.Backend.AppOrModule (AppOrModule (..))
+import Language.PureScript.Backend.IR (ModuleName)
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Linker qualified as Linker
+import Language.PureScript.Backend.IR.Names (moduleNameToText)
 import Language.PureScript.Backend.IR.Query (usesRuntimeLazy)
 import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
 import Language.PureScript.Backend.Lua.Key qualified as Key
@@ -28,8 +30,7 @@ import Language.PureScript.Backend.Lua.Linker.Foreign qualified as Foreign
 import Language.PureScript.Backend.Lua.Name qualified as Lua
 import Language.PureScript.Backend.Lua.Name qualified as Name
 import Language.PureScript.Backend.Lua.Types qualified as Lua
-import Language.PureScript.Names (ModuleName (..), runModuleName)
-import Language.PureScript.Names qualified as PS
+import Language.PureScript.CoreFn qualified as Cfn
 import Path (Abs, Dir, Path)
 import Prelude hiding (exp, local)
 
@@ -50,7 +51,7 @@ instance Monoid UsesObjectUpdate where
 data Error
   = UnexpectedRefBound ModuleName IR.Exp
   | LinkerErrorForeign Foreign.Error
-  | AppEntryPointNotFound ModuleName PS.Ident
+  | AppEntryPointNotFound ModuleName Cfn.Ident
   deriving stock (Show)
 
 fromUberModule
@@ -140,7 +141,7 @@ fromNameWithIndex name (IR.unIndex → index) =
     else Name.makeSafe $ IR.nameToText name <> show index
 
 fromModuleName ∷ ModuleName → Lua.Name
-fromModuleName = Name.makeSafe . runModuleName
+fromModuleName = Name.makeSafe . moduleNameToText
 
 fromPropName ∷ IR.PropName → Lua.Name
 fromPropName (IR.PropName name) = Name.makeSafe name
@@ -214,8 +215,11 @@ fromIR foreigns topLevelNames modname ir = case ir of
     e ← goExp expr
     Right . Lua.functionCall e <$> case arg of
       -- PS sometimes inserts syntetic unused argument "Prim.undefined"
-      IR.Ref _ann (IR.Imported (IR.ModuleName "Prim") (IR.Name "undefined")) _ →
-        pure []
+      IR.Ref
+        _ann
+        (IR.Imported (Cfn.moduleNameToText → "Prim") (IR.Name "undefined"))
+        _ →
+          pure []
       _ → goExp arg <&> (: [])
   IR.Ref _ann qualifiedName index →
     pure . Right $ case qualifiedName of

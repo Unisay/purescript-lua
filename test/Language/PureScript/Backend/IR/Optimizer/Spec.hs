@@ -6,10 +6,7 @@ import Hedgehog.Gen qualified as Gen
 import Language.PureScript.Backend.IR.Gen qualified as Gen
 import Language.PureScript.Backend.IR.Linker (LinkMode (..))
 import Language.PureScript.Backend.IR.Linker qualified as Linker
-import Language.PureScript.Backend.IR.Names
-  ( Name (..)
-  , moduleNameFromString
-  )
+import Language.PureScript.Backend.IR.Names (Name (..))
 import Language.PureScript.Backend.IR.Optimizer
   ( etaReduce
   , optimizedExpression
@@ -36,6 +33,7 @@ import Language.PureScript.Backend.IR.Types
   , refLocal0
   , rewriteExpTopDown
   )
+import Language.PureScript.CoreFn qualified as Cfn
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
 
@@ -116,7 +114,7 @@ spec = describe "IR Optimizer" do
   describe "inliner unlocks more optimizations" do
     test "constant folding after inlining" do
       name ← forAll Gen.name
-      let uberName = moduleNameFromString "Main"
+      let uberName = Cfn.unsafeModuleNameFromText "Main"
           linkMode = LinkAsModule uberName
           mkUber = Linker.makeUberModule linkMode . pure . wrapInModule
       let original =
@@ -228,7 +226,7 @@ spec = describe "IR Optimizer" do
 wrapInModule ∷ Exp → Module
 wrapInModule e =
   Module
-    { moduleName = moduleNameFromString "Main"
+    { moduleName = Cfn.unsafeModuleNameFromText "Main"
     , moduleBindings = [Standalone (noAnn, Name "main", e)]
     , moduleImports = []
     , moduleExports = [Name "main"]

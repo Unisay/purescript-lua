@@ -1,2 +1,7 @@
 packages: *.cabal
 tests: True
+
+source-repository-package
+  type: git
+  location: https://github.com/Unisay/purescript-corefn
+  tag: HEAD

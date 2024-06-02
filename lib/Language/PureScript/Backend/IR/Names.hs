@@ -13,10 +13,13 @@ module Language.PureScript.Backend.IR.Names
   ) where
 
 import Data.Char (isAlphaNum)
-import Language.PureScript.Names as Reexport
-  ( ModuleName (..)
-  , moduleNameFromString
-  , runModuleName
+import Language.PureScript.CoreFn qualified as Cfn
+import Language.PureScript.CoreFn.ModuleName as Reexport
+  ( ModuleName
+  , isBuiltinModuleName
+  , moduleNameFromText
+  , moduleNameToText
+  , unsafeModuleNameFromText
   )
 import Quiet (Quiet (..))
 import Text.Megaparsec qualified as Megaparsec
@@ -35,7 +38,7 @@ data QName = QName {qnameModuleName ∷ ModuleName, qnameName ∷ Name}
 
 printQName ∷ QName → Text
 printQName QName {..} =
-  runModuleName qnameModuleName <> "∷" <> nameToText qnameName
+  Cfn.moduleNameToText qnameModuleName <> "∷" <> nameToText qnameName
 
 newtype TyName = TyName {renderTyName ∷ Text}
   deriving newtype (Eq, Ord)

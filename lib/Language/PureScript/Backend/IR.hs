@@ -17,11 +17,10 @@ import Language.PureScript.Backend.IR.Inliner (Annotation)
 import Language.PureScript.Backend.IR.Inliner qualified as Inliner
 import Language.PureScript.Backend.IR.Names
 import Language.PureScript.Backend.IR.Types
-import Language.PureScript.Comments (Comment (..))
+import Language.PureScript.Backend.Lua.Fixture (runtimeLazyName)
+import Language.PureScript.Backend.Lua.Name qualified as Name
 import Language.PureScript.CoreFn qualified as Cfn
 import Language.PureScript.CoreFn.Laziness (applyLazinessTransform)
-import Language.PureScript.Names qualified as Names
-import Language.PureScript.Names qualified as PS
 import Language.PureScript.PSString
   ( PSString
   , decodeString
@@ -111,8 +110,8 @@ parseAnnotations ∷ Cfn.Module Cfn.Ann → Either CoreFnError (Map Name Annotat
 parseAnnotations currentModule =
   Cfn.moduleComments currentModule
     & foldMapM \case
-      LineComment line → pure <$> parsePragmaLine line
-      BlockComment block → traverse parsePragmaLine (lines block)
+      Cfn.LineComment line → pure <$> parsePragmaLine line
+      Cfn.BlockComment block → traverse parsePragmaLine (lines block)
     & fmap (Map.fromList . catMaybes)
  where
   parsePragmaLine ∷ Text → Either CoreFnError (Maybe Inliner.Pragma)
@@ -137,9 +136,10 @@ mkImports = do
   pure $
     -- it's ok to always add prim as an explicit import:
     -- DCE removes it if it's not used.
-    ModuleName "Prim" : [i | (_ann, i) ← moduleImports, isIncluded moduleName i]
+    Cfn.unsafeModuleNameFromText "Prim"
+      : [i | (_ann, i) ← moduleImports, isIncluded moduleName i]
  where
-  isIncluded ∷ PS.ModuleName → ModuleName → Bool
+  isIncluded ∷ ModuleName → ModuleName → Bool
   isIncluded currentModule modname = modname /= currentModule
 
 mkExports ∷ RepM [Name]
@@ -168,7 +168,7 @@ collectDataDeclarations cfnModules = Map.unions do
       | ctors ←
           List.groupBy
             ((==) `on` fst)
-            [ (mkTyName tyName, (mkCtorName ctorName, mkFieldName <$> fields))
+            [ (mkTyName tyName, (mkCtorName ctorName, identToFieldName <$> fields))
             | bind ← Cfn.moduleBindings cfnModule
             , Cfn.Constructor _ann tyName ctorName fields ← boundExp bind
             ]
@@ -181,14 +181,25 @@ collectDataDeclarations cfnModules = Map.unions do
     Cfn.Rec bindingGroup → snd <$> bindingGroup
     Cfn.NonRec _ann _ident expr → [expr]
 
-mkQualified ∷ (a → n) → PS.Qualified a → Qualified n
-mkQualified f (PS.Qualified by a) =
+mkQualified ∷ (a → n) → Cfn.Qualified a → Qualified n
+mkQualified f (Cfn.Qualified by a) =
   case by of
-    PS.BySourcePos _sourcePos → Local (f a)
-    PS.ByModuleName mn → Imported mn (f a)
+    Cfn.BySourcePos _sourcePos → Local (f a)
+    Cfn.ByModuleName mn → Imported mn (f a)
 
-identToName ∷ PS.Ident → Name
-identToName = Name . PS.runIdent
+identToName ∷ Cfn.Ident → Name
+identToName = Name . identToText
+
+identToFieldName ∷ Cfn.Ident → FieldName
+identToFieldName = FieldName . identToText
+
+identToText ∷ Cfn.Ident → Text
+identToText = \case
+  Cfn.Ident ident → ident
+  Cfn.GenIdent name n → maybe "$" ("$" <>) name <> toText (show n)
+  Cfn.UnusedIdent → "$__unused"
+  Cfn.InternalIdent Cfn.RuntimeLazyFactory → Name.toText runtimeLazyName
+  Cfn.InternalIdent (Cfn.Lazy t) → "Lazy_" <> t
 
 mkBindings ∷ RepM [Binding]
 mkBindings = do
@@ -258,9 +269,9 @@ mkLiteral ann = \case
 mkConstructor
   ∷ Cfn.Ann
   → Ann
-  → PS.ProperName 'PS.TypeName
-  → PS.ProperName 'PS.ConstructorName
-  → [PS.Ident]
+  → Cfn.ProperName 'Cfn.TypeName
+  → Cfn.ProperName 'Cfn.ConstructorName
+  → [Cfn.Ident]
   → RepM Exp
 mkConstructor cfnAnn ann properTyName properCtorName fields = do
   let tyName = mkTyName properTyName
@@ -276,16 +287,13 @@ mkConstructor cfnAnn ann properTyName properCtorName fields = do
           contextModuleName
           tyName
           (mkCtorName properCtorName)
-          (mkFieldName <$> fields)
+          (identToFieldName <$> fields)
 
-mkTyName ∷ PS.ProperName 'PS.TypeName → TyName
-mkTyName = TyName . PS.runProperName
+mkTyName ∷ Cfn.ProperName 'Cfn.TypeName → TyName
+mkTyName = TyName . Cfn.runProperName
 
-mkCtorName ∷ PS.ProperName 'PS.ConstructorName → CtorName
-mkCtorName = CtorName . PS.runProperName
-
-mkFieldName ∷ PS.Ident → FieldName
-mkFieldName = FieldName . PS.runIdent
+mkCtorName ∷ Cfn.ProperName 'Cfn.ConstructorName → CtorName
+mkCtorName = CtorName . Cfn.runProperName
 
 mkPropName ∷ PSString → RepM PropName
 mkPropName str = case decodeString str of
@@ -305,11 +313,11 @@ mkObjectUpdate cfnExp props = do
     Nothing → throwContextualError EmptyObjectUpdate
     Just ps → pure $ ObjectUpdate noAnn expr ps
 
-mkAbstraction ∷ Ann → PS.Ident → CfnExp → RepM Exp
+mkAbstraction ∷ Ann → Cfn.Ident → CfnExp → RepM Exp
 mkAbstraction ann i e = Abs ann param <$> makeExpr e
  where
   param ∷ Parameter Ann =
-    case PS.runIdent i of
+    case identToText i of
       "$__unused" → paramUnused
       n → paramNamed (Name n)
 
@@ -319,17 +327,17 @@ mkApplication e1 e2 =
     then makeExpr e2
     else application <$> makeExpr e1 <*> makeExpr e2
 
-mkQualifiedIdent ∷ PS.Qualified PS.Ident → RepM (Qualified Name)
-mkQualifiedIdent (PS.Qualified by ident) =
+mkQualifiedIdent ∷ Cfn.Qualified Cfn.Ident → RepM (Qualified Name)
+mkQualifiedIdent (Cfn.Qualified by ident) =
   gets (Cfn.moduleName . contextModule) <&> \contextModuleName →
     case by of
-      PS.BySourcePos _sourcePos → Local $ identToName ident
-      PS.ByModuleName modName →
+      Cfn.BySourcePos _sourcePos → Local $ identToName ident
+      Cfn.ByModuleName modName →
         if modName == contextModuleName
           then Local (identToName ident)
           else Imported modName (identToName ident)
 
-mkRef ∷ PS.Qualified PS.Ident → RepM Exp
+mkRef ∷ Cfn.Qualified Cfn.Ident → RepM Exp
 mkRef = (\n → Ref noAnn n 0) <<$>> mkQualifiedIdent
 
 mkLet ∷ Ann → [Cfn.Bind Cfn.Ann] → CfnExp → RepM Exp
@@ -597,7 +605,7 @@ mkBinder matchExp = go mempty
             Local tyName →
               (contextModuleName,tyName,)
                 <$> algebraicTy contextModuleName tyName
-          let ctrName = mkCtorName (Names.disqualify qCtorName)
+          let ctrName = mkCtorName (Cfn.disqualify qCtorName)
           pure
             Match
               { matchExp
@@ -735,7 +743,7 @@ data CoreFnError = CoreFnError
 instance Show CoreFnError where
   show CoreFnError {currentModule, reason} =
     "in module "
-      <> toString (runModuleName currentModule)
+      <> toString (moduleNameToText currentModule)
       <> ": "
       <> show reason
 

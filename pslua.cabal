@@ -94,6 +94,7 @@ common shared
     , pretty-simple                ^>=4.1.2.0
     , prettyprinter                ^>=1.7.1
     , prettyprinter-ansi-terminal  ^>=1.1.3
+    , purescript-corefn            ^>=0.1
     , quiet                        ^>=0.2
     , relude                       ^>=1.2.1
     , scientific                   ^>=0.3.7.0
@@ -141,17 +142,6 @@ library
     Language.PureScript.Backend.Lua.Traversal
     Language.PureScript.Backend.Lua.Types
     Language.PureScript.Backend.AppOrModule
-    Language.PureScript.Comments
-    Language.PureScript.CoreFn
-    Language.PureScript.CoreFn.Expr
-    Language.PureScript.CoreFn.FromJSON
-    Language.PureScript.CoreFn.Laziness
-    Language.PureScript.CoreFn.Meta
-    Language.PureScript.CoreFn.Module
-    Language.PureScript.CoreFn.Reader
-    Language.PureScript.CoreFn.Traversals
-    Language.PureScript.Names
-    Language.PureScript.PSString
 
 test-suite spec
   import:         shared

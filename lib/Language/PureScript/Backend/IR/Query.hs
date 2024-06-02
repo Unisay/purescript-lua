@@ -10,7 +10,7 @@ import Language.PureScript.Backend.IR.Linker (UberModule (..))
 import Language.PureScript.Backend.IR.Names
   ( Name (Name)
   , Qualified (Imported, Local)
-  , runModuleName
+  , moduleNameToText
   )
 import Language.PureScript.Backend.IR.Types
   ( Exp
@@ -23,7 +23,8 @@ import Language.PureScript.Backend.IR.Types
   , subexpressions
   )
 import Language.PureScript.Backend.IR.Types qualified as IR
-import Language.PureScript.Names (runtimeLazyName)
+import Language.PureScript.Backend.Lua.Fixture qualified as Fixture
+import Language.PureScript.Backend.Lua.Name qualified as Name
 
 countFreeRefs ∷ RawExp ann → Map (Qualified Name) Natural
 countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
@@ -112,7 +113,7 @@ usesRuntimeLazy UberModule {uberModuleBindings, uberModuleExports} =
 
 findRuntimeLazyInExpr ∷ Exp → Bool
 findRuntimeLazyInExpr expr =
-  countFreeRef (Local (Name runtimeLazyName)) expr > 0
+  countFreeRef (Local (Name (Name.toText Fixture.runtimeLazyName))) expr > 0
 
 usesPrimModule ∷ UberModule → Bool
 usesPrimModule UberModule {uberModuleBindings, uberModuleExports} =
@@ -126,7 +127,7 @@ findPrimModuleInExpr ∷ Exp → Bool
 findPrimModuleInExpr expr =
   Map.keys (countFreeRefs expr) & any \case
     Local _name → False
-    Imported moduleName _name → runModuleName moduleName == "Prim"
+    Imported moduleName _name → moduleNameToText moduleName == "Prim"
 
 collectBoundNames ∷ Exp → Set Name
 collectBoundNames =

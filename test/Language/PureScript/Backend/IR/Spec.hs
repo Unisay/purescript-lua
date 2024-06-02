@@ -7,7 +7,6 @@ import Language.PureScript.Backend.IR (Context (..), RepM, mkCase, runRepM)
 import Language.PureScript.Backend.IR.Names (Name (..), PropName (..))
 import Language.PureScript.Backend.IR.Types
 import Language.PureScript.CoreFn qualified as Cfn
-import Language.PureScript.Names qualified as PS
 import Language.PureScript.PSString qualified as PS
 import Test.Hspec (Spec, describe, it, shouldBe)
 
@@ -360,7 +359,7 @@ spec = describe "IR representation" do
           [cfnCharE 't', cfnCharE 'z']
           [ Cfn.CaseAlternative
               { caseAlternativeBinders =
-                  [ cfnVarB (PS.Ident "x")
+                  [ cfnVarB (Cfn.Ident "x")
                   , cfnLitB (cfnCharL 'a')
                   ]
               , caseAlternativeResult = Right $ cfnRef "x"
@@ -368,7 +367,7 @@ spec = describe "IR representation" do
           , Cfn.CaseAlternative
               { caseAlternativeBinders =
                   [ cfnLitB (cfnCharL 'b')
-                  , cfnVarB (PS.Ident "y")
+                  , cfnVarB (Cfn.Ident "y")
                   ]
               , caseAlternativeResult = Right $ cfnRef "y"
               }
@@ -396,8 +395,8 @@ spec = describe "IR representation" do
           [cfnCharE 'x', cfnCharE 'y']
           [ Cfn.CaseAlternative
               { caseAlternativeBinders =
-                  [ cfnNamB (PS.Ident "v") cfnNullB
-                  , cfnNamB (PS.Ident "z") cfnNullB
+                  [ cfnNamB (Cfn.Ident "v") cfnNullB
+                  , cfnNamB (Cfn.Ident "z") cfnNullB
                   ]
               , caseAlternativeResult = Right $ cfnRef "z"
               }
@@ -415,16 +414,16 @@ spec = describe "IR representation" do
           [cfnCharE 'x', cfnCharE 'y']
           [ Cfn.CaseAlternative
               { caseAlternativeBinders =
-                  [ cfnNamB (PS.Ident "a") (cfnLitB (cfnCharL 'a'))
-                  , cfnNamB (PS.Ident "b") (cfnLitB (cfnCharL 'b'))
+                  [ cfnNamB (Cfn.Ident "a") (cfnLitB (cfnCharL 'a'))
+                  , cfnNamB (Cfn.Ident "b") (cfnLitB (cfnCharL 'b'))
                   ]
               , caseAlternativeResult =
                   Right $ cfnApp (cfnRef "a") (cfnRef "b")
               }
           , Cfn.CaseAlternative
               { caseAlternativeBinders =
-                  [ cfnNamB (PS.Ident "o1") cfnNullB
-                  , cfnNamB (PS.Ident "o2") cfnNullB
+                  [ cfnNamB (Cfn.Ident "o1") cfnNullB
+                  , cfnNamB (Cfn.Ident "o2") cfnNullB
                   ]
               , caseAlternativeResult =
                   Right $ cfnApp (cfnRef "o2") (cfnRef "o1")
@@ -500,7 +499,7 @@ ann = Nothing
 cfnModule ∷ ∀ {a}. Cfn.Module a
 cfnModule =
   Cfn.Module
-    { moduleName = PS.ModuleName "M"
+    { moduleName = Cfn.unsafeModuleNameFromText "M"
     , moduleComments = mempty
     , modulePath = "M.purs"
     , moduleImports = mempty
@@ -510,11 +509,11 @@ cfnModule =
     , moduleBindings = mempty
     }
 
-cfnQualifyModule ∷ a → PS.Qualified a
-cfnQualifyModule = PS.Qualified (PS.ByModuleName (PS.ModuleName "ModuleName"))
+cfnQualifyModule ∷ a → Cfn.Qualified a
+cfnQualifyModule = Cfn.Qualified (Cfn.ByModuleName (Cfn.unsafeModuleNameFromText "ModuleName"))
 
-cfnLocalIdent ∷ Text → PS.Qualified PS.Ident
-cfnLocalIdent = PS.Qualified (PS.BySourcePos (PS.SourcePos 0 0)) . PS.Ident
+cfnLocalIdent ∷ Text → Cfn.Qualified Cfn.Ident
+cfnLocalIdent = Cfn.Qualified (Cfn.BySourcePos (Cfn.SourcePos 0 0)) . Cfn.Ident
 
 cfnRef ∷ Text → Cfn.Expr Cfn.Ann
 cfnRef = Cfn.Var ann . cfnLocalIdent
@@ -543,10 +542,10 @@ cfnObject o = Cfn.Literal ann $ Cfn.ObjectLiteral (first PS.mkString <$> o)
 cfnLitB ∷ Cfn.Literal (Cfn.Binder Cfn.Ann) → Cfn.Binder Cfn.Ann
 cfnLitB = Cfn.LiteralBinder ann
 
-cfnVarB ∷ PS.Ident → Cfn.Binder Cfn.Ann
+cfnVarB ∷ Cfn.Ident → Cfn.Binder Cfn.Ann
 cfnVarB = Cfn.VarBinder ann
 
-cfnNamB ∷ PS.Ident → Cfn.Binder Cfn.Ann → Cfn.Binder Cfn.Ann
+cfnNamB ∷ Cfn.Ident → Cfn.Binder Cfn.Ann → Cfn.Binder Cfn.Ann
 cfnNamB = Cfn.NamedBinder ann
 
 cfnNullB ∷ Cfn.Binder Cfn.Ann

@@ -12,7 +12,6 @@ import Language.PureScript.Backend.IR.Names
   , Name (Name)
   , QName (QName)
   , Qualified (Local)
-  , moduleNameFromString
   )
 import Language.PureScript.Backend.IR.Query (countFreeRefs)
 import Language.PureScript.Backend.IR.Types
@@ -32,6 +31,7 @@ import Language.PureScript.Backend.IR.Types
 import Test.Hspec (Spec, describe, it)
 import Test.Hspec.Hedgehog.Extended (hedgehog, test)
 import Text.Pretty.Simple (pShow)
+import qualified Language.PureScript.CoreFn as Cfn
 
 spec ∷ Spec
 spec = describe "IR Dead Code Elimination" do
@@ -142,7 +142,7 @@ dceExpression e =
 -- Fixture ---------------------------------------------------------------------
 
 mainModuleName ∷ ModuleName
-mainModuleName = moduleNameFromString "Main"
+mainModuleName = Cfn.unsafeModuleNameFromText "Main"
 
 mainEntryPoint ∷ EntryPoint
 mainEntryPoint = EntryPoint mainModuleName [Name "main"]

@@ -5,10 +5,11 @@ import Hedgehog (MonadGen)
 import Hedgehog.Corpus qualified as Corpus
 import Hedgehog.Gen.Extended qualified as Gen
 import Hedgehog.Range qualified as Range
+import Language.PureScript.Backend.IR (ModuleName)
 import Language.PureScript.Backend.IR.Names qualified as IR
 import Language.PureScript.Backend.IR.Types (noAnn)
 import Language.PureScript.Backend.IR.Types qualified as IR
-import Language.PureScript.Names (ModuleName, moduleNameFromString)
+import Language.PureScript.CoreFn qualified as Cfn
 import Prelude hiding (exp)
 
 exp ∷ ∀ m. MonadGen m ⇒ m IR.Exp
@@ -38,7 +39,10 @@ exp =
       )
     ,
       ( 2
-      , IR.literalObject <$> Gen.list (Range.linear 1 10) ((,) <$> genPropName <*> exp)
+      , IR.literalObject
+          <$> Gen.list
+            (Range.linear 1 10)
+            ((,) <$> genPropName <*> exp)
       )
     ,
       ( 1
@@ -129,7 +133,7 @@ refLocal ∷ MonadGen m ⇒ m IR.Exp
 refLocal = flip IR.refLocal 0 <$> name
 
 moduleName ∷ MonadGen m ⇒ m ModuleName
-moduleName = moduleNameFromString <$> Gen.element Corpus.colours
+moduleName = Cfn.unsafeModuleNameFromText <$> Gen.element Corpus.colours
 
 name ∷ MonadGen m ⇒ m IR.Name
 name = IR.Name <$> Gen.element ["x", "y", "z", "i", "j", "k", "l"]
