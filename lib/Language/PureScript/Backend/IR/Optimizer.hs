@@ -279,13 +279,12 @@ etaReduce ∷ RewriteRule Ann
 etaReduce =
   pure . \case
     Abs _ (ParamNamed _ param) (App _ m (Ref _ (Local param') 0))
-      | param == param' →
+      | param == param' && countFreeRef (Local param) m == 0 →
           Rewritten Recurse m
     _ → NoChange
 
 betaReduceUnusedParams ∷ RewriteRule Ann
-betaReduceUnusedParams =
-  pure . \case
+betaReduceUnusedParams = pure . \case
     App _ (Abs _ (ParamUnused _) body) _arg →
       Rewritten Recurse body
     _ → NoChange

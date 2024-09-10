@@ -1,4 +1,23 @@
 UberModule
-  { uberModuleBindings = [], uberModuleForeigns = [], uberModuleExports =
-    [ ( Name "main", LiteralInt Nothing 1 ) ]
+  { uberModuleBindings =
+    [ Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.Inline.Test", qnameName = Name "runMu"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "v" ) )
+        ( App Nothing
+          ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+          ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+        )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "main", LiteralInt Nothing 1 ),
+      ( Name "runMu", Ref Nothing
+        ( Imported ( ModuleName "Golden.Inline.Test" ) ( Name "runMu" ) ) 0
+      ),
+      ( Name "iMu", Ref Nothing
+        ( Imported ( ModuleName "Golden.Inline.Test" ) ( Name "runMu" ) ) 0
+      )
+    ]
   }
