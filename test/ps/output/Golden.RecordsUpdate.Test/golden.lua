@@ -1,7 +1,7 @@
 local function PSLUA_object_update(o, patches)
   local o_copy = {}
   for k, v in pairs(o) do
-    local patch_v = patches
+    local patch_v = patches[k]
     if patch_v ~= nil then
       o_copy[k] = patch_v
     else
