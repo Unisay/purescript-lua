@@ -25,8 +25,9 @@ import Text.Megaparsec.Char qualified as M
 import Prelude hiding (toText)
 
 newtype Name = Name {toText ∷ Text}
-  deriving stock (Data)
+  deriving stock (Data, Generic)
   deriving newtype (Eq, Ord, Show, Pretty)
+  deriving anyclass (NFData)
 
 name ∷ QuasiQuoter
 name =

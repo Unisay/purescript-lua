@@ -6,3 +6,5 @@ cradle:
       component: "lib:pslua"
     - path: "test"
       component: "pslua:test:spec"
+
+sessionLoading: multiComponent

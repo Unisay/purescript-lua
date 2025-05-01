@@ -8,7 +8,7 @@ import Data.Tagged (Tagged (..))
 import Data.Text (splitOn)
 import Data.Text qualified as Text
 import Language.PureScript.Backend.AppOrModule (AppOrModule (..))
-import Language.PureScript.Names qualified as PS
+import Language.PureScript.CoreFn
 import Options.Applicative
   ( Parser
   , eitherReader
@@ -112,7 +112,10 @@ options = do
       [ metavar "ENTRY"
       , short 'e'
       , long "entry"
-      , value $ AsApplication (PS.ModuleName "Main") (PS.Ident "main")
+      , value $
+          AsApplication
+            (unsafeModuleNameFromText "Main")
+            (Ident "main")
       , helpDoc . Just $
           vsep
             [ "Where to start compilation."
@@ -130,15 +133,17 @@ options = do
 parseAppOrModule ∷ String → Either String AppOrModule
 parseAppOrModule s = case splitOn "." (toText s) of
   [] → Left "Invalid entry point format"
-  [name] | isModule name → pure . AsModule $ PS.ModuleName name
-  segments → do
-    let name = last (NE.fromList segments)
-    pure
-      if isModule name
-        then AsModule . PS.ModuleName $ Text.intercalate "." segments
-        else
-          let modname = Text.intercalate "." (init (NE.fromList segments))
-           in AsApplication (PS.ModuleName modname) (PS.Ident name)
+  [name] | isModule name → maybeToRight "Invalid module name" do
+    AsModule <$> moduleNameFromText name
+  (NE.fromList → segments) →
+    case moduleNameFromText (Text.intercalate "." (init segments)) of
+      Nothing → Left $ "Invalid module name: " <> s
+      Just mn →
+        let segment = last segments
+         in Right
+              if isModule segment
+                then AsModule mn
+                else AsApplication mn (Ident segment)
  where
   isModule = Char.isAsciiUpper . Text.head
 

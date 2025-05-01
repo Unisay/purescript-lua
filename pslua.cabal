@@ -74,7 +74,7 @@ common shared
     ViewPatterns
 
   build-depends:
-    , aeson                        ^>=2.2
+    , aeson                        ^>=2.2.2
     , array                        ^>=0.5.4.0
     , base                         ^>=4.19.1
     , containers                   ^>=0.6.5.1

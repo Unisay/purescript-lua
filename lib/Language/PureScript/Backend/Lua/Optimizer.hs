@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module Language.PureScript.Backend.Lua.Optimizer where
 
 import Control.Lens ((^?))
@@ -16,10 +18,11 @@ import Language.PureScript.Backend.Lua.Traversal
   , everywhereStatM
   )
 import Language.PureScript.Backend.Lua.Types qualified as Lua
+import Text.Pretty.Simple
 import Prelude hiding (return)
 
 optimizeChunk ∷ Lua.Chunk → Lua.Chunk
-optimizeChunk = idempotently optimizeChunkOnce
+optimizeChunk = {- idempotently -} optimizeChunkOnce
 
 idempotently ∷ Eq a ⇒ (a → a) → a → a
 idempotently = fix $ \i f a →
@@ -58,7 +61,7 @@ optimizeStatement currentStat nextStats =
       ann
       var
       (Lua.Function _ args [Lua.Return _ (Lua.Function _ innerArgs innerBody)])
-        | Just nextStats' ← everywhere (rewriteCurried var) nextStats →
+        | Just nextStats' {- everywhere -} ← (rewriteCurried var) nextStats →
             ( go $
                 Lua.Assign
                   ann
@@ -108,12 +111,15 @@ pattern NestedCall innerVar outerAnn outerArgs innerArgs innerCall ←
 
 rewriteCurried ∷ Lua.Var → [Lua.Statement] → Maybe [Lua.Statement]
 rewriteCurried var (map Lua.S → statTerms) =
-  case appliedHow var statTerms of
+  case tr "appliedHow" (appliedHow var statTerms) of
     Unknown → Nothing
     NotApplied → Nothing
     AppliedOnce → Nothing
     AppliedAtLeastTwice →
-      Just $ mapMaybe ((^? Lua._S) . rewriteCurriedTerm var 2) statTerms
+      Just $
+        mapMaybe
+          ((^? Lua._S) . rewriteCurriedTerm var 2)
+          statTerms
 
 appliedHow ∷ Lua.Var → [Lua.Term] → AppliedHow
 appliedHow var = foldMap appliedHowInTerm
@@ -134,110 +140,139 @@ rewriteCurriedTerm var numApplications term0 =
   case go term0 of Pass {resTerm} → resTerm
  where
   go ∷ Lua.Term → Res
-  go term = rewriteTerm (go <$> children term)
+  go term = rewriteTerm term (go <$> children term)
    where
     passTerm = flip Pass Nothing
 
-    rewriteTerm ∷ [Res] → Res
-    rewriteTerm results =
-      case term of
+    rewriteTerm ∷ Lua.Term → [Res] → Res
+    rewriteTerm thisTerm resChildren =
+      force resChildren `seq` case thisTerm of
         Lua.E (Lua.Function ann params _body) →
-          let body' = [s | Pass (Lua.S s) _ ← results]
+          let body' = [s | Pass (Lua.S s) _ ← resChildren]
            in passTerm (Lua.E (Lua.Function ann params body'))
         Lua.E (Lua.FunctionCall ann appliedExpr _args) →
-          case results of
-            Pass (Lua.E (Lua.Var _ var')) Nothing : passes
-              | var == var' →
-                  Pass
-                    ( Lua.E
-                        ( Lua.FunctionCall
-                            ann
-                            appliedExpr
-                            [a | Pass (Lua.E a) _ ← passes]
+          tr
+            "Lua.E (Lua.FunctionCall ann appliedExpr _args) →"
+            case resChildren of
+              Pass (Lua.E (Lua.Var _ var')) Nothing : passes
+                | var == var' →
+                    tr "var == var'" $
+                      Pass
+                        ( Lua.E
+                            ( Lua.FunctionCall
+                                ann
+                                appliedExpr
+                                [a | Pass (Lua.E a) _ ← passes]
+                            )
                         )
-                    )
-                    (Just (1, numApplications))
-            Pass (Lua.E subTerm) (Just (n, maxApplications)) : passes
-              | succ n == maxApplications →
-                  Pass
-                    ( collapseFunCalls
-                        (succ n)
-                        ( Lua.FunctionCall
-                            ann
-                            subTerm
-                            [a | Pass (Lua.E a) _ ← passes]
+                        (Just (1, numApplications))
+              Pass (Lua.E subTerm) (Just (n, maxApplications)) : passes
+                | succ n == maxApplications →
+                    tr "succ n == maxApplications" $
+                      Pass
+                        ( collapseFunCalls
+                            (succ n)
+                            ( Lua.FunctionCall
+                                ann
+                                subTerm
+                                [a | Pass (Lua.E a) _ ← passes]
+                            )
                         )
-                    )
-                    Nothing
-            Pass _subTerm (Just (n, maxApplications)) : passes
-              | n < maxApplications →
-                  Pass
-                    ( Lua.E
-                        ( Lua.FunctionCall
-                            ann
-                            appliedExpr
-                            [a | Pass (Lua.E a) _ ← passes]
+                        Nothing
+              Pass _subTerm (Just (n, maxApplications)) : passes
+                | n < maxApplications →
+                    tr "n < maxApplications" $
+                      Pass
+                        ( Lua.E
+                            ( Lua.FunctionCall
+                                ann
+                                appliedExpr
+                                [a | Pass (Lua.E a) _ ← passes]
+                            )
                         )
-                    )
-                    (Just (succ n, maxApplications))
-            Pass (Lua.E fun) _ : passes →
-              passTerm . Lua.E $
-                Lua.functionCall fun [a | Pass (Lua.E a) _ ← passes]
-            _ →
-              passTerm term
+                        (Just (succ n, maxApplications))
+              Pass (Lua.E fun) _ : passes →
+                tr "fun" $
+                  passTerm . Lua.E $
+                    Lua.functionCall fun [a | Pass (Lua.E a) _ ← passes]
+              _ →
+                tr "default" $ passTerm term
         Lua.S (Lua.Assign ann name _expr) →
-          case results of
-            [Pass Lua.V {} _, Pass (Lua.E expr') _] →
-              passTerm (Lua.S (Lua.Assign ann name expr'))
-            _ → error "Impossible subexpressions: Assign"
+          tr_
+            "Lua.S (Lua.Assign ann name _expr) →"
+            case resChildren of
+              [Pass Lua.V {} _, Pass (Lua.E expr') _] →
+                passTerm (Lua.S (Lua.Assign ann name expr'))
+              _ → error "Impossible subexpressions: Assign"
         Lua.S (Lua.Local ann name (Just _expr)) →
-          case results of
-            [Pass (Lua.E expr') _info] →
-              passTerm (Lua.S (Lua.Local ann name (Just expr')))
-            _ → error "Impossible subexpression: Local"
-        Lua.S (Lua.IfThenElse ann _expr th el) →
-          case results of
-            [Pass (Lua.E expr') _info] →
-              passTerm (Lua.S (Lua.IfThenElse ann expr' th el))
-            _ → error "Impossible subexpressions: IfThenElse"
+          tr_
+            "Lua.S (Lua.Local ann name (Just _expr)) →"
+            case resChildren of
+              [Pass (Lua.E expr') _info] →
+                passTerm (Lua.S (Lua.Local ann name (Just expr')))
+              _ → error "Impossible subexpression: Local"
+        Lua.S (Lua.IfThenElse ann expr th el) →
+          tr_ "Lua.S (Lua.IfThenElse ann _expr th el) →" $
+            case resChildren of
+              Pass (Lua.E expr') _info : _passes →
+                passTerm (Lua.S (Lua.IfThenElse ann expr' th el))
+              res →
+                error $
+                  "Impossible subexpressions: IfThenElse, res =\n"
+                    <> toText (pShow res)
         Lua.S (Lua.Return ann _expr) →
-          case results of
-            [Pass (Lua.E expr') _info] →
-              passTerm (Lua.S (Lua.Return ann expr'))
-            _ → error "Impossible subexpressions: Return"
+          tr_
+            "Lua.S (Lua.Return ann _expr) →"
+            case resChildren of
+              [Pass (Lua.E expr') _info] →
+                passTerm (Lua.S (Lua.Return ann expr'))
+              _ → error "Impossible subexpressions: Return"
         Lua.E (Lua.UnOp ann op _expr) →
-          case results of
-            [Pass (Lua.E expr') _info] →
-              passTerm (Lua.E (Lua.UnOp ann op expr'))
-            _ → error "Impossible subexpressions: UnOp"
+          tr_
+            "Lua.E (Lua.UnOp ann op _expr) →"
+            case resChildren of
+              [Pass (Lua.E expr') _info] →
+                passTerm (Lua.E (Lua.UnOp ann op expr'))
+              _ → error "Impossible subexpressions: UnOp"
         Lua.E (Lua.BinOp ann op _lhs _rhs) →
-          case results of
-            [Pass (Lua.E lhs') _, Pass (Lua.E rhs') _] →
-              passTerm (Lua.E (Lua.BinOp ann op lhs' rhs'))
-            _ → error "Impossible subexpressions: BinOp"
+          tr_
+            "Lua.E (Lua.BinOp ann op _lhs _rhs) →"
+            case resChildren of
+              [Pass (Lua.E lhs') _, Pass (Lua.E rhs') _] →
+                passTerm (Lua.E (Lua.BinOp ann op lhs' rhs'))
+              _ → error "Impossible subexpressions: BinOp"
         Lua.E (Lua.TableCtor ann _rows) →
-          passTerm
-            (Lua.E (Lua.TableCtor ann [r | Pass (Lua.R r) _ ← results]))
+          tr_ "Lua.E (Lua.TableCtor ann _rows) →" $
+            passTerm
+              (Lua.E (Lua.TableCtor ann [r | Pass (Lua.R r) _ ← resChildren]))
         Lua.V (Lua.VarIndex ann _lhs _rhs) →
-          case results of
-            [Pass (Lua.E lhs') _, Pass (Lua.E rhs') _] →
-              passTerm (Lua.V (Lua.VarIndex ann lhs' rhs'))
-            _ → error "Impossible subexpressions: VarIndex"
+          tr_
+            "Lua.V (Lua.VarIndex ann _lhs _rhs) →"
+            case resChildren of
+              [Pass (Lua.E lhs') _, Pass (Lua.E rhs') _] →
+                passTerm (Lua.V (Lua.VarIndex ann lhs' rhs'))
+              _ → error "Impossible subexpressions: VarIndex"
         Lua.V (Lua.VarField ann _expr field) →
-          case results of
-            [Pass (Lua.E expr') _] →
-              passTerm (Lua.V (Lua.VarField ann expr' field))
-            _ → error "Impossible subexpressions: VarField"
+          tr_
+            "Lua.V (Lua.VarField ann _expr field) →"
+            case resChildren of
+              [Pass (Lua.E expr') _] →
+                passTerm (Lua.V (Lua.VarField ann expr' field))
+              _ → error "Impossible subexpressions: VarField"
         Lua.R (Lua.TableRowKV ann _k _v) →
-          case results of
-            [Pass (Lua.E k') _, Pass (Lua.E v') _] →
-              passTerm (Lua.R (Lua.TableRowKV ann k' v'))
-            _ → error "Impossible subexpressions: TableRowKV"
+          tr_
+            "Lua.R (Lua.TableRowKV ann _k _v) →"
+            case resChildren of
+              [Pass (Lua.E k') _, Pass (Lua.E v') _] →
+                passTerm (Lua.R (Lua.TableRowKV ann k' v'))
+              _ → error "Impossible subexpressions: TableRowKV"
         Lua.R (Lua.TableRowNV ann name _v) →
-          case results of
-            [Pass (Lua.E expr') _] →
-              passTerm (Lua.R (Lua.TableRowNV ann name expr'))
-            _ → error "Impossible subexpressions: TableRowNV"
+          tr_
+            "Lua.R (Lua.TableRowNV ann name _v) →"
+            case resChildren of
+              [Pass (Lua.E expr') _] →
+                passTerm (Lua.R (Lua.TableRowNV ann name expr'))
+              _ → error "Impossible subexpressions: TableRowNV"
         _ → passTerm term
 
 data St = St
@@ -293,12 +328,17 @@ data Res = Pass
   { resTerm ∷ Lua.Term
   , resInfo ∷ Maybe (Int, Int)
   }
-  deriving stock (Show)
+  deriving stock (Show, Generic)
+  deriving anyclass (NFData)
 
-{-
-t1 ∷ ∀ {a}. Show a ⇒ [Char] → a → a
-t1 x a = trace ("\n------------<" ++ x ++ ">----------\n" ++ toString (pShow a)) a
--}
+tr ∷ ∀ {a}. Show a ⇒ [Char] → a → a
+tr x a = trace ("\n------------<" ++ x ++ ">----------\n" ++ toString (pShow a)) a
+
+trs ∷ Show a ⇒ [Char] → a → x → x
+trs label a = trace ("\n------------<" ++ label ++ ">----------\n" ++ toString (pShow a))
+
+tr_ ∷ ∀ {a}. [Char] → a → a
+tr_ x = trace ("\n------------<" ++ x ++ ">----------\n")
 
 optimizeExpression ∷ Lua.Exp → Lua.Exp
 optimizeExpression = foldr (>>>) identity rewriteRulesInOrder

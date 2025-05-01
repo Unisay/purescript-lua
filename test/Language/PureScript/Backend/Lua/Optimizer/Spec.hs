@@ -91,11 +91,11 @@ spec = describe "Lua AST Optimizer" do
       Unknown <> how === how
 
     it "AppliedAtLeastTwice always loses" $ hedgehog do
-      how ← forAll $ Gen.knownAppliedHow
+      how ← forAll Gen.knownAppliedHow
       AppliedAtLeastTwice <> how === how
 
     it "NotApplied always wins" $ hedgehog do
-      how ← forAll $ Gen.knownAppliedHow
+      how ← forAll Gen.knownAppliedHow
       NotApplied <> how === NotApplied
 
     it "is not applied" do
@@ -322,6 +322,68 @@ spec = describe "Lua AST Optimizer" do
             )
             [Lua.integer 3] -- 5
             --
+    it "rewrite curried functions, sample 1" do
+      let
+        _0 = Lua.integer 0
+        _1 = Lua.integer 1
+        fooField = Lua.varField (Lua.var (Lua.varName [name|M|])) [name|foo|]
+
+        {-
+
+        if foo(0)(1)
+          then return 0
+          else return foo(0)(1)
+
+        ====>
+
+        if foo(0, 1) -- rewritten
+          then return 0
+          else return foo(0, 1) -- rewritten
+        -}
+        original =
+          Lua.ifThenElse
+            (Lua.boolean True)
+            [ Lua.return
+                ( Lua.functionCall
+                    (Lua.functionCall (Lua.var fooField) [_0])
+                    [_1]
+                )
+            ]
+            [ Lua.return
+                ( Lua.functionCall
+                    (Lua.functionCall (Lua.var fooField) [_0])
+                    [_1]
+                )
+            ]
+
+        {-           Lua.ifThenElse
+                    ( Lua.functionCall
+                        (Lua.functionCall (Lua.var fooField) [_0])
+                        [_1]
+                    )
+                    [Lua.return _0]
+                    [ Lua.return
+                        ( Lua.functionCall
+                            (Lua.functionCall (Lua.var fooField) [_0])
+                            [_1]
+                        )
+                    ] -}
+
+        rewritten =
+          {-           Lua.ifThenElse
+                      (Lua.functionCall (Lua.var fooField) [_0, _1])
+                      [Lua.return _0]
+                      [ Lua.return
+                          (Lua.functionCall (Lua.var fooField) [_0, _1])
+                      ] -}
+
+          Lua.ifThenElse
+            (Lua.boolean True)
+            [Lua.return (Lua.functionCall (Lua.var fooField) [_0, _1])]
+            [Lua.return (Lua.functionCall (Lua.var fooField) [_0, _1])]
+
+      assertRewriteCurried fooField [original] (Just [rewritten])
+
     test "collapseFunCalls 0" do
       collapseFunCalls 0 subterms === Lua.E subterms
 

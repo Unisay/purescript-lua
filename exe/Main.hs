@@ -9,8 +9,8 @@ import Language.PureScript.Backend qualified as Backend
 import Language.PureScript.Backend.IR qualified as IR
 import Language.PureScript.Backend.Lua qualified as Lua
 import Language.PureScript.Backend.Lua.Printer qualified as Printer
+import Language.PureScript.CoreFn.ModuleName (moduleNameToText)
 import Language.PureScript.CoreFn.Reader qualified as CoreFn
-import Language.PureScript.Names (moduleNameToText)
 import Main.Utf8 qualified as Utf8
 import Path (Abs, Dir, Path, SomeBase (..), replaceExtension, toFilePath)
 import Path.IO qualified as Path

@@ -35,6 +35,8 @@ type Param = ParamF Ann
 deriving stock instance Eq a ⇒ Eq (ParamF a)
 deriving stock instance Ord a ⇒ Ord (ParamF a)
 deriving stock instance Show a ⇒ Show (ParamF a)
+deriving stock instance Generic (ParamF a)
+deriving anyclass instance NFData a => NFData (ParamF a)
 
 data VarF ann
   = VarName ann Name
@@ -46,6 +48,8 @@ type Var = VarF Ann
 deriving stock instance Eq a ⇒ Eq (VarF a)
 deriving stock instance Ord a ⇒ Ord (VarF a)
 deriving stock instance Show a ⇒ Show (VarF a)
+deriving stock instance Generic (VarF a)
+deriving anyclass instance NFData a => NFData (VarF a)
 
 data TableRowF ann
   = TableRowKV ann (ExpF ann) (ExpF ann)
@@ -56,6 +60,8 @@ type TableRow = TableRowF Ann
 deriving stock instance Eq a ⇒ Eq (TableRowF a)
 deriving stock instance Ord a ⇒ Ord (TableRowF a)
 deriving stock instance Show a ⇒ Show (TableRowF a)
+deriving stock instance Generic (TableRowF a)
+deriving anyclass instance NFData a => NFData (TableRowF a)
 
 data Precedence
   = PrecFunction
@@ -75,7 +81,8 @@ instance HasPrecedence Precedence where
   prec = id
 
 data UnaryOp = HashOp | Negate | LogicalNot | BitwiseNot
-  deriving stock (Show, Eq, Ord, Enum, Bounded)
+  deriving stock (Show, Eq, Ord, Enum, Bounded, Generic)
+  deriving anyclass (NFData)
 
 instance HasPrecedence UnaryOp where
   prec =
@@ -93,7 +100,8 @@ instance HasSymbol UnaryOp where
     BitwiseNot → "~"
 
 newtype Ann = Ann ()
-  deriving stock (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show, Generic)
+  deriving newtype (NFData)
 
 newAnn ∷ Ann
 newAnn = Ann ()
@@ -195,7 +203,8 @@ data BinaryOp
   | FloorDiv
   | Mod
   | Exp
-  deriving stock (Show, Eq, Ord, Enum, Bounded)
+  deriving stock (Show, Eq, Ord, Enum, Bounded, Generic)
+  deriving anyclass (NFData)
 
 {- 1   or
    2   and
@@ -279,6 +288,8 @@ type Exp = ExpF Ann
 deriving stock instance Eq a ⇒ Eq (ExpF a)
 deriving stock instance Ord a ⇒ Ord (ExpF a)
 deriving stock instance Show a ⇒ Show (ExpF a)
+deriving stock instance Generic (ExpF a)
+deriving anyclass instance NFData a => NFData (ExpF a)
 
 data StatementF ann
   = Assign ann (VarF ann) (ExpF ann)
@@ -299,6 +310,8 @@ type Statement = StatementF Ann
 deriving stock instance Eq a ⇒ Eq (StatementF a)
 deriving stock instance Ord a ⇒ Ord (StatementF a)
 deriving stock instance Show a ⇒ Show (StatementF a)
+deriving stock instance Generic (StatementF a)
+deriving anyclass instance NFData a => NFData (StatementF a)
 
 --------------------------------------------------------------------------------
 -- Terms -----------------------------------------------------------------------
@@ -308,7 +321,8 @@ data TermF a
   | S (StatementF a)
   | V (VarF a)
   | R (TableRowF a)
-  deriving stock (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show, Generic)
+  deriving anyclass (NFData)
 
 $(makePrisms ''TermF)
 
@@ -372,7 +386,7 @@ instance Plated (TermF a) where
         TableRowKV ann k v →
           R <$> liftA2 (TableRowKV ann) (mapE f k) (mapE f v)
         TableRowNV ann name e →
-          R <$> liftA2 (TableRowNV ann) (pure name) (mapE f e)
+          R . TableRowNV ann name <$> mapE f e
 
 mapS ∷ Functor f ⇒ (TermF a → f (TermF a)) → StatementF a → f (StatementF a)
 mapS tf s = tf (S s) <&> \case S s' → s'; _ → s
