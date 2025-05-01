@@ -84,7 +84,6 @@
       }
     );
 
-  # --- Flake Local Nix Configuration ----------------------------
   nixConfig = {
     extra-substituters = [
       "https://cache.iog.io"
