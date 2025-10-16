@@ -1,4 +1,4 @@
-module Golden.Issue37.Test where
+module Golden.Issue37.Test(baz) where
 
 import Prelude 
 import Effect (Effect)
