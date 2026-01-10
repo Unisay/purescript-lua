@@ -108,7 +108,7 @@ printRow = \case
 printVar ∷ Lua.Var → ADoc
 printVar = \case
   Lua.VarName name → printName name
-  Lua.VarIndex (Ann e) (Ann i) → printedExp e <> brackets (printedExp i)
+  Lua.VarIndex (Ann e) (Ann i) → wrapPrec PrecAtom (printExp e) <> brackets (printedExp i)
   Lua.VarField (Ann e) n → wrapPrec PrecAtom (printExp e) <> "." <> printName n
 
 printFunctionCall ∷ PADoc → [PADoc] → ADoc
