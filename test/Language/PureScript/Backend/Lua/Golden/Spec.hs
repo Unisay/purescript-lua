@@ -75,10 +75,10 @@ spec ∷ Spec
 spec = do
   describe "Goldens: *.purs -> *.lua" do
     let compilePs = do
-          putText "Comipling PureScript sources"
+          putText "Compiling PureScript sources"
           exitCode ←
             runProcess . setWorkingDir "test/ps" . shell $
-              String.unwords ["spago", "build", "-u", "'-g corefn'"]
+              String.unwords ["spago", "build"]
           exitCode `shouldBe` ExitSuccess
         psOutputPath = $(mkRelDir "test/ps/output/")
 
