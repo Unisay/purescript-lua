@@ -55,7 +55,7 @@
                 };
                 buildInputs = with pkgs; [
                   cachix
-                  easy-ps.purs-0_15_15
+                  easy-ps.purs-0_15_16-0
                   easy-ps.spago
                   lua51Packages.lua
                   lua51Packages.luacheck

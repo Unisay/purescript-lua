@@ -10,3 +10,4 @@ result-*
 .vscode/settings.json
 .envrc.local
 .hspec-failures
+.local/

@@ -1,9 +1,9 @@
 let upstream-ps =
-      https://github.com/purescript/package-sets/releases/download/psc-0.15.15-20240419/packages.dhall
-        sha256:50c4ee579bf2c38671ac97df821c2cc4221fb3f6ad79c807bb6e4597ab6d1e95
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.15-20260605/packages.dhall
+        sha256:e48c9b283ca89ec994453459fb74c4b5b5a9432349f83a2e104f39dd869a0f6e
 
 let upstream-lua =
-      https://github.com/Unisay/purescript-lua-package-sets/releases/download/psc-0.15.15-20240425/packages.dhall
-        sha256:3721bc8a2f6681e16fb505b8b0256650d9fd47977755fde9947852343888f14b
+      https://github.com/Unisay/purescript-lua-package-sets/releases/download/psc-0.15.15-20260612/packages.dhall
+        sha256:e031a7820831578424a5270b778f9f31a5aadee7a719a9fa95f8d58f406b308d
 
 in  upstream-ps // upstream-lua
