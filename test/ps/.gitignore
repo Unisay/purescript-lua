@@ -5,6 +5,7 @@
 /output/*/*.json
 !/output/Golden*/corefn.json
 /output/*/*.js
+/output/*/*.js.map
 /output/*/actual.*
 /output/*.json
 /output-es/
@@ -14,3 +15,18 @@
 /.purs*
 /.psa*
 /.spago
+
+# Spago build artifacts (library dependencies)
+# Only Golden.* test directories should be tracked
+/output/Control.*/
+/output/Data.*/
+/output/Effect*/
+/output/Prelude/
+/output/Record.*/
+/output/Safe.*/
+/output/Spago.*/
+/output/Type.*/
+/output/Unsafe.*/
+
+# Spago lock file (regenerated on build)
+/spago.lock

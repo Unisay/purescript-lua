@@ -1,0 +1,205 @@
+# PureScript Lua Test Project
+# Migrated from spago.dhall to spago.yaml format
+#
+# This project uses Lua-compatible forks of core PureScript packages
+# maintained at https://github.com/Unisay/purescript-lua-*
+
+package:
+  name: test-project
+  dependencies:
+    - console
+    - effect
+    - foldable-traversable
+    - prelude
+
+workspace:
+  packageSet:
+    registry: 67.0.1
+
+  # Lua-compatible package overrides from purescript-lua-package-sets
+  extraPackages:
+    assert:
+      git: https://github.com/Unisay/purescript-lua-assert.git
+      ref: v6.1.0
+      dependencies:
+        - effect
+        - console
+        - prelude
+
+    arrays:
+      git: https://github.com/Unisay/purescript-lua-arrays.git
+      ref: v7.3.0
+      dependencies:
+        - foldable-traversable
+        - functions
+        - nonempty
+        - partial
+        - prelude
+        - st
+        - unfoldable
+        - unsafe-coerce
+
+    console:
+      git: https://github.com/Unisay/purescript-lua-console.git
+      ref: v6.1.0
+      dependencies:
+        - effect
+        - prelude
+
+    control:
+      git: https://github.com/Unisay/purescript-lua-control.git
+      ref: v6.0.0
+      dependencies:
+        - newtype
+        - prelude
+
+    effect:
+      git: https://github.com/Unisay/purescript-lua-effect.git
+      ref: v4.1.0
+      dependencies:
+        - prelude
+
+    enums:
+      git: https://github.com/Unisay/purescript-lua-enums.git
+      ref: v6.1.0
+      dependencies:
+        - control
+        - either
+        - gen
+        - maybe
+        - newtype
+        - nonempty
+        - partial
+        - prelude
+        - tuples
+        - unfoldable
+
+    exceptions:
+      git: https://github.com/Unisay/purescript-lua-exceptions.git
+      ref: v6.1.0
+      dependencies:
+        - effect
+        - either
+        - maybe
+        - prelude
+
+    functions:
+      git: https://github.com/Unisay/purescript-lua-functions.git
+      ref: v6.1.0
+      dependencies:
+        - prelude
+
+    lazy:
+      git: https://github.com/Unisay/purescript-lua-lazy.git
+      ref: v7.0.0
+      dependencies:
+        - control
+        - foldable-traversable
+        - invariant
+        - prelude
+
+    integers:
+      git: https://github.com/Unisay/purescript-lua-integers.git
+      ref: v6.1.0
+      dependencies:
+        - maybe
+        - numbers
+        - prelude
+
+    numbers:
+      git: https://github.com/Unisay/purescript-lua-numbers.git
+      ref: v9.1.0
+      dependencies:
+        - functions
+        - maybe
+        - prelude
+
+    partial:
+      git: https://github.com/Unisay/purescript-lua-partial.git
+      ref: v4.1.0
+      dependencies: []
+
+    prelude:
+      git: https://github.com/Unisay/purescript-lua-prelude.git
+      ref: v7.1.2
+      dependencies: []
+
+    refs:
+      git: https://github.com/Unisay/purescript-lua-refs.git
+      ref: v6.1.0
+      dependencies:
+        - effect
+        - prelude
+
+    safe-coerce:
+      git: https://github.com/Unisay/purescript-lua-safe-coerce.git
+      ref: v2.0.0
+      dependencies:
+        - unsafe-coerce
+
+    st:
+      git: https://github.com/purescript-lua/purescript-lua-st.git
+      ref: v6.3.0
+      dependencies:
+        - partial
+        - prelude
+        - tailrec
+        - unsafe-coerce
+
+    strings:
+      git: https://github.com/Unisay/purescript-lua-strings.git
+      ref: v6.1.0
+      dependencies:
+        - arrays
+        - enums
+        - foldable-traversable
+        - gen
+        - integers
+        - maybe
+        - newtype
+        - nonempty
+        - partial
+        - prelude
+        - tailrec
+        - tuples
+        - unfoldable
+        - unsafe-coerce
+
+    unfoldable:
+      git: https://github.com/Unisay/purescript-lua-unfoldable.git
+      ref: v6.1.0
+      dependencies:
+        - foldable-traversable
+        - maybe
+        - partial
+        - prelude
+        - tuples
+
+    unsafe-coerce:
+      git: https://github.com/Unisay/purescript-lua-unsafe-coerce.git
+      ref: v6.1.0
+      dependencies: []
+
+    foldable-traversable:
+      git: https://github.com/Unisay/purescript-lua-foldable-traversable.git
+      ref: v6.1.0
+      dependencies:
+        - bifunctors
+        - const
+        - control
+        - either
+        - functors
+        - identity
+        - maybe
+        - newtype
+        - orders
+        - prelude
+        - tuples
+
+    # Lua/Nginx bindings
+    lua-ngx:
+      git: https://github.com/Unisay/purescript-lua-ngx.git
+      ref: v0.2.0
+      dependencies:
+        - effect
+        - prelude

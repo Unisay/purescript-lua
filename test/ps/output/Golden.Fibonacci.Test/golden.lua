@@ -21,4 +21,7 @@ M.Golden_Fibonacci_Test_fib = function(v)
     end
   end
 end
-return (function(s) return function() print(s) end end)((function(n) return tostring(n) end)(M.Golden_Fibonacci_Test_fib(32)))()
+return {
+  fib = M.Golden_Fibonacci_Test_fib,
+  main = (function(s) return function() print(s) end end)((function(n) return tostring(n) end)(M.Golden_Fibonacci_Test_fib(32)))
+}

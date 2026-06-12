@@ -78,7 +78,7 @@ spec = do
           putText "Compiling PureScript sources"
           exitCode ←
             runProcess . setWorkingDir "test/ps" . shell $
-              String.unwords ["spago", "build", "-u", "'-g corefn'"]
+              String.unwords ["spago", "build"]
           exitCode `shouldBe` ExitSuccess
         psOutputPath = $(mkRelDir "test/ps/output/")
 

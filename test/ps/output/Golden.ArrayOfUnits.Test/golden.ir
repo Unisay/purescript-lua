@@ -4,25 +4,25 @@ UberModule
       ( QName
         { qnameModuleName = ModuleName "Data.Unit", qnameName = Name "foreign"
         }, ForeignImport Nothing
-        ( ModuleName "Data.Unit" ) ".spago/prelude/v7.2.0/src/Data/Unit.purs"
+        ( ModuleName "Data.Unit" ) ".spago/p/prelude/384b74cec7d51a2fa20baad3768cf00575aedf63/src/Data/Unit.purs"
         [ ( Just Always, Name "unit" ) ]
       ), Standalone
       ( QName
         { qnameModuleName = ModuleName "Data.Semiring", qnameName = Name "foreign"
         }, ForeignImport Nothing
-        ( ModuleName "Data.Semiring" ) ".spago/prelude/v7.2.0/src/Data/Semiring.purs"
+        ( ModuleName "Data.Semiring" ) ".spago/p/prelude/384b74cec7d51a2fa20baad3768cf00575aedf63/src/Data/Semiring.purs"
         [ ( Nothing, Name "intAdd" ), ( Nothing, Name "intMul" ) ]
       ), Standalone
       ( QName
         { qnameModuleName = ModuleName "Data.Foldable", qnameName = Name "foreign"
         }, ForeignImport Nothing
-        ( ModuleName "Data.Foldable" ) ".spago/foldable-traversable/v6.1.0/src/Data/Foldable.purs"
+        ( ModuleName "Data.Foldable" ) ".spago/p/foldable-traversable/18a7d55fa2e87d3f2c557e24f89e197bd30c4f25/src/Data/Foldable.purs"
         [ ( Nothing, Name "foldrArray" ), ( Nothing, Name "foldlArray" ) ]
       ), Standalone
       ( QName
         { qnameModuleName = ModuleName "Effect", qnameName = Name "foreign"
         }, ForeignImport Nothing
-        ( ModuleName "Effect" ) ".spago/effect/v4.1.0/src/Effect.purs"
+        ( ModuleName "Effect" ) ".spago/p/effect/ee3f5984b9d68c3e116eeb44da09dcb8714c9c66/src/Effect.purs"
         [ ( Nothing, Name "pureE" ), ( Nothing, Name "bindE" ) ]
       ), Standalone
       ( QName
@@ -339,7 +339,7 @@ UberModule
           ( App Nothing
             ( ObjectProp ( Just Always )
               ( ForeignImport Nothing
-                ( ModuleName "Effect.Console" ) ".spago/console/v6.1.0/src/Effect/Console.purs"
+                ( ModuleName "Effect.Console" ) ".spago/p/console/66f1ba20176dd9b35aff47b45f13fd17582683b1/src/Effect/Console.purs"
                 [ ( Nothing, Name "log" ) ]
               )
               ( PropName "log" )
@@ -520,7 +520,7 @@ UberModule
                   [
                     ( PropName "show", ObjectProp ( Just Always )
                       ( ForeignImport Nothing
-                        ( ModuleName "Data.Show" ) ".spago/prelude/v7.2.0/src/Data/Show.purs"
+                        ( ModuleName "Data.Show" ) ".spago/p/prelude/384b74cec7d51a2fa20baad3768cf00575aedf63/src/Data/Show.purs"
                         [ ( Nothing, Name "showIntImpl" ) ]
                       )
                       ( PropName "showIntImpl" )
