@@ -80,7 +80,10 @@ Two consequences:
 renameShadowedNames ∷ UberModule → UberModule
 renameShadowedNames uberModule =
   uberModule
-    { uberModuleExports =
+    { uberModuleBindings =
+        fmap (renameShadowedNamesInExpr mempty)
+          <<$>> uberModuleBindings uberModule
+    , uberModuleExports =
         renameShadowedNamesInExpr mempty <<$>> uberModuleExports uberModule
     }
 
@@ -265,10 +268,10 @@ substituteInExports qname inlinee = map \case
 
 optimizedExpression ∷ Exp → Exp
 optimizedExpression =
+  -- See Note [Eta reduction is unsound]
   rewriteExpTopDown $
     constantFolding
       `thenRewrite` betaReduce
-      `thenRewrite` etaReduce
       `thenRewrite` betaReduceUnusedParams
       `thenRewrite` removeUnreachableThenBranch
       `thenRewrite` removeUnreachableElseBranch
@@ -301,14 +304,48 @@ betaReduce =
       Rewritten Recurse $ substitute (Local param) 0 r body
     _ → NoChange
 
--- (λx. M x) where x not free in M ===> M
-etaReduce ∷ RewriteRule Ann
-etaReduce =
-  pure . \case
-    Abs _ (ParamNamed _ param) (App _ m (Ref _ (Local param') 0))
-      | param == param' && countFreeRef (Local param) m == 0 →
-          Rewritten Recurse m
-    _ → NoChange
+{- Note [Eta reduction is unsound]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The optimizer used to rewrite (λx. M x) to M whenever x was not free
+in M. In a strict language this is not semantics-preserving: it moves
+the evaluation of M from every call of the lambda to the point where
+the lambda itself was constructed.
+
+That breaks self-referential instance dictionaries (issue #32). For
+
+  data Tree a = Leaf | Node { left ∷ Tree a, value ∷ a, right ∷ Tree a }
+  derive instance genericTree ∷ Generic (Tree a) _
+  instance eqTree ∷ Eq a ⇒ Eq (Tree a) where
+    eq x y = genericEq x y
+
+the method is deliberately eta-expanded by the user: the dictionary
+chain built by genericEq contains `eqTree dictEq` — a self-reference —
+and hiding it under λx λy is the documented PureScript way to break
+the cycle (upstream purs relies on it too: its JS output keeps the
+chain under the lambdas). Eta reduction rewrote the method to a bare
+application chain
+
+  eqTree = \dictEq → { eq = genericEq genericTree (… eqTree dictEq …) }
+
+which recurses at dictionary-construction time: calling `eqTree d`
+evaluates `eqTree d` eagerly and overflows the stack before any
+comparison happens. Golden/GenericEqTwoTypes is the regression test
+(two generic types, so the chain is multiply-used and the inliner
+cannot mask the problem by inlining it under another lambda).
+
+Reducing only special cases of M does not help either:
+
+  * M is an application — may diverge (the case above);
+  * M is a reference — a recursive-group member `f = λx. g x`
+    becomes the value binding `f = g`, but the laziness analysis
+    (CoreFn.Laziness.applyLazinessTransform) already ran on CoreFn
+    and never saw it, so nothing wraps it in runtime-lazy and `g`
+    may still be uninitialized when `f` is assigned;
+  * M is an abstraction — the redex (λy. K) x is already handled by
+    betaReduce, so nothing is left to gain.
+
+Hence no eta reduction is performed at all.
+-}
 
 betaReduceUnusedParams ∷ RewriteRule Ann
 betaReduceUnusedParams =

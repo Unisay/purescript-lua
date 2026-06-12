@@ -59,7 +59,7 @@ return {
     local b
     a = function() return b(z) end
     b = function() return a(z) end
-    local f = function() return a end
+    local f = function() return function(k) return a(k) end end
     local y = f(z)(z)
     return f(f(y)(y))(f(y)(0))
   end)()

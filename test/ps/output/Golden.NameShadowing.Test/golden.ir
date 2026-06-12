@@ -52,7 +52,7 @@ UberModule
         )
       ),
       ( Name "c", Abs Nothing
-        ( ParamNamed Nothing ( Name "y" ) )
+        ( ParamNamed Nothing ( Name "x" ) )
         ( Abs Nothing
           ( ParamNamed Nothing ( Name "x1" ) )
           ( App Nothing
@@ -62,7 +62,7 @@ UberModule
               )
               ( Ref Nothing ( Local ( Name "x1" ) ) 0 )
             )
-            ( Ref Nothing ( Local ( Name "y" ) ) 0 )
+            ( Ref Nothing ( Local ( Name "x" ) ) 0 )
           )
         )
       )
