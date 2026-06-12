@@ -86,29 +86,40 @@ UberModule
                 [
                   ( PropName "map", Abs Nothing
                     ( ParamNamed Nothing ( Name "f" ) )
-                    ( App Nothing
-                      ( ObjectProp Nothing
-                        ( App Nothing
-                          ( ObjectProp Nothing
-                            ( Ref Nothing
-                              ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
-                            )
-                            ( PropName "Apply0" )
-                          )
-                          ( Ref Nothing ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
-                        )
-                        ( PropName "apply" )
-                      )
+                    ( Abs Nothing
+                      ( ParamNamed Nothing ( Name "a" ) )
                       ( App Nothing
                         ( App Nothing
-                          ( Ref Nothing
-                            ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0
+                          ( ObjectProp Nothing
+                            ( App Nothing
+                              ( ObjectProp Nothing
+                                ( Ref Nothing
+                                  ( Imported
+                                    ( ModuleName "Effect" )
+                                    ( Name "applicativeEffect" )
+                                  ) 0
+                                )
+                                ( PropName "Apply0" )
+                              )
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
+                              )
+                            )
+                            ( PropName "apply" )
                           )
-                          ( Ref Nothing
-                            ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
+                          ( App Nothing
+                            ( App Nothing
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0
+                              )
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
+                              )
+                            )
+                            ( Ref Nothing ( Local ( Name "f" ) ) 0 )
                           )
                         )
-                        ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                        ( Ref Nothing ( Local ( Name "a" ) ) 0 )
                       )
                     )
                   )
@@ -215,8 +226,12 @@ UberModule
         }, ObjectProp Nothing
         ( LiteralObject Nothing
           [
-            ( PropName "discard", Ref Nothing
-              ( Imported ( ModuleName "Control.Bind" ) ( Name "bind" ) ) 0
+            ( PropName "discard", Abs Nothing
+              ( ParamNamed Nothing ( Name "dictBind" ) )
+              ( App Nothing
+                ( Ref Nothing ( Imported ( ModuleName "Control.Bind" ) ( Name "bind" ) ) 0 )
+                ( Ref Nothing ( Local ( Name "dictBind" ) ) 0 )
+              )
             )
           ]
         )

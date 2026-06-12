@@ -81,7 +81,9 @@ M.Data_Foldable_foldableArray = {
   foldMap = function(dictMonoid)
     return function(f)
       return M.Data_Foldable_foldr(M.Data_Foldable_foldableArray)(function(x)
-        return (dictMonoid.Semigroup0()).append(f(x))
+        return function(acc)
+          return (dictMonoid.Semigroup0()).append(f(x))(acc)
+        end
       end)(dictMonoid.mempty)
     end
   end
@@ -101,7 +103,9 @@ M.Effect_applicativeEffect = {
 M.Effect_Lazy_functorEffect = PSLUA_runtime_lazy("functorEffect")(function()
   return {
     map = function(f)
-      return M.Control_Apply_apply(M.Effect_applicativeEffect.Apply0())(M.Control_Applicative_pure(M.Effect_applicativeEffect)(f))
+      return function(a)
+        return M.Control_Apply_apply(M.Effect_applicativeEffect.Apply0())(M.Control_Applicative_pure(M.Effect_applicativeEffect)(f))(a)
+      end
     end
   }
 end)
@@ -133,10 +137,14 @@ return (function()
     [2] = M.Data_Unit_foreign.unit,
     [3] = M.Data_Unit_foreign.unit
   }
-  return M.Control_Bind_bind(M.Effect_bindEffect)(M.Data_Foldable_foldr(M.Data_Foldable_foldableArray)(M.Control_Semigroupoid_semigroupoidFn.compose(function( a )
-    return M.Control_Apply_apply(M.Effect_applicativeEffect.Apply0())(((M.Effect_applicativeEffect.Apply0()).Functor0()).map(function(  )
-      return function(x) return x end
-    end)(a))
+  return (function(dictBind)
+    return M.Control_Bind_bind(dictBind)
+  end)(M.Effect_bindEffect)(M.Data_Foldable_foldr(M.Data_Foldable_foldableArray)(M.Control_Semigroupoid_semigroupoidFn.compose(function( a )
+    return function(b)
+      return M.Control_Apply_apply(M.Effect_applicativeEffect.Apply0())(((M.Effect_applicativeEffect.Apply0()).Functor0()).map(function(  )
+        return function(x) return x end
+      end)(a))(b)
+    end
   end)(M.Effect_Console_logShow({
     show = function() return "unit" end
   })))(M.Control_Applicative_pure(M.Effect_applicativeEffect)(M.Data_Unit_foreign.unit))(arr))(function(  )

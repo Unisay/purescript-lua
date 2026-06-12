@@ -51,7 +51,9 @@ M.Effect_applicativeEffect = {
 M.Effect_Lazy_functorEffect = PSLUA_runtime_lazy("functorEffect")(function()
   return {
     map = function(f)
-      return (M.Effect_applicativeEffect.Apply0()).apply(M.Control_Applicative_pure(M.Effect_applicativeEffect)(f))
+      return function(a)
+        return (M.Effect_applicativeEffect.Apply0()).apply(M.Control_Applicative_pure(M.Effect_applicativeEffect)(f))(a)
+      end
     end
   }
 end)
@@ -72,7 +74,9 @@ M.Effect_Lazy_applyEffect = PSLUA_runtime_lazy("applyEffect")(function()
     Functor0 = function() return M.Effect_Lazy_functorEffect(0) end
   }
 end)
-M.Golden_Issue37_Test_discard = M.Control_Bind_bind
+M.Golden_Issue37_Test_discard = function(dictBind)
+  return M.Control_Bind_bind(dictBind)
+end
 return {
   baz = (function()
     return function(f)

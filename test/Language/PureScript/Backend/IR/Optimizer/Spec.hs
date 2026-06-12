@@ -65,6 +65,17 @@ spec = describe "IR Optimizer" do
       let f = abstraction paramUnused body
       body === optimizedExpression (application f arg)
 
+    -- See Note [Eta reduction is unsound]
+    test "does not eta-reduce λx. M x to M" do
+      param ← forAll Gen.name
+      let dict = moduleNameFromString "Dict"
+          m =
+            application
+              (refImported dict (Name "eqList") 0)
+              (refImported dict (Name "eqInt") 0)
+          original = abstraction (paramNamed param) (application m (refLocal0 param))
+      optimizedExpression original === original
+
   describe "inlines expressions" do
     test "inlines literals" do
       name ← forAll Gen.name

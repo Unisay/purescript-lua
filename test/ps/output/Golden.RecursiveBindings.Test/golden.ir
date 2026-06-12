@@ -112,7 +112,13 @@ UberModule
               ]
             ), Standalone
             ( Nothing, Name "f", Abs Nothing ( ParamUnused Nothing )
-              ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+              ( Abs Nothing
+                ( ParamNamed Nothing ( Name "k" ) )
+                ( App Nothing
+                  ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+                  ( Ref Nothing ( Local ( Name "k" ) ) 0 )
+                )
+              )
             ), Standalone
             ( Nothing, Name "y", App Nothing
               ( App Nothing
