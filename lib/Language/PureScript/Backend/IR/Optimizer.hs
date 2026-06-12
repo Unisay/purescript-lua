@@ -41,6 +41,8 @@ optimizedUberModule =
     -- unblock even more optimizations, e.g. inline foreign bindings.
     >>> mergeForeignsIntoBindings
     >>> idempotently (eliminateDeadCode . optimizeModule)
+    -- Must run last:
+    -- see Note [Locals are uniquely named after renameShadowedNames]
     >>> renameShadowedNames
 
 mergeForeignsIntoBindings ∷ UberModule → UberModule
@@ -51,6 +53,30 @@ mergeForeignsIntoBindings uberModule@UberModule {..} =
         map Standalone uberModuleForeigns <> uberModuleBindings
     }
 
+{- Note [Locals are uniquely named after renameShadowedNames]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+'renameShadowedNames' gives every shadowing local binder a fresh name
+and rewrites all references to it with index 0, so afterwards a local
+reference resolves to its binder by name alone. The Lua code generator
+relies on this: Lua has no notion of "the second enclosing local named
+x", so the Ref case of 'fromIR' emits a plain variable name and throws
+'UnexpectedRefBound' if it ever meets a local reference with a non-zero
+index. Such a reference is unbound: rendering it by name would silently
+capture a different binder, and inventing a name produces an undefined
+Lua variable (issue #37).
+
+Two consequences:
+
+  * this pass must run LAST in 'optimizedUberModule' — passes like
+    inlining and DCE may introduce or remove shadowing and rely on
+    indices being meaningful, so running anything after the renaming
+    would invalidate it;
+
+  * (name, index) references must be resolved according to
+    Note [Sequential scoping of Let bindings], which this pass and the
+    rest of the pipeline implement.
+-}
+
 renameShadowedNames ∷ UberModule → UberModule
 renameShadowedNames uberModule =
   uberModule
@@ -60,6 +86,7 @@ renameShadowedNames uberModule =
 
 type RenamesInScope = Map Name [Name]
 
+-- | See Note [Sequential scoping of Let bindings]
 renameShadowedNamesInExpr ∷ RenamesInScope → Exp → Exp
 renameShadowedNamesInExpr scope = go
  where
@@ -284,7 +311,8 @@ etaReduce =
     _ → NoChange
 
 betaReduceUnusedParams ∷ RewriteRule Ann
-betaReduceUnusedParams = pure . \case
+betaReduceUnusedParams =
+  pure . \case
     App _ (Abs _ (ParamUnused _) body) _arg →
       Rewritten Recurse body
     _ → NoChange

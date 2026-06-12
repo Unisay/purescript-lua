@@ -309,6 +309,7 @@ eliminateDeadCode uber@UberModule {..} =
           addToScope ((nameId, _ann), name, _expr) =
             addLocalToScope nameId name 0
    where
+    -- See Note [Sequential scoping of Let bindings]
     adjacencyListForGrouping
       ∷ (Scope, DList Node)
       → Grouping ((Id, Ann), Name, AExp)

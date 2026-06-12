@@ -208,10 +208,7 @@ fromIR foreigns topLevelNames modname ir = case ir of
             pure . Right $
               Lua.varField (Lua.varName Fixture.moduleName) topLevelName
       IR.Local name
-        -- After the optimizer's renameShadowedNames pass every local
-        -- reference must resolve to its binder by name alone: a
-        -- non-zero index means the reference is unbound and would be
-        -- rendered as an undefined Lua variable (issue #37).
+        -- See Note [Locals are uniquely named after renameShadowedNames]
         | index == 0 → pure . Right $ Lua.varName (fromName name)
         | otherwise → Oops.throw $ UnexpectedRefBound modname ir
       IR.Imported modname' name →
@@ -219,6 +216,8 @@ fromIR foreigns topLevelNames modname ir = case ir of
           Lua.varField
             (Lua.varName Fixture.moduleName)
             (qualifyName modname' (fromName name))
+  -- Standalone bindings become a sequence of 'local' statements, which
+  -- matches Note [Sequential scoping of Let bindings]
   IR.Let _ann bindings bodyExp → do
     body ← go bodyExp
     recs ←

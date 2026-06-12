@@ -42,9 +42,7 @@ spec = describe "Types" do
         , (Imported (ModuleName "Partial.Unsafe") (Name "unsafePartial"), 1)
         ]
 
-  -- Convention: Let bindings have sequential (let*) scoping — in a
-  -- standalone binding's RHS the earlier siblings of the same Let are
-  -- in scope, while the binding's own name refers to an outer binder.
+  -- See Note [Sequential scoping of Let bindings]
   describe "Let sequential (let*) scoping" do
     let x = Name "x"
         y = Name "y"

@@ -126,6 +126,7 @@ spec = describe "IR Optimizer" do
     -- Mimics issue #37: an inlined binding contains a let with a
     -- reference bound by an earlier sibling; inlining it under a binder
     -- with the same name must not leave the reference unbound.
+    -- See Note [Sequential scoping of Let bindings]
     test "inlining bindings does not unbind let-bound references" do
       let mainModule = moduleNameFromString "Main"
           dict = moduleNameFromString "Dict"
