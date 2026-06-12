@@ -507,28 +507,41 @@ countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
          where
           minIndexes' = Map.insertWith (+) (Local name) 1 minIndexes
         ParamUnused _paramAnn → countFreeRefs' minIndexes body
+    -- Let bindings have sequential (let*) scoping: in a standalone
+    -- binding's RHS the earlier siblings of the same Let are in scope,
+    -- while the binding's own name refers to an outer binder. Members
+    -- of a recursive group additionally see the whole group.
     Let _ann binds body → fold (countsInBody : countsInBinds)
      where
-      countsInBody = countFreeRefs' minIndexes' body
-       where
-        minIndexes' =
-          foldr (\name → Map.insertWith (+) name 1) minIndexes $
-            toList binds >>= fmap Local . bindingNames
-      countsInBinds =
-        toList binds >>= \case
-          Standalone (_nameAnn, boundName, expr) →
-            [countFreeRefs' minIndexes' expr]
-           where
-            minIndexes' = Map.insertWith (+) (Local boundName) 1 minIndexes
-          RecursiveGroup recBinds →
-            toList recBinds <&> \(_nameAnn, _boundName, expr) →
-              countFreeRefs' minIndexes' expr
-           where
-            minIndexes' =
-              foldr
-                (\(_nameAnn, qName, _expr) → Map.insertWith (+) (Local qName) 1)
-                minIndexes
-                recBinds
+      countsInBody = countFreeRefs' minIndexesAfterBinds body
+      (minIndexesAfterBinds, countsInBinds) =
+        foldl' withGrouping (minIndexes, []) (toList binds)
+      withGrouping
+        ∷ ( Map (Qualified Name) Index
+          , [MonoidMap (Qualified Name) (Sum Natural)]
+          )
+        → Grouping (ann, Name, RawExp ann)
+        → ( Map (Qualified Name) Index
+          , [MonoidMap (Qualified Name) (Sum Natural)]
+          )
+      withGrouping (mins, counts) = \case
+        Standalone (_nameAnn, boundName, expr) →
+          ( Map.insertWith (+) (Local boundName) 1 mins
+          , countFreeRefs' mins expr : counts
+          )
+        RecursiveGroup recBinds →
+          ( minsAfterGroup
+          , ( toList recBinds <&> \(_nameAnn, _boundName, expr) →
+                countFreeRefs' minsAfterGroup expr
+            )
+              <> counts
+          )
+         where
+          minsAfterGroup =
+            foldr
+              (\(_nameAnn, qName, _expr) → Map.insertWith (+) (Local qName) 1)
+              mins
+              recBinds
     App _ann argument function →
       go argument <> go function
     LiteralArray _ann as →
@@ -604,39 +617,39 @@ substitute name idx replacement = substitute' idx
            where
             index' = if name == Local pName then index + 1 else index
             replacement' = shift 1 pName 0 replacement
+      -- Sequential (let*) scoping: a standalone binding's RHS sees the
+      -- earlier siblings of the same Let (its own name refers to an
+      -- outer binder), recursive group members see the whole group,
+      -- and the body sees all the bindings.
       Let ann binds body → Let ann binds' body'
        where
-        binds' =
-          binds <&> \grouping →
-            case grouping of
-              Standalone (nameAnn, boundName, expr) →
-                Standalone
-                  ( nameAnn
-                  , boundName
-                  , substitute name index' replacement' expr
-                  )
-               where
-                index'
-                  | name == Local boundName = index + 1
-                  | otherwise = index
-                replacement' = shift 1 boundName 0 replacement
-              RecursiveGroup recBinds →
-                RecursiveGroup $
-                  substitute name index' replacement' <<$>> recBinds
-               where
-                index'
-                  | name `elem` fmap Local boundNames = index + 1
-                  | otherwise = index
-                replacement' =
-                  foldr (\n r → shift 1 n 0 r) replacement boundNames
-                boundNames = bindingNames grouping
-        body' = substitute name index' replacement' body
-         where
-          boundNames = toList binds >>= bindingNames
-          index' =
-            index
-              & if name `elem` (Local <$> boundNames) then (+ 1) else id
-          replacement' = foldr (\n r → shift 1 n 0 r) replacement boundNames
+        ((bodyIndex, bodyReplacement), binds') =
+          mapAccumL withGrouping (index, replacement) binds
+        body' = substitute name bodyIndex bodyReplacement body
+        withGrouping
+          ∷ (Index, RawExp ann)
+          → Grouping (ann, Name, RawExp ann)
+          → ((Index, RawExp ann), Grouping (ann, Name, RawExp ann))
+        withGrouping (i, repl) grouping =
+          case grouping of
+            Standalone (nameAnn, boundName, expr) →
+              (
+                ( if name == Local boundName then i + 1 else i
+                , shift 1 boundName 0 repl
+                )
+              , Standalone (nameAnn, boundName, substitute name i repl expr)
+              )
+            RecursiveGroup recBinds →
+              ( (i', repl')
+              , RecursiveGroup $ substitute name i' repl' <<$>> recBinds
+              )
+             where
+              boundNames = bindingNames grouping
+              i' =
+                i
+                  + fromIntegral
+                    (length (filter ((name ==) . Local) boundNames))
+              repl' = foldr (\n r → shift 1 n 0 r) repl boundNames
       App ann argument function →
         App ann (go argument) (go function)
       LiteralArray ann as →
@@ -696,36 +709,36 @@ shift offset namespace minIndex expression =
       minIndex'
         | paramName argument == Just namespace = minIndex + 1
         | otherwise = minIndex
+    -- Sequential (let*) scoping: a standalone binding's RHS sees the
+    -- earlier siblings of the same Let (its own name refers to an
+    -- outer binder), recursive group members see the whole group,
+    -- and the body sees all the bindings.
     Let ann binds body →
       Let ann binds' body'
      where
-      binds' =
-        binds <&> \grouping →
-          case grouping of
-            Standalone (annotation, boundName, expr) →
-              Standalone
+      (bodyMinIndex, binds') = mapAccumL withGrouping minIndex binds
+      body' = shift offset namespace bodyMinIndex body
+      withGrouping minIdx grouping =
+        case grouping of
+          Standalone (annotation, boundName, expr) →
+            ( if boundName == namespace then minIdx + 1 else minIdx
+            , Standalone
                 ( annotation
                 , boundName
-                , shift offset namespace minIndex' expr
+                , shift offset namespace minIdx expr
                 )
-             where
-              minIndex'
-                | namespace == boundName = minIndex + 1
-                | otherwise = minIndex
-            RecursiveGroup recBinds →
-              RecursiveGroup $
+            )
+          RecursiveGroup recBinds →
+            ( minIdx'
+            , RecursiveGroup $
                 recBinds <&> \(nameAnn, boundName, expr) →
-                  (nameAnn, boundName, shift offset namespace minIndex' expr)
-             where
-              minIndex'
-                | namespace `elem` bindingNames grouping = minIndex + 1
-                | otherwise = minIndex
-      body' = shift offset namespace minIndex' body
-       where
-        boundNames' = toList binds >>= bindingNames
-        minIndex'
-          | namespace `elem` boundNames' = minIndex + 1
-          | otherwise = minIndex
+                  (nameAnn, boundName, shift offset namespace minIdx' expr)
+            )
+           where
+            minIdx' =
+              minIdx
+                + fromIntegral
+                  (length (filter (== namespace) (bindingNames grouping)))
     App ann argument function →
       App ann (go argument) (go function)
     LiteralArray ann as →

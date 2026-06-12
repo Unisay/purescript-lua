@@ -140,12 +140,12 @@ spec = describe "IR Optimizer" do
                         (refLocal (Name "fn1") 0)
                     )
                     :| [ Standalone
-                          ( noAnn
-                          , Name "discard1"
-                          , application
-                              (refImported dict (Name "discard") 0)
-                              (refLocal (Name "Bind1") 0)
-                          )
+                           ( noAnn
+                           , Name "discard1"
+                           , application
+                               (refImported dict (Name "discard") 0)
+                               (refLocal (Name "Bind1") 0)
+                           )
                        ]
                 )
                 ( application
@@ -182,7 +182,8 @@ spec = describe "IR Optimizer" do
                   , Standalone (QName mainModule (Name "bar"), barExp)
                   ]
               , uberModuleExports =
-                  [ ( Name "baz"
+                  [
+                    ( Name "baz"
                     , application
                         (refImported mainModule (Name "bar") 0)
                         (literalInt 7)

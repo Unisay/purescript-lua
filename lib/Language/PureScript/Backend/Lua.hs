@@ -127,12 +127,6 @@ asExpression = \case
 fromName ∷ HasCallStack ⇒ IR.Name → Lua.Name
 fromName = Name.makeSafe . IR.nameToText
 
-fromNameWithIndex ∷ HasCallStack ⇒ IR.Name → IR.Index → Lua.Name
-fromNameWithIndex name (IR.unIndex → index) =
-  if index == 0
-    then fromName name
-    else Name.makeSafe $ IR.nameToText name <> show index
-
 fromModuleName ∷ ModuleName → Lua.Name
 fromModuleName = Name.makeSafe . runModuleName
 
@@ -207,17 +201,24 @@ fromIR foreigns topLevelNames modname ir = case ir of
         pure []
       _ → goExp arg <&> \a → [a]
   IR.Ref _ann qualifiedName index →
-    pure . Right $ case qualifiedName of
+    case qualifiedName of
       IR.Local name
         | topLevelName ← qualifyName modname (fromName name)
         , Set.member topLevelName topLevelNames →
-            Lua.varField (Lua.varName Fixture.moduleName) topLevelName
-      IR.Local name →
-        Lua.varName (fromNameWithIndex name index)
+            pure . Right $
+              Lua.varField (Lua.varName Fixture.moduleName) topLevelName
+      IR.Local name
+        -- After the optimizer's renameShadowedNames pass every local
+        -- reference must resolve to its binder by name alone: a
+        -- non-zero index means the reference is unbound and would be
+        -- rendered as an undefined Lua variable (issue #37).
+        | index == 0 → pure . Right $ Lua.varName (fromName name)
+        | otherwise → Oops.throw $ UnexpectedRefBound modname ir
       IR.Imported modname' name →
-        Lua.varField
-          (Lua.varName Fixture.moduleName)
-          (qualifyName modname' (fromName name))
+        pure . Right $
+          Lua.varField
+            (Lua.varName Fixture.moduleName)
+            (qualifyName modname' (fromName name))
   IR.Let _ann bindings bodyExp → do
     body ← go bodyExp
     recs ←
