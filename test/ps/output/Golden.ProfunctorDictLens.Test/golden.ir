@@ -1,0 +1,598 @@
+UberModule
+  { uberModuleBindings =
+    [ Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Semiring", qnameName = Name "foreign"
+        }, ForeignImport Nothing
+        ( ModuleName "Data.Semiring" ) ".spago/prelude/v7.2.0/src/Data/Semiring.purs"
+        [ ( Nothing, Name "intAdd" ), ( Nothing, Name "intMul" ) ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Unsafe.Coerce", qnameName = Name "foreign"
+        }, ForeignImport Nothing
+        ( ModuleName "Unsafe.Coerce" ) ".spago/unsafe-coerce/v6.1.0/src/Unsafe/Coerce.purs"
+        [ ( Nothing, Name "unsafeCoerce" ) ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Effect", qnameName = Name "foreign"
+        }, ForeignImport Nothing
+        ( ModuleName "Effect" ) ".spago/effect/v4.1.0/src/Effect.purs"
+        [ ( Nothing, Name "pureE" ), ( Nothing, Name "bindE" ) ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Semiring", qnameName = Name "semiringInt"
+        }, LiteralObject Nothing
+        [
+          ( PropName "add", ObjectProp ( Just Always )
+            ( Ref Nothing ( Imported ( ModuleName "Data.Semiring" ) ( Name "foreign" ) ) 0 )
+            ( PropName "intAdd" )
+          ),
+          ( PropName "zero", LiteralInt Nothing 0 ),
+          ( PropName "mul", ObjectProp ( Just Always )
+            ( Ref Nothing ( Imported ( ModuleName "Data.Semiring" ) ( Name "foreign" ) ) 0 )
+            ( PropName "intMul" )
+          ),
+          ( PropName "one", LiteralInt Nothing 1 )
+        ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Control.Applicative", qnameName = Name "pure"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "dict" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "dict" ) ) 0 ) ( PropName "pure" ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Control.Bind", qnameName = Name "bind" }, Abs Nothing
+        ( ParamNamed Nothing ( Name "dict" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "dict" ) ) 0 ) ( PropName "bind" ) )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Newtype", qnameName = Name "unwrap"
+        }, Abs Nothing ( ParamUnused Nothing )
+        ( ObjectProp ( Just Always )
+          ( Ref Nothing ( Imported ( ModuleName "Unsafe.Coerce" ) ( Name "foreign" ) ) 0 )
+          ( PropName "unsafeCoerce" )
+        )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Profunctor", qnameName = Name "composeFlipped"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "f" ) )
+        ( Abs Nothing
+          ( ParamNamed Nothing ( Name "g" ) )
+          ( App Nothing
+            ( App Nothing
+              ( ObjectProp Nothing
+                ( LiteralObject Nothing
+                  [
+                    ( PropName "compose", Abs Nothing
+                      ( ParamNamed Nothing ( Name "f1" ) )
+                      ( Abs Nothing
+                        ( ParamNamed Nothing ( Name "g1" ) )
+                        ( Abs Nothing
+                          ( ParamNamed Nothing ( Name "x" ) )
+                          ( App Nothing
+                            ( Ref Nothing ( Local ( Name "f1" ) ) 0 )
+                            ( App Nothing
+                              ( Ref Nothing ( Local ( Name "g1" ) ) 0 )
+                              ( Ref Nothing ( Local ( Name "x" ) ) 0 )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ]
+                )
+                ( PropName "compose" )
+              )
+              ( Ref Nothing ( Local ( Name "g" ) ) 0 )
+            )
+            ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+          )
+        )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Profunctor", qnameName = Name "profunctorFn"
+        }, LiteralObject Nothing
+        [
+          ( PropName "dimap", Abs Nothing
+            ( ParamNamed Nothing ( Name "a2b" ) )
+            ( Abs Nothing
+              ( ParamNamed Nothing ( Name "c2d" ) )
+              ( Abs Nothing
+                ( ParamNamed Nothing ( Name "b2c" ) )
+                ( App Nothing
+                  ( App Nothing
+                    ( Ref Nothing
+                      ( Imported ( ModuleName "Data.Profunctor" ) ( Name "composeFlipped" ) ) 0
+                    )
+                    ( Ref Nothing ( Local ( Name "a2b" ) ) 0 )
+                  )
+                  ( App Nothing
+                    ( App Nothing
+                      ( Ref Nothing
+                        ( Imported ( ModuleName "Data.Profunctor" ) ( Name "composeFlipped" ) ) 0
+                      )
+                      ( Ref Nothing ( Local ( Name "b2c" ) ) 0 )
+                    )
+                    ( Ref Nothing ( Local ( Name "c2d" ) ) 0 )
+                  )
+                )
+              )
+            )
+          )
+        ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Data.Profunctor", qnameName = Name "dimap" }, Abs Nothing
+        ( ParamNamed Nothing ( Name "dict" ) )
+        ( ObjectProp Nothing ( Ref Nothing ( Local ( Name "dict" ) ) 0 ) ( PropName "dimap" ) )
+      ), RecursiveGroup
+      (
+        ( QName
+          { qnameModuleName = ModuleName "Effect", qnameName = Name "monadEffect"
+          }, LiteralObject Nothing
+          [
+            ( PropName "Applicative0", Abs Nothing ( ParamUnused Nothing )
+              ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0 )
+            ),
+            ( PropName "Bind1", Abs Nothing ( ParamUnused Nothing )
+              ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "bindEffect" ) ) 0 )
+            )
+          ]
+        ) :|
+        [
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "bindEffect"
+            }, LiteralObject Nothing
+            [
+              ( PropName "bind", ObjectProp ( Just Always )
+                ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "foreign" ) ) 0 )
+                ( PropName "bindE" )
+              ),
+              ( PropName "Apply0", Abs Nothing ( ParamUnused Nothing )
+                ( App Nothing
+                  ( Ref Nothing
+                    ( Imported ( ModuleName "Effect" ) ( Name "Lazy_applyEffect" ) ) 0
+                  )
+                  ( LiteralInt Nothing 0 )
+                )
+              )
+            ]
+          ),
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "applicativeEffect"
+            }, LiteralObject Nothing
+            [
+              ( PropName "pure", ObjectProp ( Just Always )
+                ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "foreign" ) ) 0 )
+                ( PropName "pureE" )
+              ),
+              ( PropName "Apply0", Abs Nothing ( ParamUnused Nothing )
+                ( App Nothing
+                  ( Ref Nothing
+                    ( Imported ( ModuleName "Effect" ) ( Name "Lazy_applyEffect" ) ) 0
+                  )
+                  ( LiteralInt Nothing 0 )
+                )
+              )
+            ]
+          ),
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "Lazy_functorEffect"
+            }, App Nothing
+            ( App Nothing
+              ( Ref Nothing ( Local ( Name "PSLUA_runtime_lazy" ) ) 0 )
+              ( LiteralString Nothing "functorEffect" )
+            )
+            ( Abs Nothing ( ParamUnused Nothing )
+              ( LiteralObject Nothing
+                [
+                  ( PropName "map", Abs Nothing
+                    ( ParamNamed Nothing ( Name "f" ) )
+                    ( Abs Nothing
+                      ( ParamNamed Nothing ( Name "a" ) )
+                      ( App Nothing
+                        ( App Nothing
+                          ( ObjectProp Nothing
+                            ( App Nothing
+                              ( ObjectProp Nothing
+                                ( Ref Nothing
+                                  ( Imported
+                                    ( ModuleName "Effect" )
+                                    ( Name "applicativeEffect" )
+                                  ) 0
+                                )
+                                ( PropName "Apply0" )
+                              )
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
+                              )
+                            )
+                            ( PropName "apply" )
+                          )
+                          ( App Nothing
+                            ( App Nothing
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Control.Applicative" ) ( Name "pure" ) ) 0
+                              )
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Effect" ) ( Name "applicativeEffect" ) ) 0
+                              )
+                            )
+                            ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                          )
+                        )
+                        ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+                      )
+                    )
+                  )
+                ]
+              )
+            )
+          ),
+          ( QName
+            { qnameModuleName = ModuleName "Effect", qnameName = Name "Lazy_applyEffect"
+            }, App Nothing
+            ( App Nothing
+              ( Ref Nothing ( Local ( Name "PSLUA_runtime_lazy" ) ) 0 )
+              ( LiteralString Nothing "applyEffect" )
+            )
+            ( Abs Nothing ( ParamUnused Nothing )
+              ( LiteralObject Nothing
+                [
+                  ( PropName "apply", Let Nothing
+                    ( Standalone
+                      ( Nothing, Name "bind", App Nothing
+                        ( Ref Nothing
+                          ( Imported ( ModuleName "Control.Bind" ) ( Name "bind" ) ) 0
+                        )
+                        ( App Nothing
+                          ( ObjectProp Nothing
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Effect" ) ( Name "monadEffect" ) ) 0
+                            )
+                            ( PropName "Bind1" )
+                          )
+                          ( Ref Nothing ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
+                        )
+                      ) :| []
+                    )
+                    ( Abs Nothing
+                      ( ParamNamed Nothing ( Name "f" ) )
+                      ( Abs Nothing
+                        ( ParamNamed Nothing ( Name "a" ) )
+                        ( App Nothing
+                          ( App Nothing
+                            ( Ref Nothing ( Local ( Name "bind" ) ) 0 )
+                            ( Ref Nothing ( Local ( Name "f" ) ) 0 )
+                          )
+                          ( Abs Nothing
+                            ( ParamNamed Nothing ( Name "f'" ) )
+                            ( App Nothing
+                              ( App Nothing
+                                ( Ref Nothing ( Local ( Name "bind" ) ) 0 )
+                                ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+                              )
+                              ( Abs Nothing
+                                ( ParamNamed Nothing ( Name "a'" ) )
+                                ( App Nothing
+                                  ( App Nothing
+                                    ( Ref Nothing
+                                      ( Imported
+                                        ( ModuleName "Control.Applicative" )
+                                        ( Name "pure" )
+                                      ) 0
+                                    )
+                                    ( App Nothing
+                                      ( ObjectProp Nothing
+                                        ( Ref Nothing
+                                          ( Imported
+                                            ( ModuleName "Effect" )
+                                            ( Name "monadEffect" )
+                                          ) 0
+                                        )
+                                        ( PropName "Applicative0" )
+                                      )
+                                      ( Ref Nothing
+                                        ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
+                                      )
+                                    )
+                                  )
+                                  ( App Nothing
+                                    ( Ref Nothing ( Local ( Name "f'" ) ) 0 )
+                                    ( Ref Nothing ( Local ( Name "a'" ) ) 0 )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+                  ( PropName "Functor0", Abs Nothing ( ParamUnused Nothing )
+                    ( App Nothing
+                      ( Ref Nothing
+                        ( Imported ( ModuleName "Effect" ) ( Name "Lazy_functorEffect" ) ) 0
+                      )
+                      ( LiteralInt Nothing 0 )
+                    )
+                  )
+                ]
+              )
+            )
+          )
+        ]
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.ProfunctorDictLens.Test", qnameName = Name "unwrap"
+        }, App Nothing
+        ( Ref Nothing ( Imported ( ModuleName "Data.Newtype" ) ( Name "unwrap" ) ) 0 )
+        ( Ref Nothing ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.ProfunctorDictLens.Test", qnameName = Name "discard"
+        }, App Nothing
+        ( ObjectProp Nothing
+          ( LiteralObject Nothing
+            [
+              ( PropName "discard", Abs Nothing
+                ( ParamNamed Nothing ( Name "dictBind" ) )
+                ( App Nothing
+                  ( Ref Nothing ( Imported ( ModuleName "Control.Bind" ) ( Name "bind" ) ) 0 )
+                  ( Ref Nothing ( Local ( Name "dictBind" ) ) 0 )
+                )
+              )
+            ]
+          )
+          ( PropName "discard" )
+        )
+        ( Ref Nothing ( Imported ( ModuleName "Effect" ) ( Name "bindEffect" ) ) 0 )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.ProfunctorDictLens.Test", qnameName = Name "logShow"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "a" ) )
+        ( App Nothing
+          ( ObjectProp ( Just Always )
+            ( ForeignImport Nothing
+              ( ModuleName "Effect.Console" ) ".spago/console/v6.1.0/src/Effect/Console.purs"
+              [ ( Nothing, Name "log" ) ]
+            )
+            ( PropName "log" )
+          )
+          ( App Nothing
+            ( ObjectProp Nothing
+              ( LiteralObject Nothing
+                [
+                  ( PropName "show", ObjectProp ( Just Always )
+                    ( ForeignImport Nothing
+                      ( ModuleName "Data.Show" ) ".spago/prelude/v7.2.0/src/Data/Show.purs"
+                      [ ( Nothing, Name "showIntImpl" ) ]
+                    )
+                    ( PropName "showIntImpl" )
+                  )
+                ]
+              )
+              ( PropName "show" )
+            )
+            ( Ref Nothing ( Local ( Name "a" ) ) 0 )
+          )
+        )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.ProfunctorDictLens.Test", qnameName = Name "Wrapped"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "x" ) )
+        ( Ref Nothing ( Local ( Name "x" ) ) 0 )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.ProfunctorDictLens.Test", qnameName = Name "_Wrapped"
+        }, Abs Nothing
+        ( ParamNamed Nothing ( Name "dictProfunctor" ) )
+        ( App Nothing
+          ( App Nothing
+            ( App Nothing
+              ( Ref Nothing ( Imported ( ModuleName "Data.Profunctor" ) ( Name "dimap" ) ) 0 )
+              ( Ref Nothing ( Local ( Name "dictProfunctor" ) ) 0 )
+            )
+            ( Ref Nothing
+              ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "unwrap" ) ) 0
+            )
+          )
+          ( Ref Nothing
+            ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "Wrapped" ) ) 0
+          )
+        )
+      ), Standalone
+      ( QName
+        { qnameModuleName = ModuleName "Golden.ProfunctorDictLens.Test", qnameName = Name "_Wrapped1"
+        }, App Nothing
+        ( Ref Nothing
+          ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "_Wrapped" ) ) 0
+        )
+        ( Ref Nothing ( Imported ( ModuleName "Data.Profunctor" ) ( Name "profunctorFn" ) ) 0 )
+      )
+    ], uberModuleForeigns = [], uberModuleExports =
+    [
+      ( Name "Wrapped", Ref Nothing
+        ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "Wrapped" ) ) 0
+      ),
+      ( Name "_Wrapped", Ref Nothing
+        ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "_Wrapped" ) ) 0
+      ),
+      ( Name "main", App Nothing
+        ( App Nothing
+          ( Ref Nothing
+            ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "discard" ) ) 0
+          )
+          ( App Nothing
+            ( Ref Nothing
+              ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "logShow" ) ) 0
+            )
+            ( App Nothing
+              ( Ref Nothing
+                ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "unwrap" ) ) 0
+              )
+              ( App Nothing
+                ( App Nothing
+                  ( Ref Nothing
+                    ( Imported
+                      ( ModuleName "Golden.ProfunctorDictLens.Test" )
+                      ( Name "_Wrapped1" )
+                    ) 0
+                  )
+                  ( Abs Nothing
+                    ( ParamNamed Nothing ( Name "v" ) )
+                    ( App Nothing
+                      ( App Nothing
+                        ( ObjectProp Nothing
+                          ( Ref Nothing
+                            ( Imported ( ModuleName "Data.Semiring" ) ( Name "semiringInt" ) ) 0
+                          )
+                          ( PropName "add" )
+                        )
+                        ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+                      )
+                      ( LiteralInt Nothing 1 )
+                    )
+                  )
+                )
+                ( LiteralInt Nothing 10 )
+              )
+            )
+          )
+        )
+        ( Abs Nothing ( ParamUnused Nothing )
+          ( App Nothing
+            ( App Nothing
+              ( Ref Nothing
+                ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "discard" ) ) 0
+              )
+              ( App Nothing
+                ( Ref Nothing
+                  ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "logShow" ) ) 0
+                )
+                ( App Nothing
+                  ( Ref Nothing
+                    ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "unwrap" ) ) 0
+                  )
+                  ( App Nothing
+                    ( App Nothing
+                      ( Ref Nothing
+                        ( Imported
+                          ( ModuleName "Golden.ProfunctorDictLens.Test" )
+                          ( Name "_Wrapped1" )
+                        ) 0
+                      )
+                      ( Abs Nothing
+                        ( ParamNamed Nothing ( Name "v" ) )
+                        ( App Nothing
+                          ( App Nothing
+                            ( ObjectProp Nothing
+                              ( Ref Nothing
+                                ( Imported ( ModuleName "Data.Semiring" ) ( Name "semiringInt" ) ) 0
+                              )
+                              ( PropName "mul" )
+                            )
+                            ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+                          )
+                          ( LiteralInt Nothing 2 )
+                        )
+                      )
+                    )
+                    ( LiteralInt Nothing 10 )
+                  )
+                )
+              )
+            )
+            ( Abs Nothing ( ParamUnused Nothing )
+              ( App Nothing
+                ( Ref Nothing
+                  ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "logShow" ) ) 0
+                )
+                ( App Nothing
+                  ( Ref Nothing
+                    ( Imported ( ModuleName "Golden.ProfunctorDictLens.Test" ) ( Name "unwrap" ) ) 0
+                  )
+                  ( App Nothing
+                    ( App Nothing
+                      ( App Nothing
+                        ( App Nothing
+                          ( App Nothing
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Data.Profunctor" ) ( Name "dimap" ) ) 0
+                            )
+                            ( Ref Nothing
+                              ( Imported
+                                ( ModuleName "Data.Profunctor" )
+                                ( Name "profunctorFn" )
+                              ) 0
+                            )
+                          )
+                          ( App Nothing
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Data.Newtype" ) ( Name "unwrap" ) ) 0
+                            )
+                            ( Ref Nothing
+                              ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0
+                            )
+                          )
+                        )
+                        ( ObjectProp ( Just Always )
+                          ( Ref Nothing
+                            ( Imported ( ModuleName "Unsafe.Coerce" ) ( Name "foreign" ) ) 0
+                          )
+                          ( PropName "unsafeCoerce" )
+                        )
+                      )
+                      ( Abs Nothing
+                        ( ParamNamed Nothing ( Name "v" ) )
+                        ( App Nothing
+                          ( App Nothing
+                            ( ObjectProp Nothing
+                              ( LiteralObject Nothing
+                                [
+                                  ( PropName "sub", ObjectProp ( Just Always )
+                                    ( ForeignImport Nothing
+                                      ( ModuleName "Data.Ring" ) ".spago/prelude/v7.2.0/src/Data/Ring.purs"
+                                      [ ( Nothing, Name "intSub" ) ]
+                                    )
+                                    ( PropName "intSub" )
+                                  ),
+                                  ( PropName "Semiring0", Abs Nothing ( ParamUnused Nothing )
+                                    ( Ref Nothing
+                                      ( Imported
+                                        ( ModuleName "Data.Semiring" )
+                                        ( Name "semiringInt" )
+                                      ) 0
+                                    )
+                                  )
+                                ]
+                              )
+                              ( PropName "sub" )
+                            )
+                            ( Ref Nothing ( Local ( Name "v" ) ) 0 )
+                          )
+                          ( LiteralInt Nothing 5 )
+                        )
+                      )
+                    )
+                    ( LiteralInt Nothing 10 )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ),
+      ( Name "newtypeWrapped", LiteralObject Nothing
+        [
+          ( PropName "Coercible0", Abs Nothing ( ParamUnused Nothing )
+            ( Ref Nothing ( Imported ( ModuleName "Prim" ) ( Name "undefined" ) ) 0 )
+          )
+        ]
+      )
+    ]
+  }
