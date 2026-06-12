@@ -5,13 +5,14 @@ import Hedgehog ((===))
 import Language.PureScript.Backend.IR.Names
   ( ModuleName (..)
   , Name (..)
-  , Qualified (Imported)
+  , Qualified (Imported, Local)
   )
 import Language.PureScript.Backend.IR.Types
   ( Exp
   , Grouping (..)
   , abstraction
   , application
+  , countFreeRef
   , countFreeRefs
   , lets
   , literalInt
@@ -20,6 +21,8 @@ import Language.PureScript.Backend.IR.Types
   , paramUnused
   , refImported
   , refLocal
+  , shift
+  , substitute
   )
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
@@ -38,6 +41,64 @@ spec = describe "Types" do
         , (Imported (ModuleName "Data.Ordering") (Name "GT"), 1)
         , (Imported (ModuleName "Partial.Unsafe") (Name "unsafePartial"), 1)
         ]
+
+  -- Convention: Let bindings have sequential (let*) scoping — in a
+  -- standalone binding's RHS the earlier siblings of the same Let are
+  -- in scope, while the binding's own name refers to an outer binder.
+  describe "Let sequential (let*) scoping" do
+    let x = Name "x"
+        y = Name "y"
+
+    test "shift: ref bound by an earlier sibling is not shifted" do
+      let e =
+            lets
+              ( Standalone (noAnn, x, literalInt 1)
+                  :| [Standalone (noAnn, y, refLocal x 0)]
+              )
+              (literalInt 0)
+      shift 1 x 0 e === e
+
+    test "shift: ref to an outer name in own RHS is shifted" do
+      let original =
+            lets (Standalone (noAnn, x, refLocal x 0) :| []) (literalInt 0)
+          shifted =
+            lets (Standalone (noAnn, x, refLocal x 1) :| []) (literalInt 0)
+      shift 1 x 0 original === shifted
+
+    test "shift: ref in the body bound by the let is not shifted" do
+      let e =
+            lets (Standalone (noAnn, x, literalInt 1) :| []) (refLocal x 0)
+      shift 1 x 0 e === e
+
+    test "countFreeRefs: ref bound by an earlier sibling is not free" do
+      let e =
+            lets
+              ( Standalone (noAnn, x, literalInt 1)
+                  :| [Standalone (noAnn, y, refLocal x 0)]
+              )
+              (literalInt 0)
+      countFreeRef (Local x) e === 0
+
+    test "countFreeRefs: ref to an outer name in own RHS is free" do
+      let e =
+            lets (Standalone (noAnn, x, refLocal x 0) :| []) (literalInt 0)
+      countFreeRef (Local x) e === 1
+
+    test "substitute: ref bound by an earlier sibling is not substituted" do
+      let e =
+            lets
+              ( Standalone (noAnn, x, literalInt 1)
+                  :| [Standalone (noAnn, y, refLocal x 0)]
+              )
+              (literalInt 0)
+      substitute (Local x) 0 (literalInt 42) e === e
+
+    test "substitute: ref to an outer name in own RHS is substituted" do
+      let original =
+            lets (Standalone (noAnn, x, refLocal x 0) :| []) (literalInt 0)
+          expected =
+            lets (Standalone (noAnn, x, literalInt 42) :| []) (literalInt 0)
+      substitute (Local x) 0 (literalInt 42) original === expected
 
 expr ∷ Exp
 expr =

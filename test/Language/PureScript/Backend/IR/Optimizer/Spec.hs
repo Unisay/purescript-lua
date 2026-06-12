@@ -1,5 +1,6 @@
 module Language.PureScript.Backend.IR.Optimizer.Spec where
 
+import Control.Lens (universeOf)
 import Data.Map qualified as Map
 import Hedgehog (annotateShow, forAll, (===))
 import Hedgehog.Gen qualified as Gen
@@ -8,6 +9,8 @@ import Language.PureScript.Backend.IR.Linker (LinkMode (..))
 import Language.PureScript.Backend.IR.Linker qualified as Linker
 import Language.PureScript.Backend.IR.Names
   ( Name (..)
+  , QName (..)
+  , Qualified (Local)
   , moduleNameFromString
   )
 import Language.PureScript.Backend.IR.Optimizer
@@ -31,8 +34,10 @@ import Language.PureScript.Backend.IR.Types
   , noAnn
   , paramNamed
   , paramUnused
+  , refImported
   , refLocal
   , refLocal0
+  , subexpressions
   )
 import Test.Hspec (Spec, describe)
 import Test.Hspec.Hedgehog.Extended (test)
@@ -116,6 +121,83 @@ spec = describe "IR Optimizer" do
       annotateShow original
       annotateShow expected
       optimizedUberModule original === expected
+
+  describe "scoping invariants" do
+    -- Mimics issue #37: an inlined binding contains a let with a
+    -- reference bound by an earlier sibling; inlining it under a binder
+    -- with the same name must not leave the reference unbound.
+    test "inlining bindings does not unbind let-bound references" do
+      let mainModule = moduleNameFromString "Main"
+          dict = moduleNameFromString "Dict"
+          fooExp =
+            abstraction (paramNamed (Name "fn1")) $
+              lets
+                ( Standalone
+                    ( noAnn
+                    , Name "Bind1"
+                    , application
+                        (refImported dict (Name "bind") 0)
+                        (refLocal (Name "fn1") 0)
+                    )
+                    :| [ Standalone
+                          ( noAnn
+                          , Name "discard1"
+                          , application
+                              (refImported dict (Name "discard") 0)
+                              (refLocal (Name "Bind1") 0)
+                          )
+                       ]
+                )
+                ( application
+                    (refLocal (Name "discard1") 0)
+                    (refLocal (Name "discard1") 0)
+                )
+          barExp =
+            abstraction (paramNamed (Name "f")) $
+              lets
+                ( Standalone
+                    ( noAnn
+                    , Name "Bind1"
+                    , application
+                        (refImported dict (Name "bind") 0)
+                        (refLocal (Name "f") 0)
+                    )
+                    :| []
+                )
+                ( application
+                    ( application
+                        (refImported mainModule (Name "foo") 0)
+                        (refLocal (Name "f") 0)
+                    )
+                    ( application
+                        (refLocal (Name "Bind1") 0)
+                        (refLocal (Name "Bind1") 0)
+                    )
+                )
+          original =
+            Linker.UberModule
+              { uberModuleForeigns = []
+              , uberModuleBindings =
+                  [ Standalone (QName mainModule (Name "foo"), fooExp)
+                  , Standalone (QName mainModule (Name "bar"), barExp)
+                  ]
+              , uberModuleExports =
+                  [ ( Name "baz"
+                    , application
+                        (refImported mainModule (Name "bar") 0)
+                        (literalInt 7)
+                    )
+                  ]
+              }
+          optimized = optimizedUberModule original
+          unboundLocalRefs =
+            [ (name, index)
+            | (_exportedName, expr) ← Linker.uberModuleExports optimized
+            , Ref _ann (Local name) index ← universeOf subexpressions expr
+            , index /= 0
+            ]
+      annotateShow optimized
+      unboundLocalRefs === []
 
   describe "renames shadowed names" do
     test "nested λ-abstractions" do
