@@ -2,6 +2,7 @@ module Main where
 
 import Language.PureScript.Backend.IR.DCE.Spec qualified as IrDce
 import Language.PureScript.Backend.IR.Inliner.Spec qualified as Inliner
+import Language.PureScript.Backend.IR.Linker.Spec qualified as IRLinker
 import Language.PureScript.Backend.IR.Optimizer.Spec qualified as IROptimizer
 import Language.PureScript.Backend.IR.Spec qualified as IR
 import Language.PureScript.Backend.IR.Types.Spec qualified as Types
@@ -20,6 +21,7 @@ main = hspec do
   IrDce.spec
   LuaDce.spec
   Types.spec
+  IRLinker.spec
   IROptimizer.spec
   LuaOptimizer.spec
   Printer.spec

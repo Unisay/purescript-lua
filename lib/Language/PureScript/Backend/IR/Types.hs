@@ -98,6 +98,64 @@ data RawExp ann
   | Exception ann Text
   | ForeignImport ann ModuleName FilePath [(ann, Name)]
 
+{- Note [Sequential scoping of Let bindings]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A local variable is referenced by name plus a De Bruijn-style index
+('Ref _ (Local name) index'): the index selects among the binders of
+that same name that are in scope, counting from the innermost binder
+outwards, starting at 0. The index is per-name, so introducing a binder
+for one name does not disturb references to other names.
+
+Which binders of a 'Let' are in scope where? The convention is
+sequential, like Scheme's let*:
+
+  * the RHS of a Standalone binding sees the *earlier* siblings of the
+    same Let; the binding's own name is NOT in scope there, so a
+    reference to it from its own RHS points at an outer binder
+    (Standalone bindings are non-recursive);
+
+  * the RHS of a RecursiveGroup member sees the earlier groupings of
+    the same Let and every member of its own group, itself included;
+
+  * the body sees all the bindings.
+
+For example (indices in brackets):
+
+  let a = ...           -- sees only the enclosing scope
+      b = f a[0]        -- a[0] is the sibling directly above
+      a = g a[0] b[0]   -- a[0] is the FIRST binding, not itself
+  in h a[0] a[1] b[0]   -- a[0] is the second binding, a[1] the first
+
+Every traversal that walks under Let binders must implement this
+convention, and they must all agree:
+
+  * 'countFreeRefs', 'substitute' and 'shift' thread the scope through
+    the groupings left to right;
+
+  * 'qualifyTopRefs' decides whether a local reference escapes to a
+    top-level binding by threading per-name depths the same way;
+
+  * 'renameShadowedNamesInExpr' resolves (name, index) pairs to fresh
+    unique names the same way (see also
+    Note [Locals are uniquely named after renameShadowedNames]);
+
+  * dead code elimination resolves references against the same
+    sequential scope ('adjacencyListForGrouping');
+
+  * the Lua code generator emits Standalone bindings of a Let as a
+    sequence of 'local' statements, which is exactly let* scoping on
+    the Lua side (the Let case of 'fromIR').
+
+Getting one of the walkers wrong miscompiles. Issue #37 was caused by
+shift/substitute/countFreeRefs implementing the opposite convention
+(own name bound in its own RHS, siblings ignored): inlining shifted a
+sibling-bound reference past its binder, DCE deleted the "unused"
+binder, and codegen rendered the dangling 'Ref (Local Bind1) 1' as an
+undefined Lua variable 'Bind11'. The golden test
+test/ps/golden/Golden/Issue37/Test.purs and the "Let sequential (let*)
+scoping" tests pin the convention.
+-}
+
 deriving stock instance Show ann ⇒ Show (RawExp ann)
 deriving stock instance Eq ann ⇒ Eq (RawExp ann)
 deriving stock instance Ord ann ⇒ Ord (RawExp ann)
@@ -507,28 +565,38 @@ countFreeRefs = fmap getSum . MMap.toMap . countFreeRefs' mempty
          where
           minIndexes' = Map.insertWith (+) (Local name) 1 minIndexes
         ParamUnused _paramAnn → countFreeRefs' minIndexes body
+    -- See Note [Sequential scoping of Let bindings]
     Let _ann binds body → fold (countsInBody : countsInBinds)
      where
-      countsInBody = countFreeRefs' minIndexes' body
-       where
-        minIndexes' =
-          foldr (\name → Map.insertWith (+) name 1) minIndexes $
-            toList binds >>= fmap Local . bindingNames
-      countsInBinds =
-        toList binds >>= \case
-          Standalone (_nameAnn, boundName, expr) →
-            [countFreeRefs' minIndexes' expr]
-           where
-            minIndexes' = Map.insertWith (+) (Local boundName) 1 minIndexes
-          RecursiveGroup recBinds →
-            toList recBinds <&> \(_nameAnn, _boundName, expr) →
-              countFreeRefs' minIndexes' expr
-           where
-            minIndexes' =
-              foldr
-                (\(_nameAnn, qName, _expr) → Map.insertWith (+) (Local qName) 1)
-                minIndexes
-                recBinds
+      countsInBody = countFreeRefs' minIndexesAfterBinds body
+      (minIndexesAfterBinds, countsInBinds) =
+        foldl' withGrouping (minIndexes, []) (toList binds)
+      withGrouping
+        ∷ ( Map (Qualified Name) Index
+          , [MonoidMap (Qualified Name) (Sum Natural)]
+          )
+        → Grouping (ann, Name, RawExp ann)
+        → ( Map (Qualified Name) Index
+          , [MonoidMap (Qualified Name) (Sum Natural)]
+          )
+      withGrouping (mins, counts) = \case
+        Standalone (_nameAnn, boundName, expr) →
+          ( Map.insertWith (+) (Local boundName) 1 mins
+          , countFreeRefs' mins expr : counts
+          )
+        RecursiveGroup recBinds →
+          ( minsAfterGroup
+          , ( toList recBinds <&> \(_nameAnn, _boundName, expr) →
+                countFreeRefs' minsAfterGroup expr
+            )
+              <> counts
+          )
+         where
+          minsAfterGroup =
+            foldr
+              (\(_nameAnn, qName, _expr) → Map.insertWith (+) (Local qName) 1)
+              mins
+              recBinds
     App _ann argument function →
       go argument <> go function
     LiteralArray _ann as →
@@ -604,39 +672,36 @@ substitute name idx replacement = substitute' idx
            where
             index' = if name == Local pName then index + 1 else index
             replacement' = shift 1 pName 0 replacement
+      -- See Note [Sequential scoping of Let bindings]
       Let ann binds body → Let ann binds' body'
        where
-        binds' =
-          binds <&> \grouping →
-            case grouping of
-              Standalone (nameAnn, boundName, expr) →
-                Standalone
-                  ( nameAnn
-                  , boundName
-                  , substitute name index' replacement' expr
-                  )
-               where
-                index'
-                  | name == Local boundName = index + 1
-                  | otherwise = index
-                replacement' = shift 1 boundName 0 replacement
-              RecursiveGroup recBinds →
-                RecursiveGroup $
-                  substitute name index' replacement' <<$>> recBinds
-               where
-                index'
-                  | name `elem` fmap Local boundNames = index + 1
-                  | otherwise = index
-                replacement' =
-                  foldr (\n r → shift 1 n 0 r) replacement boundNames
-                boundNames = bindingNames grouping
-        body' = substitute name index' replacement' body
-         where
-          boundNames = toList binds >>= bindingNames
-          index' =
-            index
-              & if name `elem` (Local <$> boundNames) then (+ 1) else id
-          replacement' = foldr (\n r → shift 1 n 0 r) replacement boundNames
+        ((bodyIndex, bodyReplacement), binds') =
+          mapAccumL withGrouping (index, replacement) binds
+        body' = substitute name bodyIndex bodyReplacement body
+        withGrouping
+          ∷ (Index, RawExp ann)
+          → Grouping (ann, Name, RawExp ann)
+          → ((Index, RawExp ann), Grouping (ann, Name, RawExp ann))
+        withGrouping (i, repl) grouping =
+          case grouping of
+            Standalone (nameAnn, boundName, expr) →
+              (
+                ( if name == Local boundName then i + 1 else i
+                , shift 1 boundName 0 repl
+                )
+              , Standalone (nameAnn, boundName, substitute name i repl expr)
+              )
+            RecursiveGroup recBinds →
+              ( (i', repl')
+              , RecursiveGroup $ substitute name i' repl' <<$>> recBinds
+              )
+             where
+              boundNames = bindingNames grouping
+              i' =
+                i
+                  + fromIntegral
+                    (length (filter ((name ==) . Local) boundNames))
+              repl' = foldr (\n r → shift 1 n 0 r) repl boundNames
       App ann argument function →
         App ann (go argument) (go function)
       LiteralArray ann as →
@@ -696,36 +761,33 @@ shift offset namespace minIndex expression =
       minIndex'
         | paramName argument == Just namespace = minIndex + 1
         | otherwise = minIndex
+    -- See Note [Sequential scoping of Let bindings]
     Let ann binds body →
       Let ann binds' body'
      where
-      binds' =
-        binds <&> \grouping →
-          case grouping of
-            Standalone (annotation, boundName, expr) →
-              Standalone
+      (bodyMinIndex, binds') = mapAccumL withGrouping minIndex binds
+      body' = shift offset namespace bodyMinIndex body
+      withGrouping minIdx grouping =
+        case grouping of
+          Standalone (annotation, boundName, expr) →
+            ( if boundName == namespace then minIdx + 1 else minIdx
+            , Standalone
                 ( annotation
                 , boundName
-                , shift offset namespace minIndex' expr
+                , shift offset namespace minIdx expr
                 )
-             where
-              minIndex'
-                | namespace == boundName = minIndex + 1
-                | otherwise = minIndex
-            RecursiveGroup recBinds →
-              RecursiveGroup $
+            )
+          RecursiveGroup recBinds →
+            ( minIdx'
+            , RecursiveGroup $
                 recBinds <&> \(nameAnn, boundName, expr) →
-                  (nameAnn, boundName, shift offset namespace minIndex' expr)
-             where
-              minIndex'
-                | namespace `elem` bindingNames grouping = minIndex + 1
-                | otherwise = minIndex
-      body' = shift offset namespace minIndex' body
-       where
-        boundNames' = toList binds >>= bindingNames
-        minIndex'
-          | namespace `elem` boundNames' = minIndex + 1
-          | otherwise = minIndex
+                  (nameAnn, boundName, shift offset namespace minIdx' expr)
+            )
+           where
+            minIdx' =
+              minIdx
+                + fromIntegral
+                  (length (filter (== namespace) (bindingNames grouping)))
     App ann argument function →
       App ann (go argument) (go function)
     LiteralArray ann as →

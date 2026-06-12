@@ -106,23 +106,27 @@ qualifyTopRefs moduleName = go
           case parameter of
             ParamNamed _ann argName → Map.adjust (+ 1) argName topNames
             ParamUnused _ann → topNames
+      -- See Note [Sequential scoping of Let bindings]
       Let ann groupings body →
-        Let ann (qualifyGroupings groupings) (qualifyBody body)
+        Let ann groupings' (go topNamesAfterBinds body)
        where
-        qualifyGroupings ∷ NonEmpty Binding → NonEmpty Binding
-        qualifyGroupings = fmap \case
-          Standalone (a, name, expr) →
-            Standalone (a, name, go (Map.adjust (+ 1) name topNames) expr)
-          RecursiveGroup recBinds →
-            RecursiveGroup do
-              (a, name, expr) ← recBinds
-              pure (a, name, go indexedNames expr)
-           where
-            boundNames = toList recBinds <&> \(_, n, _) → n
-            indexedNames = foldr (Map.adjust (+ 1)) topNames boundNames
-        qualifyBody =
-          let boundNames = toList groupings >>= bindingNames
-           in go (foldr (Map.adjust (+ 1)) topNames boundNames)
+        (topNamesAfterBinds, groupings') =
+          mapAccumL qualifyGrouping topNames groupings
+        qualifyGrouping ∷ Map Name Index → Binding → (Map Name Index, Binding)
+        qualifyGrouping names grouping =
+          case grouping of
+            Standalone (a, name, expr) →
+              ( Map.adjust (+ 1) name names
+              , Standalone (a, name, go names expr)
+              )
+            RecursiveGroup recBinds →
+              ( names'
+              , RecursiveGroup $
+                  recBinds <&> \(a, name, expr) → (a, name, go names' expr)
+              )
+             where
+              names' =
+                foldr (Map.adjust (+ 1)) names (bindingNames grouping)
       App ann argument function →
         App ann (go' argument) (go' function)
       LiteralArray ann as →
