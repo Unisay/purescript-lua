@@ -10,6 +10,17 @@ This is `pslua` - a PureScript to Lua compiler backend. It takes PureScript Core
 
 The project uses **Nix with flakes** for reproducible builds and **Cabal** for Haskell development.
 
+### Toolchain
+
+Versions are pinned by the flake (`compiler-nix-name` and `easy-ps.purs-*`
+in `flake.nix`); update them there, not locally:
+
+- **GHC**: 9.8.x (haskell.nix `ghc98`)
+- **PureScript**: `purs` 0.15.16 (from easy-purescript-nix; note that attr
+  names may carry an upstream release suffix, e.g. `purs-0_15_16-0`)
+- **Spago**: 0.21.x — the *legacy* Haskell spago driven by `spago.dhall` /
+  `packages.dhall` (not the newer `spago.yaml`-based one)
+
 ### Development Environment
 
 ```bash
@@ -92,8 +103,8 @@ luacheck --quiet --std min test/ps/output/
 # Build and run
 cabal run pslua -- --help
 
-# Or after building
-./dist-newstyle/build/x86_64-linux/ghc-9.8.1/pslua-0.1.0.0/x/pslua/build/pslua/pslua --help
+# Or after building (resolves the dist-newstyle path for the current GHC)
+$(cabal list-bin pslua) --help
 
 # Or via nix
 nix run . -- --help
@@ -158,8 +169,9 @@ PureScript Source → CoreFn → IR → Lua → Optimized Lua
 **CoreFn Layer** (`Language.PureScript.CoreFn.*`):
 - `CoreFn.Reader`: Reads CoreFn JSON from disk
 - `CoreFn.FromJSON`: JSON deserialization
-- `CoreFn.Expr`: CoreFn expression types
+- `CoreFn.Expr`, `CoreFn.Module`, `CoreFn.Meta`: CoreFn data types
 - `CoreFn.Traversals`: Traversal utilities
+- `CoreFn.Laziness`: Lazy binding analysis
 
 **IR Layer** (`Language.PureScript.Backend.IR.*`):
 - `IR.Types`: Core IR data types (`RawExp`, `Module`, `Binding`)
@@ -168,6 +180,7 @@ PureScript Source → CoreFn → IR → Lua → Optimized Lua
 - `IR.Optimizer`: IR-level optimizations
 - `IR.DCE`: Dead code elimination
 - `IR.Inliner`: Inlining annotations and logic
+- `IR.Query`: Queries over IR expressions
 
 **Lua Backend** (`Language.PureScript.Backend.Lua.*`):
 - `Lua.Types`: Lua AST types (`Chunk`, `Statement`, `Exp`)
@@ -177,6 +190,7 @@ PureScript Source → CoreFn → IR → Lua → Optimized Lua
 - `Lua.DCE`: Lua-specific DCE
 - `Lua.Linker.Foreign`: FFI support for Lua foreign modules
 - `Lua.Fixture`: Runtime support code injected into output
+- `Lua.Key`, `Lua.Traversal`: Table keys and AST traversal helpers
 
 **Main Entry** (`Language.PureScript.Backend`):
 - `compileModules`: Top-level compilation function orchestrating the pipeline
@@ -274,6 +288,34 @@ The project uses Hedgehog for property-based testing:
 4. Run tests: `cabal test all --test-show-details=direct`
 5. If golden tests fail, inspect `actual.*` files in `test/ps/output/`
 6. Update golden files if changes are correct
+
+## Updating Dependencies
+
+1. `nix flake update` — refreshes haskell.nix (and with it the Hackage
+   index pin), nixpkgs, and easy-purescript-nix. To bump GHC or `purs`,
+   edit `compiler-nix-name` / `easy-ps.purs-*` in `flake.nix`.
+2. PureScript package sets live in `test/ps/packages.dhall` as
+   `upstream-ps // upstream-lua`. The right operand wins: `upstream-lua`
+   (releases of `Unisay/purescript-lua-package-sets`) overrides core
+   packages with Lua forks that ship `.lua` FFI files.
+3. After changing package sets or `purs`: `cd test/ps && spago build -u
+   '-g corefn'`, then `cabal test all`. Drop the `sha256:` annotations
+   when changing package set URLs — spago re-freezes them on first build.
+4. Expected churn after updates:
+   - `test/ps/output/*/corefn.json` are committed; their `"builtWith"`
+     stamp changes with the `purs` version.
+   - `golden.ir` files embed `.spago/<pkg>/<version>/...` source paths,
+     so package version bumps legitimately change goldens.
+
+### Known Pitfalls
+
+- **`unit` must not be `nil`**: Lua tables cannot hold `nil` values, so
+  `Array Unit` silently collapses to an empty table if the prelude defines
+  `unit = nil`. Requires `Unisay/purescript-lua-prelude` ≥ v7.2.0, where
+  `unit = {}`. If eval goldens for unit arrays start printing `0`, a
+  package set downgraded the prelude — do not accept such goldens.
+- A generated-Lua change that only passes `luacheck` is not verified:
+  eval goldens (`eval/golden.txt`) are the semantic check.
 
 ## Debugging Tips
 
