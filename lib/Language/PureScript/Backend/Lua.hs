@@ -33,6 +33,7 @@ import Language.PureScript.Backend.Lua.Types qualified as Lua
 import Language.PureScript.Backend.Types (AppOrModule (..))
 import Language.PureScript.Names (ModuleName (..), runModuleName)
 import Language.PureScript.Names qualified as PS
+import Language.PureScript.PSString (decodeStringEscaping, mkString)
 import Path (Abs, Dir, Path)
 import Prelude hiding (exp, local)
 
@@ -149,7 +150,7 @@ fromIR foreigns topLevelNames modname ir = case ir of
   IR.LiteralString _ann s →
     pure . Right $ Lua.String s
   IR.LiteralChar _ann c →
-    pure . Right $ Lua.String $ Text.singleton c
+    pure (Right (Lua.String (decodeStringEscaping (mkString (Text.singleton c)))))
   IR.LiteralBool _ann b →
     pure . Right $ Lua.Boolean b
   IR.LiteralArray _ann exprs →
